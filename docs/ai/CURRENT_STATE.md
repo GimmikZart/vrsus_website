@@ -35,13 +35,16 @@ caricamento/errore/vuoto e metadata SEO. Phase 2 resta completata e verificata.
   prenotazioni, capienza privata/visibilità e dati del luogo.
 - Console `/admin/catalogo` per attività e postazioni globali, categorie,
   stato attivo, capienza standard e metadati SEO.
+- Configurazione `/admin/eventi/[id]` per selezionare attività/postazioni
+  presenti e gestire le associazioni many-to-many per singolo evento.
 - `robots.txt` e `sitemap.xml` dinamica; ambienti non production configurati
   come `noindex, nofollow` e disallow completo via robots.
 
 ## Lavoro in corso
 
-Restano da implementare nella Phase 3 le associazioni evento/postazione/attività,
-upload asset e i contenuti editoriali reali/assets di QUALITY e produzione.
+Restano da implementare nella Phase 3 gli override per evento (nomi,
+descrizioni, capienze, access mode), upload asset e i contenuti editoriali
+reali/assets di QUALITY e produzione.
 
 ## Verifiche
 
@@ -76,6 +79,8 @@ upload asset e i contenuti editoriali reali/assets di QUALITY e produzione.
   ancora da eseguire con un account DEV.
 - Test manuale autenticato di creazione/modifica attività e postazioni in
   `/admin/catalogo` ancora da eseguire con un account DEV.
+- Test manuale autenticato delle associazioni in `/admin/eventi/[id]` ancora da
+  eseguire con un account DEV.
 - Il retry di `pnpm typecheck` e del lint mirato è stato interrotto dopo il
   bootstrap Nuxt senza errori TypeScript emessi; resta il warning noto Volar.
 

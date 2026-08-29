@@ -2,12 +2,12 @@
 
 ## Prossima attivita
 
-Completare la Phase 3 con le associazioni evento/postazione/attività.
+Completare la Phase 3 con gli override evento e l’upload asset.
 
 ### Area interessata
 
-- associazioni per evento tra postazioni e attività, con override pubblici e
-  capienze coerenti con il modello many-to-many;
+- override per evento di nome, descrizione, capienza, visibilità, disponibilità,
+  orari e modalità d’accesso;
 - upload asset con storage configurabile;
 - test autenticato manuale di `/admin/news` e `/admin/servizi`;
 - test autenticato manuale di `/admin/richieste` e invio form servizio;
@@ -44,6 +44,8 @@ Completare la Phase 3 con le associazioni evento/postazione/attività.
 - console `/admin/eventi` con date, stato, prenotazioni, prezzo e visibilità
   capienza privata.
 - console `/admin/catalogo` con CRUD globale di attività/postazioni e categorie.
+- configurazione `/admin/eventi/[id]` con associazioni many-to-many tra attività
+  e postazioni.
 
 ### Verifica
 

@@ -323,6 +323,12 @@ async function saveEvent() {
               label="Modifica"
               @click="editEvent(event)"
             />
+            <UButton
+              :to="`/admin/eventi/${event.id}`"
+              variant="ghost"
+              size="sm"
+              label="Catalogo evento"
+            />
           </div>
         </UCard>
         <p

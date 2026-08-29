@@ -4,8 +4,9 @@
 
 Phase 2 e completata e verificata. La Phase 3 e in corso: eventi pubblici, SEO
 tecnico, pagine pubbliche CMS, console editoriale news/servizi, flusso lead
-servizi, gestione admin eventi e catalogo globale sono implementati; restano da
-completare le associazioni operative per singolo evento.
+servizi, gestione admin eventi e catalogo globale sono implementati; sono
+implementate anche le associazioni operative per singolo evento. Restano gli
+override evento e gli asset.
 Non inserire `IMPLEMENTAZIONE COMPLETATA`.
 
 ## Ultimo lavoro
@@ -28,6 +29,8 @@ Non inserire `IMPLEMENTAZIONE COMPLETATA`.
 - Console `/admin/eventi` per gestione di base degli eventi e capienza privata.
 - Console `/admin/catalogo` per gestione globale di attività, postazioni e
   categorie.
+- Configurazione `/admin/eventi/[id]` per selezione e associazione many-to-many
+  tra attività e postazioni.
 - `robots.txt`, sitemap dinamica e JSON-LD evento.
 
 ## File importanti
@@ -49,8 +52,9 @@ pubblico sono PASS; gli utenti locali temporanei sono stati rimossi.
 
 ## Prossima azione
 
-Implementare le associazioni evento/postazione/attività. Eseguire anche il test
-manuale autenticato delle console CMS, eventi, catalogo e del flusso lead.
+Implementare gli override per evento e l’upload asset. Eseguire anche il test
+manuale autenticato delle console CMS, eventi, catalogo, configurazione evento
+e del flusso lead.
 Seguire
 `docs/ai/NEXT_STEPS.md`.
 

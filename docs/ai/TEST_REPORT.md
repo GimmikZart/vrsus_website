@@ -21,6 +21,7 @@ Ultimo aggiornamento: 2026-08-29
 | Protezione route CMS admin | bundle preview + richieste anonime | PASS — `/admin/news`, `/admin/servizi` e `/admin/richieste` restituiscono redirect al login |
 | Build console eventi | `pnpm build` | PASS — route `/admin/eventi` compilata nel bundle server |
 | Build console catalogo | `pnpm build` | PASS — route `/admin/catalogo` compilata nel bundle server |
+| Build configurazione evento | `pnpm build` | PASS — route dinamica `/admin/eventi/[id]` compilata nel bundle server |
 | Verifica manuale landing | Procedura in guideline | DA ESEGUIRE |
 | Verifica manuale database | Procedura in guideline | DA ESEGUIRE |
 
@@ -44,6 +45,8 @@ Ultimo aggiornamento: 2026-08-29
   dell’evento e mantiene privata la capienza salvo configurazione esplicita.
 - Console catalogo: `/admin/catalogo` gestisce attività e postazioni globali con
   categorie, stato attivo e capienza standard.
+- Configurazione evento: `/admin/eventi/[id]` gestisce selezione e associazioni
+  many-to-many tra attività e postazioni.
 - Schema V1: tabelle, vincoli, ruoli seed, trigger `updated_at` e mapping
   evento/stazione/attivita.
 - Sicurezza della foundation: RLS abilitata, tabelle raw di eventi e booking
@@ -79,4 +82,5 @@ Ultimo aggiornamento: 2026-08-29
   form da un dettaglio servizio.
 - Verifica manuale autenticata della creazione/modifica evento in `/admin/eventi`.
 - Verifica manuale autenticata della gestione catalogo in `/admin/catalogo`.
+- Verifica manuale autenticata delle associazioni evento in `/admin/eventi/[id]`.
 - Reset password, SMTP custom e Google OAuth in ambiente QUALITY.

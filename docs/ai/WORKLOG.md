@@ -367,3 +367,23 @@ reali.
 
 Phase 3 avanzata: catalogo globale pronto per test manuale DEV. Restano le
 associazioni evento/postazione/attività, upload asset e contenuti reali.
+
+## 2026-08-29 — Sessione 12
+
+### Lavoro svolto
+
+- Aggiunta `/admin/eventi/[id]` per configurare il catalogo di un evento.
+- Implementata la selezione di postazioni e attività attive e la gestione delle
+  associazioni many-to-many in `event_station_activities`.
+- Collegato il percorso dalla lista eventi; la configurazione resta protetta da
+  middleware ruolo e policy RLS.
+
+### Verifiche
+
+- Prettier mirato -> PASS.
+- `pnpm build` -> PASS, preset `node-server`.
+
+### Stato finale della sessione
+
+Phase 3 avanzata: associazioni evento/catalogo pronte per test manuale DEV.
+Restano override per evento, upload asset e contenuti reali.

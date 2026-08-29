@@ -283,6 +283,45 @@ non vengono pubblicate nelle view pubbliche.
 
 <!-- Inserire qui eventuali osservazioni -->
 
+## Configurazione catalogo per evento
+
+**Stato:** READY TO TEST
+
+### Prerequisiti
+
+- Docker Desktop e Supabase DEV attivi.
+- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+- Almeno un evento, una postazione e un’attività attivi nel catalogo.
+
+### Procedura di test
+
+- [ ] 1. Accedere a `/admin/eventi` e aprire `Catalogo evento` su `VRSUS Demo`.
+- [ ] 2. Selezionare una o più postazioni e attività, poi salvare.
+- [ ] 3. Nella sezione associazioni, collegare un’attività a una postazione e
+      salvare nuovamente.
+- [ ] 4. Ricaricare la pagina e verificare che selezioni e associazioni siano
+      conservate.
+- [ ] 5. Rimuovere una selezione e verificare che l’associazione corrispondente
+      scompaia senza modificare gli altri eventi.
+- [ ] 6. Verificare nella route pubblica dell’evento che siano esposte soltanto
+      le attività/postazioni configurate e pubblicabili.
+
+### Risultato atteso
+
+La configurazione è isolata per evento: un’attività può essere collegata a più
+postazioni e una postazione può offrire più attività. Le scritture raw sono
+consentite solo a admin e super-admin tramite RLS.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
 ## Autenticazione e RBAC
 
 **Stato:** READY TO TEST
