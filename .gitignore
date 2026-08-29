@@ -1,0 +1,30 @@
+# Dependencies and generated Nuxt output
+node_modules/
+.nuxt/
+.output/
+dist/
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+
+# Tooling output
+.eslintcache
+coverage/
+playwright-report/
+test-results/
+.wrangler/
+
+# Supabase local state
+supabase/.temp/
+supabase/.branches/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

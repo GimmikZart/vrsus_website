@@ -1,0 +1,40 @@
+# Local DEV configuration for Supabase CLI.
+# Remote projects are linked explicitly and are never assumed by local commands.
+project_id = "vrsus-dev"
+
+[api]
+enabled = true
+port = 54331
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54332
+shadow_port = 54330
+major_version = 15
+
+[studio]
+enabled = true
+port = 54333
+
+[inbucket]
+enabled = true
+port = 54334
+smtp_port = 54335
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["http://127.0.0.1:3000"]
+
+[realtime]
+enabled = true
+
+# Analytics is not used by the VRSUS local development workflow. Disabling it
+# avoids reserving an additional host port already used by another project.
+[analytics]
+enabled = false
