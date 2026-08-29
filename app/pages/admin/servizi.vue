@@ -253,6 +253,10 @@ async function saveService() {
               :rows="7"
               required
           /></UFormField>
+          <AdminAssetUploader
+            v-model="form.coverImagePath"
+            label="Cover servizio"
+          />
           <UFormField label="Cover image path" name="coverImagePath"
             ><UInput v-model="form.coverImagePath" class="w-full"
           /></UFormField>

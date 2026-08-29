@@ -294,6 +294,10 @@ async function savePost() {
                 class="w-full"
             /></UFormField>
           </div>
+          <AdminAssetUploader
+            v-model="form.coverImagePath"
+            label="Cover news"
+          />
           <UFormField label="Cover image path" name="coverImagePath"
             ><UInput v-model="form.coverImagePath" class="w-full"
           /></UFormField>

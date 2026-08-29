@@ -430,6 +430,10 @@ async function saveEvent() {
           <UFormField label="Note luogo" name="venueNotes"
             ><UTextarea v-model="form.venueNotes" class="w-full" :rows="2"
           /></UFormField>
+          <AdminAssetUploader
+            v-model="form.coverImagePath"
+            label="Cover evento"
+          />
           <UFormField label="Cover image path" name="coverImagePath"
             ><UInput v-model="form.coverImagePath" class="w-full"
           /></UFormField>

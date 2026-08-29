@@ -452,6 +452,10 @@ async function saveStation() {
               class="w-full"
               :rows="5"
           /></UFormField>
+          <AdminAssetUploader
+            v-model="activityForm.imagePath"
+            label="Immagine attività"
+          />
           <UFormField label="Image path" name="activityImagePath"
             ><UInput v-model="activityForm.imagePath" class="w-full"
           /></UFormField>
@@ -524,6 +528,10 @@ async function saveStation() {
               min="1"
               class="w-full"
           /></UFormField>
+          <AdminAssetUploader
+            v-model="stationForm.imagePath"
+            label="Immagine postazione"
+          />
           <UFormField label="Image path" name="stationImagePath"
             ><UInput v-model="stationForm.imagePath" class="w-full"
           /></UFormField>

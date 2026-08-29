@@ -1,6 +1,6 @@
 begin;
 
-select plan(39);
+select plan(43);
 
 select has_table('public', 'profiles', 'profiles table exists');
 select has_table('public', 'events', 'events table exists');
@@ -62,6 +62,25 @@ select has_function(
   'set_user_role',
   array['uuid', 'text', 'boolean']::text[],
   'super-admin role management function exists'
+);
+
+select is(
+  (select count(*)::integer from storage.buckets where id = 'vrsus-assets' and public = true and file_size_limit = 5242880),
+  1,
+  'CMS asset bucket is public with a five megabyte limit'
+);
+select is(
+  (select count(*)::integer from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname in ('admin_assets_insert', 'admin_assets_update', 'admin_assets_delete')),
+  3,
+  'CMS asset mutations have three admin-only storage policies'
+);
+select ok(
+  not exists (select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'public_assets_insert'),
+  'storage has no public asset insert policy'
+);
+select ok(
+  not exists (select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'public_assets_delete'),
+  'storage has no public asset delete policy'
 );
 
 select is(
