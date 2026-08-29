@@ -2,27 +2,68 @@
 
 ## Stato sintetico
 
-Lo scaffolding è predisposto per essere specializzato in un nuovo progetto.
-Non è ancora stata scelta o implementata una soluzione applicativa concreta.
+Phase 3 e in corso: il sito pubblico legge eventi e contenuti editoriali dalle
+view Supabase `public_*`, con catalogo, dettagli, stati di
+caricamento/errore/vuoto e metadata SEO. Phase 2 resta completata e verificata.
 
 ## Lavoro completato
 
-- Struttura documentale per il workflow AI.
-- Template neutrale della Technical Specification.
-- Configurazione del workflow multi-agent.
+- Bootstrap Nuxt 4 e layout pubblico della Phase 0.
+- Migration e seed DEV Supabase V1 con schema, vincoli, trigger, RLS e view
+  pubbliche sicure.
+- Stack Supabase locale Docker attivo su API `54331`, database `54332`, Studio
+  `54333`, Inbucket `54334`.
+- Tipi database generati e funzioni protette `get_my_roles()` e
+  `set_user_role()`.
+- Sessione Supabase SSR abilitata, login email/password, profilo bootstrap,
+  middleware `auth`/`role` e route protette `/app`, `/admin` e `/admin/utenti`.
+- Endpoint server di gestione utenti/ruoli con service role solo dopo verifica
+  super-admin.
+- Composable tipizzato per gli eventi pubblici, basato sulle view `public_*`.
+- Homepage collegata al prossimo evento pubblicato.
+- Route pubbliche `/eventi`, `/eventi/[slug]` e compatibilita `/evento`.
+- Dettaglio con postazioni/attivita pubblicabili, JSON-LD `Event`, canonical URL.
+- View pubbliche sicure per attivita, news e servizi, con fixture DEV pubblicate.
+- Route pubbliche `/esperienze`, `/news`, `/news/[slug]`, `/servizi` e
+  `/servizi/[slug]`, con dettaglio editoriale e canonical URL.
+- Regolamento pubblico con placeholder esplicito in attesa del testo ufficiale.
+- Console admin `/admin/news` e `/admin/servizi` per creazione, modifica,
+  pubblicazione/archiviazione news e attivazione/disattivazione servizi.
+- `robots.txt` e `sitemap.xml` dinamica; ambienti non production configurati
+  come `noindex, nofollow` e disallow completo via robots.
 
 ## Lavoro in corso
 
-Nessuna implementazione applicativa ancora avviata.
+Restano da implementare nella Phase 3 il modulo richieste servizi, la gestione
+admin di eventi/catalogo, upload asset e i contenuti editoriali reali/assets di
+QUALITY e produzione.
 
 ## Verifiche
 
-Nessuna build o test applicativi ancora eseguiti.
+- `pnpm db:reset` -> PASS: migration e seed applicati localmente.
+- `pnpm db:types` -> PASS: tipi generati dal database locale.
+- `pnpm db:test` -> PASS: 37 test pgTAP.
+- `pnpm lint` -> PASS.
+- `pnpm format:check` -> PASS.
+- `pnpm typecheck` -> PASS; resta warning non bloccante Volar/vue-router.
+- `pnpm test` -> PASS, 1 test unitario.
+- `pnpm test:e2e` -> PASS, 5 test Chromium, inclusi catalogo -> dettaglio e
+  pagine CMS pubbliche.
+- `pnpm build` -> PASS, preset `node-server`.
+- Smoke SSR bundle -> PASS: tutte le route pubbliche, robots e sitemap
+  rispondono 200; fixture evento/news/servizio presenti; JSON-LD evento presente.
 
 ## Problemi aperti
 
-Definire il progetto concreto, i requisiti e lo stack tecnologico.
+- La CLI Supabase locale segnala una versione piu recente disponibile; non e un
+  blocker.
+- Reset password, SMTP custom e Google OAuth restano configurazioni future per
+  QUALITY/produzione.
+- I font vengono scaricati/cachati durante la build; valutare asset locali se la
+  pipeline futura dovra essere completamente offline.
+- Test manuale autenticato della creazione/pubblicazione in `/admin/news` e
+  `/admin/servizi` ancora da eseguire con un account DEV.
 
 ## Ultimo aggiornamento
 
-2026-08-26
+2026-08-29

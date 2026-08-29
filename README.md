@@ -1,31 +1,76 @@
-# AI Project Scaffold
+# VRSUS Web App
 
-Questo repository è una base riutilizzabile per progetti sviluppati con un
-workflow interamente assistito da AI. Non contiene ancora un'applicazione:
-contiene regole operative, documentazione di progetto e un protocollo di
-handoff tra agenti.
+PWA responsive per gli eventi VRSUS: il prodotto è progettato attorno
+all'evento e alle esperienze, con Nuxt 4, Supabase e deployment Cloudflare
+Pages.
 
-## Come usarlo
+## Sviluppo locale
 
-1. Sostituire i placeholder nella specifica tecnica con il contesto del nuovo
-   progetto.
-2. Definire requisiti, vincoli e criteri di accettazione prima di scrivere
-   codice.
-3. Aggiornare `CURRENT_STATE.md` e `NEXT_STEPS.md` quando cambia lo stato
-   effettivo del repository.
-4. Registrare in `DECISIONS.md` soltanto le decisioni tecniche persistenti.
-5. Aggiungere a `WORKLOG.md` una voce per ogni sessione significativa.
+Prerequisiti:
 
-## Struttura
+- Node.js 22.x;
+- pnpm 10.x (il progetto lo dichiara in `package.json` e può essere fornito da
+  Corepack);
+- Docker Desktop, necessario per Supabase DEV.
 
-- `AGENTS.md`: istruzioni operative per gli agenti.
-- `docs/technical/TECHNICAL_SPECIFICATION.md`: template della specifica del
-  progetto da compilare.
-- `docs/ai/HANDOFF_PROTOCOL.md`: protocollo di continuità tra sessioni.
-- `docs/ai/CURRENT_STATE.md`: stato verificato corrente.
-- `docs/ai/NEXT_STEPS.md`: una sola prossima attività prioritaria.
-- `docs/ai/DECISIONS.md`: decisioni tecniche approvate.
-- `docs/ai/WORKLOG.md`: storico append-only delle sessioni.
+```bash
+corepack enable
+pnpm install
+pnpm dev
+```
 
-La struttura applicativa, le tecnologie e le integrazioni vanno scelte per il
-progetto concreto e non sono imposte da questo scaffolding.
+L'applicazione è disponibile su `http://127.0.0.1:3000`.
+
+Per configurare Supabase locale:
+
+```bash
+supabase start
+Copy-Item .env.example .env
+```
+
+Inserire in `.env` le chiavi anon e service-role mostrate da `supabase
+status`. Il file `.env` è ignorato da Git.
+
+Comandi database disponibili:
+
+```bash
+pnpm db:start
+pnpm db:reset
+pnpm db:types
+pnpm db:test
+```
+
+VRSUS usa porte locali dedicate per non interferire con altri progetti:
+API `54331`, database `54332`, Studio `54333` e Inbucket `54334`.
+`pnpm db:reset` ricrea schema e fixture fittizie locali: non contiene utenti,
+credenziali o contenuti VRSUS reali.
+
+## Verifiche
+
+```bash
+pnpm lint
+pnpm format:check
+pnpm typecheck
+pnpm test
+pnpm test:e2e
+pnpm build
+```
+
+Per un build Cloudflare esplicito:
+
+```bash
+pnpm exec nuxt build --preset=cloudflare_pages
+```
+
+## Struttura principale
+
+- `app/`: pagine, layout, componenti, composable e token UI;
+- `server/`: servizi e logica server-side;
+- `shared/`: tipi, schemi e costanti condivisi;
+- `supabase/`: configurazione, migration e funzioni Edge;
+- `tests/`: test unitari ed E2E;
+- `docs/ai/`: stato, handoff, decisioni e report di verifica;
+- `docs/technical/`: specifica tecnica e roadmap approvate.
+
+La source of truth dello schema Supabase sarà `supabase/migrations/`. La
+service-role key non deve mai arrivare al browser.

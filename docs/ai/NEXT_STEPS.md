@@ -1,18 +1,45 @@
 # Next Steps
 
-## Prossima attività
+## Prossima attivita
 
-Specializzare lo scaffolding per il nuovo progetto compilando la Technical
-Specification.
+Completare la Phase 3 con il flusso richieste servizi e la gestione admin di
+eventi/catalogo.
 
-Prima milestone:
+### Area interessata
 
-- definire problema, obiettivi, scope e requisiti;
-- scegliere runtime, struttura e integrazioni necessarie;
-- compilare criteri di accettazione e piano di verifica;
-- registrare le decisioni tecniche persistenti.
+- console `/admin/eventi` e `/admin/catalogo` per completare la gestione
+  operativa;
+- endpoint/form per richieste dai servizi pubblici;
+- test autenticato manuale di `/admin/news` e `/admin/servizi`;
+- sostituzione dei fixture editoriali con contenuti e asset approvati;
+- `docs/dev/guideline_test_features.md` per le procedure manuali.
 
-## Criterio di completamento
+### Comportamento atteso
 
-La specifica deve essere coerente, priva di riferimenti a un progetto
-precedente e sufficientemente precisa da guidare la prima implementazione.
+- esperienze, news e servizi provengono da contenuti pubblicati e non da copy
+  inventato nel frontend;
+- draft, archived e contenuti non pubblicati non compaiono nelle route pubbliche;
+- le operazioni CMS restano protette da ruolo e RLS;
+- immagini, Open Graph e metadata restano coerenti con il contenuto effettivo.
+- le richieste servizi non espongono dati interni e restano autorizzate lato
+  server secondo il ruolo previsto.
+
+### Gia verificato in Phase 3
+
+- home alimentata dalla view `public_events`;
+- lista `/eventi` e dettaglio `/eventi/[slug]` alimentati da Supabase;
+- postazioni e attivita lette dalle view `public_event_*`;
+- loading/error/empty state senza dati fittizi lato frontend;
+- robots, sitemap, canonical e JSON-LD evento;
+- noindex/disallow in ambienti non production.
+- view pubbliche `public_activities`, `public_news_posts` e
+  `public_service_pages`, con filtering dei soli contenuti `published`;
+- route pubbliche esperienze/news/servizi/regolamento con fixture DEV e
+  dettagli editoriali;
+- sitemap dinamica con slug di eventi, news e servizi pubblicati.
+- console CMS news/servizi con scritture protette da RLS e ruoli admin.
+
+### Verifica
+
+Dopo il prossimo blocco eseguire `pnpm db:test`, `pnpm lint`,
+`pnpm typecheck`, `pnpm test`, `pnpm test:e2e` e `pnpm build`.
