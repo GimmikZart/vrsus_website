@@ -2,12 +2,10 @@
 
 ## Prossima attivita
 
-Completare la Phase 3 con gli override evento e l’upload asset.
+Completare la Phase 3 con l’upload asset e la preparazione dei contenuti reali.
 
 ### Area interessata
 
-- override per evento di nome, descrizione, capienza, visibilità, disponibilità,
-  orari e modalità d’accesso;
 - upload asset con storage configurabile;
 - test autenticato manuale di `/admin/news` e `/admin/servizi`;
 - test autenticato manuale di `/admin/richieste` e invio form servizio;
@@ -46,6 +44,8 @@ Completare la Phase 3 con gli override evento e l’upload asset.
 - console `/admin/catalogo` con CRUD globale di attività/postazioni e categorie.
 - configurazione `/admin/eventi/[id]` con associazioni many-to-many tra attività
   e postazioni.
+- override per evento di nome, descrizione, capienza, visibilità, disponibilità,
+  orari e modalità d’accesso.
 
 ### Verifica
 

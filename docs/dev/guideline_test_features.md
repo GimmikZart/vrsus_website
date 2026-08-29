@@ -303,14 +303,18 @@ non vengono pubblicate nelle view pubbliche.
       conservate.
 - [ ] 5. Rimuovere una selezione e verificare che l’associazione corrispondente
       scompaia senza modificare gli altri eventi.
-- [ ] 6. Verificare nella route pubblica dell’evento che siano esposte soltanto
+- [ ] 6. Compilare un override di nome, descrizione, capienza e visibilità per
+      una postazione o attività; salvare e verificare che il catalogo globale
+      non venga alterato.
+- [ ] 7. Verificare nella route pubblica dell’evento che siano esposte soltanto
       le attività/postazioni configurate e pubblicabili.
 
 ### Risultato atteso
 
 La configurazione è isolata per evento: un’attività può essere collegata a più
-postazioni e una postazione può offrire più attività. Le scritture raw sono
-consentite solo a admin e super-admin tramite RLS.
+postazioni e una postazione può offrire più attività. Gli override non cambiano
+il catalogo globale; le scritture raw sono consentite solo a admin e
+super-admin tramite RLS.
 
 ### Esito manuale
 

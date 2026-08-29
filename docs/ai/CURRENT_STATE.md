@@ -39,11 +39,12 @@ caricamento/errore/vuoto e metadata SEO. Phase 2 resta completata e verificata.
   presenti e gestire le associazioni many-to-many per singolo evento.
 - `robots.txt` e `sitemap.xml` dinamica; ambienti non production configurati
   come `noindex, nofollow` e disallow completo via robots.
+- Override per evento di nomi, descrizioni, capienze, visibilita, stato,
+  modalita d'accesso e orari delle attivita.
 
 ## Lavoro in corso
 
-Restano da implementare nella Phase 3 gli override per evento (nomi,
-descrizioni, capienze, access mode), upload asset e i contenuti editoriali
+Restano da implementare nella Phase 3 l'upload asset e i contenuti editoriali
 reali/assets di QUALITY e produzione.
 
 ## Verifiche
@@ -81,8 +82,8 @@ reali/assets di QUALITY e produzione.
   `/admin/catalogo` ancora da eseguire con un account DEV.
 - Test manuale autenticato delle associazioni in `/admin/eventi/[id]` ancora da
   eseguire con un account DEV.
-- Il retry di `pnpm typecheck` e del lint mirato è stato interrotto dopo il
-  bootstrap Nuxt senza errori TypeScript emessi; resta il warning noto Volar.
+- Test manuale autenticato degli override per evento ancora da eseguire con un
+  account DEV.
 - Typecheck diretto post-correzione della configurazione evento -> PASS (exit
   code 0); restano soltanto i warning non bloccanti Volar.
 

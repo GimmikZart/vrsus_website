@@ -389,3 +389,24 @@ associazioni evento/postazione/attività, upload asset e contenuti reali.
 
 Phase 3 avanzata: associazioni evento/catalogo pronte per test manuale DEV.
 Restano override per evento, upload asset e contenuti reali.
+
+## 2026-08-29 — Sessione 13
+
+### Lavoro svolto
+
+- Estesa `/admin/eventi/[id]` con override per singola postazione e attività.
+- Gestiti nome pubblico, descrizione, capienza, visibilità, stato attivo,
+  modalità d'accesso e orari delle attività.
+- Aggiunta validazione preventiva di capienze e intervalli orari per evitare
+  scritture parziali in caso di dati non validi.
+
+### Verifiche
+
+- Prettier mirato -> PASS.
+- `vue-tsc --noEmit -p .nuxt/tsconfig.json` -> PASS; warning Volar noto.
+- `pnpm build` -> PASS, preset `node-server`.
+
+### Stato finale della sessione
+
+Phase 3 avanzata: configurazione evento completa per associazioni e override.
+Restano upload asset, contenuti reali e test manuale autenticato.

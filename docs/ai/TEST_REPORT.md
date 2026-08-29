@@ -23,6 +23,7 @@ Ultimo aggiornamento: 2026-08-29
 | Build console catalogo | `pnpm build` | PASS — route `/admin/catalogo` compilata nel bundle server |
 | Build configurazione evento | `pnpm build` | PASS — route dinamica `/admin/eventi/[id]` compilata nel bundle server |
 | Typecheck configurazione evento | `vue-tsc --noEmit -p .nuxt/tsconfig.json` | PASS — nessun errore TypeScript; warning Volar non bloccante |
+| Build override evento | `pnpm build` | PASS — override attività/postazioni compilati nel bundle server |
 | Verifica manuale landing | Procedura in guideline | DA ESEGUIRE |
 | Verifica manuale database | Procedura in guideline | DA ESEGUIRE |
 
@@ -48,6 +49,8 @@ Ultimo aggiornamento: 2026-08-29
   categorie, stato attivo e capienza standard.
 - Configurazione evento: `/admin/eventi/[id]` gestisce selezione e associazioni
   many-to-many tra attività e postazioni.
+- Override evento: la stessa console gestisce contenuti, capienze, visibilità,
+  stato, modalità d'accesso e orari senza alterare il catalogo globale.
 - Schema V1: tabelle, vincoli, ruoli seed, trigger `updated_at` e mapping
   evento/stazione/attivita.
 - Sicurezza della foundation: RLS abilitata, tabelle raw di eventi e booking
@@ -84,4 +87,6 @@ Ultimo aggiornamento: 2026-08-29
 - Verifica manuale autenticata della creazione/modifica evento in `/admin/eventi`.
 - Verifica manuale autenticata della gestione catalogo in `/admin/catalogo`.
 - Verifica manuale autenticata delle associazioni evento in `/admin/eventi/[id]`.
+- Verifica manuale autenticata degli override attività/postazioni in
+  `/admin/eventi/[id]`.
 - Reset password, SMTP custom e Google OAuth in ambiente QUALITY.
