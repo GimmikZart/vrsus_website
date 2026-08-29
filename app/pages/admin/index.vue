@@ -19,6 +19,11 @@ const adminSections = [
     description: 'Gestisci le pagine dei servizi visibili sul sito.',
     to: '/admin/servizi',
   },
+  {
+    label: 'Richieste servizi',
+    description: 'Segui i lead ricevuti e aggiorna il loro stato operativo.',
+    to: '/admin/richieste',
+  },
 ] as const
 
 useSeoMeta({
@@ -55,7 +60,7 @@ async function logout() {
       <UButton color="neutral" variant="outline" label="Esci" @click="logout" />
     </div>
 
-    <section class="mt-10 grid gap-4 sm:grid-cols-2">
+    <section class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <UCard
         v-for="section in adminSections"
         :key="section.to"

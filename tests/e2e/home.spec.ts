@@ -54,6 +54,14 @@ test('public CMS pages render published content from Supabase views', async ({
   await expect(
     page.getByRole('link', { name: /Eventi privati/i }),
   ).toBeVisible()
+
+  await page.getByRole('link', { name: /Eventi privati/i }).click()
+  await expect(
+    page.getByRole('heading', { name: /Eventi privati/i }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: /Invia richiesta/i }),
+  ).toBeVisible()
 })
 
 test('anonymous users are redirected away from protected areas', async ({

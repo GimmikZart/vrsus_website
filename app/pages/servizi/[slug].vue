@@ -30,6 +30,19 @@ const pageDescription = computed(
     'Scopri i servizi VRSUS.',
 )
 const config = useRuntimeConfig()
+const inquiryForm = reactive({
+  name: '',
+  email: '',
+  phone: '',
+  organization: '',
+  peopleCount: null as number | null,
+  preferredDate: '',
+  message: '',
+  website: '',
+})
+const inquiryPending = ref(false)
+const inquirySent = ref(false)
+const inquiryError = ref('')
 
 useSeoMeta({
   title: computed(() => `${pageTitle.value} — VRSUS`),
@@ -42,6 +55,40 @@ useHead(() => ({
     { rel: 'canonical', href: `${config.public.appBaseUrl}/servizi/${slug}` },
   ],
 }))
+
+async function submitInquiry() {
+  if (!service.value) return
+
+  inquiryPending.value = true
+  inquirySent.value = false
+  inquiryError.value = ''
+
+  try {
+    await $fetch('/api/services/inquiries', {
+      method: 'POST',
+      body: {
+        servicePageId: service.value.id,
+        ...inquiryForm,
+      },
+    })
+    inquirySent.value = true
+    Object.assign(inquiryForm, {
+      name: '',
+      email: '',
+      phone: '',
+      organization: '',
+      peopleCount: null,
+      preferredDate: '',
+      message: '',
+      website: '',
+    })
+  } catch {
+    inquiryError.value =
+      'Non è stato possibile inviare la richiesta. Riprova tra poco.'
+  } finally {
+    inquiryPending.value = false
+  }
+}
 </script>
 
 <template>
@@ -97,8 +144,91 @@ useHead(() => ({
       <div
         class="mt-12 rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-white/60"
       >
-        Le richieste per questo servizio saranno disponibili in un prossimo
-        aggiornamento.
+        <p
+          class="text-brand-blue-300 text-xs font-semibold tracking-[0.2em] uppercase"
+        >
+          Parliamone
+        </p>
+        <h2 class="font-display mt-3 text-2xl font-semibold text-white">
+          Raccontaci cosa stai organizzando.
+        </h2>
+        <p class="mt-3 text-sm leading-6 text-white/55">
+          Inviaci qualche dettaglio: il team VRSUS ti ricontatterà per definire
+          insieme la soluzione più adatta.
+        </p>
+
+        <form class="mt-7 space-y-4" @submit.prevent="submitInquiry">
+          <!-- eslint-disable vue/html-self-closing -->
+          <textarea
+            v-model="inquiryForm.website"
+            tabindex="-1"
+            autocomplete="off"
+            aria-hidden="true"
+            class="absolute -left-[9999px] h-px w-px opacity-0"
+            :rows="1"
+          ></textarea>
+          <!-- eslint-enable vue/html-self-closing -->
+          <div class="grid gap-4 sm:grid-cols-2">
+            <UFormField label="Nome" name="name">
+              <UInput v-model="inquiryForm.name" class="w-full" required />
+            </UFormField>
+            <UFormField label="Email" name="email">
+              <UInput
+                v-model="inquiryForm.email"
+                type="email"
+                autocomplete="email"
+                class="w-full"
+                required
+              />
+            </UFormField>
+            <UFormField label="Telefono" name="phone">
+              <UInput v-model="inquiryForm.phone" type="tel" class="w-full" />
+            </UFormField>
+            <UFormField label="Organizzazione" name="organization">
+              <UInput v-model="inquiryForm.organization" class="w-full" />
+            </UFormField>
+            <UFormField label="Partecipanti" name="peopleCount">
+              <UInput
+                v-model.number="inquiryForm.peopleCount"
+                type="number"
+                min="1"
+                class="w-full"
+              />
+            </UFormField>
+            <UFormField label="Data preferita" name="preferredDate">
+              <UInput
+                v-model="inquiryForm.preferredDate"
+                type="date"
+                class="w-full"
+              />
+            </UFormField>
+          </div>
+          <UFormField label="Messaggio" name="message">
+            <UTextarea
+              v-model="inquiryForm.message"
+              class="w-full"
+              :rows="5"
+              required
+            />
+          </UFormField>
+          <UAlert
+            v-if="inquirySent"
+            color="success"
+            variant="subtle"
+            description="Richiesta inviata. Ti ricontatteremo presto."
+          />
+          <UAlert
+            v-if="inquiryError"
+            color="error"
+            variant="subtle"
+            :description="inquiryError"
+          />
+          <UButton
+            type="submit"
+            :loading="inquiryPending"
+            label="Invia richiesta"
+          />
+        </form>
       </div>
     </article>
   </div>

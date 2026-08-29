@@ -1,6 +1,6 @@
 begin;
 
-select plan(37);
+select plan(39);
 
 select has_table('public', 'profiles', 'profiles table exists');
 select has_table('public', 'events', 'events table exists');
@@ -34,6 +34,19 @@ select ok(
   not has_table_privilege('authenticated', 'public.bookings', 'select'),
   'authenticated clients cannot select raw bookings with admin notes'
 );
+set local role anon;
+select is(
+  (select count(*)::integer from public.service_inquiries),
+  0,
+  'anonymous clients cannot select service inquiries through RLS'
+);
+select throws_ok(
+  $$insert into public.service_inquiries (name, email, message) values ('Anon', 'anon@example.test', 'Rejected')$$,
+  '42501',
+  'new row violates row-level security policy for table "service_inquiries"',
+  'anonymous clients cannot insert service inquiries directly'
+);
+set local role postgres;
 
 select has_view('public', 'public_events', 'public event projection exists');
 select has_view('public', 'public_activities', 'public activity projection exists');
