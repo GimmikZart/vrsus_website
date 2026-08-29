@@ -2,13 +2,27 @@
 import type { Database } from '~/types/database.types'
 import type { VrsusRole } from '~/composables/useVrsusAuth'
 
-type Event = Database['public']['Tables']['events']['Row']
-type Station = Database['public']['Tables']['stations']['Row']
-type Activity = Database['public']['Tables']['activities']['Row']
-type EventStation = Database['public']['Tables']['event_stations']['Row']
-type EventActivity = Database['public']['Tables']['event_activities']['Row']
-type EventStationActivity =
-  Database['public']['Tables']['event_station_activities']['Row']
+type AccessMode =
+  'free_play' | 'scheduled' | 'registration_required' | 'tournament'
+
+type StationOverride = {
+  publicName: string
+  description: string
+  capacity: number | undefined
+  isPublic: boolean
+  active: boolean
+}
+
+type ActivityOverride = {
+  publicName: string
+  description: string
+  accessMode: AccessMode
+  capacity: number | undefined
+  startsAt: string
+  endsAt: string
+  isPublic: boolean
+  active: boolean
+}
 
 definePageMeta({
   middleware: ['auth', 'role'],
@@ -33,27 +47,12 @@ const {
       activitiesResult,
       eventStationsResult,
       eventActivitiesResult,
-      mappingsResult,
     ] = await Promise.all([
       client.from('events').select('*').eq('id', eventId.value).single(),
       client.from('stations').select('*').eq('active', true).order('name'),
       client.from('activities').select('*').eq('active', true).order('name'),
       client.from('event_stations').select('*').eq('event_id', eventId.value),
       client.from('event_activities').select('*').eq('event_id', eventId.value),
-      client
-        .from('event_station_activities')
-        .select('*')
-        .in(
-          'event_activity_id',
-          (
-            await client
-              .from('event_activities')
-              .select('id')
-              .eq('event_id', eventId.value)
-          ).data?.map((item) => item.id) ?? [
-            '00000000-0000-0000-0000-000000000000',
-          ],
-        ),
     ])
 
     if (
@@ -61,10 +60,23 @@ const {
       stationsResult.error ||
       activitiesResult.error ||
       eventStationsResult.error ||
-      eventActivitiesResult.error ||
-      mappingsResult.error
+      eventActivitiesResult.error
     ) {
       throw new Error('Impossibile caricare la configurazione evento.')
+    }
+
+    const mappingsResult = await client
+      .from('event_station_activities')
+      .select('*')
+      .in(
+        'event_activity_id',
+        eventActivitiesResult.data.length
+          ? eventActivitiesResult.data.map((item) => item.id)
+          : ['00000000-0000-0000-0000-000000000000'],
+      )
+
+    if (mappingsResult.error) {
+      throw new Error('Impossibile caricare le associazioni evento.')
     }
 
     return {
@@ -81,14 +93,47 @@ const {
 const selectedStationIds = ref<string[]>([])
 const selectedActivityIds = ref<string[]>([])
 const mappingSelection = ref<Record<string, string[]>>({})
+const stationOverrides = reactive<Record<string, StationOverride>>({})
+const activityOverrides = reactive<Record<string, ActivityOverride>>({})
 const saving = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+
+function emptyStationOverride(): StationOverride {
+  return {
+    publicName: '',
+    description: '',
+    capacity: undefined,
+    isPublic: true,
+    active: true,
+  }
+}
+
+function emptyActivityOverride(): ActivityOverride {
+  return {
+    publicName: '',
+    description: '',
+    accessMode: 'free_play',
+    capacity: undefined,
+    startsAt: '',
+    endsAt: '',
+    isPublic: true,
+    active: true,
+  }
+}
 
 useSeoMeta({
   title: 'Configurazione evento — VRSUS',
   robots: 'noindex, nofollow',
 })
+
+function toDateTimeInput(value: string | null) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const offset = date.getTimezoneOffset() * 60_000
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16)
+}
 
 function syncSelections() {
   if (!configuration.value) return
@@ -98,6 +143,34 @@ function syncSelections() {
   selectedActivityIds.value = configuration.value.eventActivities
     .filter((item) => item.active)
     .map((item) => item.activity_id)
+
+  for (const station of configuration.value.stations) {
+    const configured = configuration.value.eventStations.find(
+      (item) => item.station_id === station.id,
+    )
+    stationOverrides[station.id] = {
+      publicName: configured?.public_name ?? '',
+      description: configured?.description_override ?? '',
+      capacity: configured?.capacity_override ?? undefined,
+      isPublic: configured?.is_public ?? true,
+      active: configured?.active ?? true,
+    }
+  }
+  for (const activity of configuration.value.activities) {
+    const configured = configuration.value.eventActivities.find(
+      (item) => item.activity_id === activity.id,
+    )
+    activityOverrides[activity.id] = {
+      publicName: configured?.public_name ?? '',
+      description: configured?.description_override ?? '',
+      accessMode: (configured?.access_mode as AccessMode) ?? 'free_play',
+      capacity: configured?.capacity ?? undefined,
+      startsAt: toDateTimeInput(configured?.starts_at ?? null),
+      endsAt: toDateTimeInput(configured?.ends_at ?? null),
+      isPublic: configured?.is_public ?? true,
+      active: configured?.active ?? true,
+    }
+  }
 
   const eventStationById = new Map(
     configuration.value.eventStations.map((item) => [item.id, item.station_id]),
@@ -132,11 +205,48 @@ function toggleMapping(activityId: string, stationId: string) {
     : [...current, stationId]
 }
 
+function stationOverride(stationId: string) {
+  return stationOverrides[stationId] ?? emptyStationOverride()
+}
+
+function activityOverride(activityId: string) {
+  return activityOverrides[activityId] ?? emptyActivityOverride()
+}
+
 async function saveConfiguration() {
   if (!configuration.value) return
   errorMessage.value = ''
   successMessage.value = ''
   saving.value = true
+
+  for (const stationId of selectedStationIds.value) {
+    const override = stationOverrides[stationId]
+    if (
+      override?.capacity !== undefined &&
+      (!Number.isInteger(override.capacity) || override.capacity <= 0)
+    ) {
+      errorMessage.value =
+        'Le capienze delle postazioni devono essere interi positivi.'
+      saving.value = false
+      return
+    }
+  }
+  for (const activityId of selectedActivityIds.value) {
+    const override = activityOverrides[activityId]
+    const startsAt = override?.startsAt ? new Date(override.startsAt) : null
+    const endsAt = override?.endsAt ? new Date(override.endsAt) : null
+    if (
+      (override?.capacity !== undefined &&
+        (!Number.isInteger(override.capacity) || override.capacity <= 0)) ||
+      (startsAt && Number.isNaN(startsAt.getTime())) ||
+      (endsAt && Number.isNaN(endsAt.getTime())) ||
+      (startsAt && endsAt && endsAt <= startsAt)
+    ) {
+      errorMessage.value = 'Controlla capienza e date delle attività.'
+      saving.value = false
+      return
+    }
+  }
 
   try {
     const existingStations = configuration.value.eventStations
@@ -184,6 +294,51 @@ async function saveConfiguration() {
     }
     if (newActivities.length) {
       const result = await client.from('event_activities').insert(newActivities)
+      if (result.error) throw result.error
+    }
+
+    await refresh()
+    if (!configuration.value) return
+    for (const item of configuration.value.eventStations) {
+      const override = stationOverrides[item.station_id]
+      if (!override) continue
+      const result = await client
+        .from('event_stations')
+        .update({
+          public_name: override.publicName.trim() || null,
+          description_override: override.description.trim() || null,
+          capacity_override: override.capacity ?? null,
+          is_public: override.isPublic,
+          active: override.active,
+        })
+        .eq('id', item.id)
+      if (result.error) throw result.error
+    }
+    for (const item of configuration.value.eventActivities) {
+      const override = activityOverrides[item.activity_id]
+      if (!override) continue
+      const startsAt = override.startsAt ? new Date(override.startsAt) : null
+      const endsAt = override.endsAt ? new Date(override.endsAt) : null
+      if (
+        (startsAt && Number.isNaN(startsAt.getTime())) ||
+        (endsAt && Number.isNaN(endsAt.getTime())) ||
+        (startsAt && endsAt && endsAt <= startsAt)
+      ) {
+        throw new Error('Le date dell’attività non sono valide.')
+      }
+      const result = await client
+        .from('event_activities')
+        .update({
+          public_name: override.publicName.trim() || null,
+          description_override: override.description.trim() || null,
+          access_mode: override.accessMode,
+          capacity: override.capacity ?? null,
+          starts_at: startsAt?.toISOString() ?? null,
+          ends_at: endsAt?.toISOString() ?? null,
+          is_public: override.isPublic,
+          active: override.active,
+        })
+        .eq('id', item.id)
       if (result.error) throw result.error
     }
 
@@ -302,8 +457,8 @@ async function saveConfiguration() {
             Postazioni presenti
           </h2>
           <p class="mt-2 text-sm text-white/50">
-            La capienza standard resta quella globale; gli override per evento
-            saranno configurabili successivamente.
+            Puoi sovrascrivere nome, descrizione, capienza e visibilità per
+            questo evento senza alterare il catalogo globale.
           </p>
           <div class="mt-6 space-y-3">
             <label
@@ -338,8 +493,8 @@ async function saveConfiguration() {
             Attività offerte
           </h2>
           <p class="mt-2 text-sm text-white/50">
-            Le attività verranno pubblicate solo se l’evento è pubblico e
-            l’attività è selezionata qui.
+            Puoi sovrascrivere contenuti, capienza, orari e modalità d’accesso
+            per questo evento.
           </p>
           <div class="mt-6 space-y-3">
             <label
@@ -362,6 +517,175 @@ async function saveConfiguration() {
               Nessuna attività attiva nel catalogo.
             </p>
           </div>
+        </UCard>
+      </section>
+
+      <section class="grid gap-8 lg:grid-cols-2">
+        <UCard class="border border-white/10 bg-white/[0.04]">
+          <h2 class="font-display text-xl font-semibold text-white">
+            Override postazioni
+          </h2>
+          <div v-if="selectedStationIds.length" class="mt-6 space-y-5">
+            <div
+              v-for="stationId in selectedStationIds"
+              :key="stationId"
+              class="space-y-3 rounded-2xl border border-white/10 p-4"
+            >
+              <h3 class="font-medium text-white">
+                {{
+                  configuration.stations.find((item) => item.id === stationId)
+                    ?.name
+                }}
+              </h3>
+              <UFormField
+                label="Nome pubblico"
+                :name="`station-name-${stationId}`"
+              >
+                <UInput
+                  v-model="stationOverride(stationId).publicName"
+                  class="w-full"
+                  placeholder="Usa il nome globale"
+                />
+              </UFormField>
+              <UFormField
+                label="Descrizione"
+                :name="`station-description-${stationId}`"
+              >
+                <UTextarea
+                  v-model="stationOverride(stationId).description"
+                  class="w-full"
+                  :rows="2"
+                />
+              </UFormField>
+              <UFormField
+                label="Capienza override"
+                :name="`station-capacity-${stationId}`"
+              >
+                <UInput
+                  v-model.number="stationOverride(stationId).capacity"
+                  type="number"
+                  min="1"
+                  class="w-full"
+                />
+              </UFormField>
+              <div class="flex flex-wrap gap-4">
+                <UCheckbox
+                  v-model="stationOverride(stationId).isPublic"
+                  label="Pubblica"
+                />
+                <UCheckbox
+                  v-model="stationOverride(stationId).active"
+                  label="Attiva"
+                />
+              </div>
+            </div>
+          </div>
+          <p v-else class="mt-6 text-sm text-white/45">
+            Seleziona una postazione sopra per configurarla.
+          </p>
+        </UCard>
+
+        <UCard class="border border-white/10 bg-white/[0.04]">
+          <h2 class="font-display text-xl font-semibold text-white">
+            Override attività
+          </h2>
+          <div v-if="selectedActivityIds.length" class="mt-6 space-y-5">
+            <div
+              v-for="activityId in selectedActivityIds"
+              :key="activityId"
+              class="space-y-3 rounded-2xl border border-white/10 p-4"
+            >
+              <h3 class="font-medium text-white">
+                {{
+                  configuration.activities.find(
+                    (item) => item.id === activityId,
+                  )?.name
+                }}
+              </h3>
+              <UFormField
+                label="Nome pubblico"
+                :name="`activity-name-${activityId}`"
+              >
+                <UInput
+                  v-model="activityOverride(activityId).publicName"
+                  class="w-full"
+                  placeholder="Usa il nome globale"
+                />
+              </UFormField>
+              <UFormField
+                label="Descrizione"
+                :name="`activity-description-${activityId}`"
+              >
+                <UTextarea
+                  v-model="activityOverride(activityId).description"
+                  class="w-full"
+                  :rows="2"
+                />
+              </UFormField>
+              <div class="grid gap-3 sm:grid-cols-2">
+                <UFormField
+                  label="Modalità d’accesso"
+                  :name="`activity-mode-${activityId}`"
+                >
+                  <select
+                    v-model="activityOverride(activityId).accessMode"
+                    class="vrsus-select w-full"
+                  >
+                    <option value="free_play">Free play</option>
+                    <option value="scheduled">Orario programmato</option>
+                    <option value="registration_required">
+                      Registrazione richiesta
+                    </option>
+                    <option value="tournament">Torneo</option>
+                  </select>
+                </UFormField>
+                <UFormField
+                  label="Capienza override"
+                  :name="`activity-capacity-${activityId}`"
+                >
+                  <UInput
+                    v-model.number="activityOverride(activityId).capacity"
+                    type="number"
+                    min="1"
+                    class="w-full"
+                  />
+                </UFormField>
+                <UFormField
+                  label="Inizio attività"
+                  :name="`activity-start-${activityId}`"
+                >
+                  <UInput
+                    v-model="activityOverride(activityId).startsAt"
+                    type="datetime-local"
+                    class="w-full"
+                  />
+                </UFormField>
+                <UFormField
+                  label="Fine attività"
+                  :name="`activity-end-${activityId}`"
+                >
+                  <UInput
+                    v-model="activityOverride(activityId).endsAt"
+                    type="datetime-local"
+                    class="w-full"
+                  />
+                </UFormField>
+              </div>
+              <div class="flex flex-wrap gap-4">
+                <UCheckbox
+                  v-model="activityOverride(activityId).isPublic"
+                  label="Pubblica"
+                />
+                <UCheckbox
+                  v-model="activityOverride(activityId).active"
+                  label="Attiva"
+                />
+              </div>
+            </div>
+          </div>
+          <p v-else class="mt-6 text-sm text-white/45">
+            Seleziona un’attività sopra per configurarla.
+          </p>
         </UCard>
       </section>
 
