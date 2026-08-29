@@ -103,11 +103,13 @@ sitemap senza modifiche al codice.
       aprire il relativo dettaglio e controllare titolo, contenuto e canonical.
 - [ ] 3. Aprire `/servizi`; verificare il servizio fixture `Eventi privati`, poi
       aprire il dettaglio e controllare titolo, contenuto e canonical.
-- [ ] 4. Aprire `/regolamento`; verificare che venga mostrata l'attesa del testo
+- [ ] 4. Nel dettaglio servizio compilare il form con dati fittizi e inviare;
+      verificare il messaggio di successo senza dati sensibili nella risposta.
+- [ ] 5. Aprire `/regolamento`; verificare che venga mostrata l'attesa del testo
       ufficiale e che non siano presentate regole inventate.
-- [ ] 5. Visitare `/sitemap.xml`; verificare la presenza degli slug pubblicati
+- [ ] 6. Visitare `/sitemap.xml`; verificare la presenza degli slug pubblicati
       di eventi, news e servizi.
-- [ ] 6. Impostare un contenuto in stato `draft` o `archived` nel database DEV;
+- [ ] 7. Impostare un contenuto in stato `draft` o `archived` nel database DEV;
       verificare che non compaia nelle route pubbliche, quindi ripristinare il
       fixture.
 
@@ -115,7 +117,7 @@ sitemap senza modifiche al codice.
 
 Le pagine mostrano esclusivamente contenuti pubblicati dalle view `public_*`,
 senza dati CMS interni; i dettagli sono navigabili e la sitemap include solo
-gli slug pubblici.
+gli slug pubblici. Il form crea un lead senza esporre le note interne.
 
 ### Esito manuale
 

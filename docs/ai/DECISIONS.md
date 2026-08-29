@@ -207,3 +207,27 @@ operazioni che richiedono davvero privilegi elevati o side effect esterni.
 Ogni nuova azione CMS deve rispettare RLS e validazione database; il frontend non
 puo considerare la visibilita del pulsante una misura di sicurezza. Pubblicazione
 e attivazione diventano effettive nelle projection view solo dopo il salvataggio.
+
+## DEC-011 — Lead servizi tramite endpoint server dedicato
+
+**Status:** Accepted
+
+### Decisione
+
+Le richieste dai dettagli servizio passano da `POST /api/services/inquiries`.
+L'endpoint valida i dati, verifica che il servizio indicato sia attivo e usa il
+service role soltanto server-side per inserire il lead; anon e authenticated non
+possono leggere o inserire direttamente `service_inquiries` tramite RLS.
+
+### Motivazione
+
+I lead sono dati di contatto e non devono diventare una tabella pubblica del
+client Supabase. Un endpoint dedicato consente validazione uniforme, anti-bot
+minimo e un punto unico per aggiungere in futuro rate limit, notifiche o
+integrazioni email.
+
+### Conseguenze
+
+Il frontend riceve solo un esito `ok` e non dati di lead. La console admin legge
+e aggiorna le richieste con la sessione autenticata e le policy di ruolo; le
+note interne non vengono mai incluse nelle projection view pubbliche.

@@ -2,15 +2,14 @@
 
 ## Prossima attivita
 
-Completare la Phase 3 con il flusso richieste servizi e la gestione admin di
-eventi/catalogo.
+Completare la Phase 3 con la gestione admin di eventi/catalogo.
 
 ### Area interessata
 
 - console `/admin/eventi` e `/admin/catalogo` per completare la gestione
   operativa;
-- endpoint/form per richieste dai servizi pubblici;
 - test autenticato manuale di `/admin/news` e `/admin/servizi`;
+- test autenticato manuale di `/admin/richieste` e invio form servizio;
 - sostituzione dei fixture editoriali con contenuti e asset approvati;
 - `docs/dev/guideline_test_features.md` per le procedure manuali.
 
@@ -23,6 +22,8 @@ eventi/catalogo.
 - immagini, Open Graph e metadata restano coerenti con il contenuto effettivo.
 - le richieste servizi non espongono dati interni e restano autorizzate lato
   server secondo il ruolo previsto.
+- l'endpoint pubblico valida input e servizio attivo prima di creare un lead;
+- admin e super-admin possono aggiornare stato e note interne delle richieste.
 
 ### Gia verificato in Phase 3
 
@@ -38,6 +39,7 @@ eventi/catalogo.
   dettagli editoriali;
 - sitemap dinamica con slug di eventi, news e servizi pubblicati.
 - console CMS news/servizi con scritture protette da RLS e ruoli admin.
+- form servizio, endpoint server validato e console `/admin/richieste`.
 
 ### Verifica
 

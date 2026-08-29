@@ -3,9 +3,8 @@
 ## Stato
 
 Phase 2 e completata e verificata. La Phase 3 e in corso: eventi pubblici, SEO
-tecnico, pagine pubbliche CMS e console editoriale news/servizi sono
-implementati; il flusso richieste servizi e la gestione eventi/catalogo restano
-da completare.
+tecnico, pagine pubbliche CMS, console editoriale news/servizi e flusso lead
+servizi sono implementati; la gestione eventi/catalogo resta da completare.
 Non inserire `IMPLEMENTAZIONE COMPLETATA`.
 
 ## Ultimo lavoro
@@ -23,6 +22,8 @@ Non inserire `IMPLEMENTAZIONE COMPLETATA`.
   view Supabase pubblicate; `/regolamento` esplicita l'attesa del testo ufficiale.
 - Console `/admin/news` e `/admin/servizi` per authoring e pubblicazione protetti
   da middleware, ruolo e RLS.
+- Form pubblico servizi, endpoint server validato e console `/admin/richieste`
+  per gestione stato/note interne.
 - `robots.txt`, sitemap dinamica e JSON-LD evento.
 
 ## File importanti
@@ -39,13 +40,13 @@ Non inserire `IMPLEMENTAZIONE COMPLETATA`.
 ## Verifiche
 
 Consultare `docs/ai/TEST_REPORT.md`. Ultimi gate lint, format, typecheck, unit,
-build, 37 test pgTAP e 5 test E2E sono PASS. Smoke Auth, role management e SSR
+build, 39 test pgTAP e 5 test E2E sono PASS. Smoke Auth, role management e SSR
 pubblico sono PASS; gli utenti locali temporanei sono stati rimossi.
 
 ## Prossima azione
 
-Implementare il flusso richieste servizi e la gestione admin di eventi/catalogo.
-Eseguire anche il test manuale autenticato della console CMS. Seguire
+Implementare la gestione admin di eventi/catalogo. Eseguire anche il test
+manuale autenticato della console CMS e del flusso lead. Seguire
 `docs/ai/NEXT_STEPS.md`.
 
 ## Note ambiente

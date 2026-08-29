@@ -8,7 +8,7 @@ Ultimo aggiornamento: 2026-08-29
 | --- | --- | --- |
 | Reset database DEV | `pnpm db:reset` | PASS — migration e seed applicati |
 | Tipi database | `pnpm db:types` | PASS — generati da Supabase locale |
-| Test database/RLS | `pnpm db:test` | PASS — 37 test pgTAP |
+| Test database/RLS | `pnpm db:test` | PASS — 39 test pgTAP |
 | Lint | `pnpm lint` | PASS |
 | Formattazione | `pnpm format:check` | PASS |
 | Typecheck | `pnpm typecheck` | PASS |
@@ -17,7 +17,8 @@ Ultimo aggiornamento: 2026-08-29
 | Build standard | `pnpm build` | PASS — `node-server` |
 | Build Cloudflare | `pnpm exec nuxt build --preset=cloudflare_pages` | PASS — Phase 0 |
 | Smoke SSR pubblico | bundle `node .output/server/index.mjs` + richieste HTTP | PASS — route pubbliche, CMS, robots e sitemap |
-| Protezione route CMS admin | bundle preview + richieste anonime | PASS — `/admin/news` e `/admin/servizi` restituiscono redirect al login |
+| Smoke lead servizi | bundle preview + POST invalido | PASS — form SSR presente e payload invalido restituisce 400 |
+| Protezione route CMS admin | bundle preview + richieste anonime | PASS — `/admin/news`, `/admin/servizi` e `/admin/richieste` restituiscono redirect al login |
 | Verifica manuale landing | Procedura in guideline | DA ESEGUIRE |
 | Verifica manuale database | Procedura in guideline | DA ESEGUIRE |
 
@@ -35,6 +36,8 @@ Ultimo aggiornamento: 2026-08-29
 - Console CMS: `/admin/news` e `/admin/servizi` espongono form strutturati per
   admin/super-admin; scritture, stato di pubblicazione e attivazione usano le
   tabelle raw protette da RLS.
+- Lead servizi: il form pubblico invia a un endpoint server validato; il pannello
+  `/admin/richieste` permette aggiornamento di stato e note interne.
 - Schema V1: tabelle, vincoli, ruoli seed, trigger `updated_at` e mapping
   evento/stazione/attivita.
 - Sicurezza della foundation: RLS abilitata, tabelle raw di eventi e booking
@@ -66,4 +69,6 @@ Ultimo aggiornamento: 2026-08-29
 - Verifica manuale della gestione utenti in `/admin/utenti`.
 - Verifica manuale autenticata della gestione news e servizi in `/admin/news` e
   `/admin/servizi`.
+- Verifica manuale autenticata delle richieste in `/admin/richieste` e invio del
+  form da un dettaglio servizio.
 - Reset password, SMTP custom e Google OAuth in ambiente QUALITY.

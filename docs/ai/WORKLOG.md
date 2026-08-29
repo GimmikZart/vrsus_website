@@ -296,3 +296,30 @@ reali secondo `docs/ai/NEXT_STEPS.md`.
 
 Phase 3 avanzata: authoring CMS news/servizi pronto in DEV. Restano richieste
 servizi, gestione admin eventi/catalogo, upload asset e test manuale autenticato.
+
+## 2026-08-29 — Sessione 9
+
+### Lavoro svolto
+
+- Implementato il form pubblico per richieste servizi con validazione server,
+  controllo del servizio attivo e honeypot anti-bot.
+- Aggiunti endpoint admin per elenco e aggiornamento delle richieste, con stato
+  operativo e note interne protetti da ruolo admin e RLS.
+- Aggiunta `/admin/richieste`, aggiornato il dettaglio servizio e ampliata la
+  copertura E2E/pgTAP.
+
+### Verifiche
+
+- `pnpm format` -> PASS
+- `pnpm lint` -> PASS
+- `pnpm typecheck` -> PASS, warning Volar non bloccante
+- `pnpm test` -> PASS, 1 test
+- `pnpm db:test` -> PASS, 39 test pgTAP
+- `pnpm build` -> PASS, preset `node-server`
+- Smoke preview -> PASS: form lead SSR, payload invalido 400 e route admin protette
+- `pnpm test:e2e` -> PASS, 5 test Chromium
+
+### Stato finale della sessione
+
+Phase 3 avanzata: flusso lead servizi pronto in DEV. Restano gestione admin
+eventi/catalogo, upload asset e test manuale autenticato.

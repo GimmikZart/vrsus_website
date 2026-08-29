@@ -29,20 +29,21 @@ caricamento/errore/vuoto e metadata SEO. Phase 2 resta completata e verificata.
 - Regolamento pubblico con placeholder esplicito in attesa del testo ufficiale.
 - Console admin `/admin/news` e `/admin/servizi` per creazione, modifica,
   pubblicazione/archiviazione news e attivazione/disattivazione servizi.
+- Form pubblico per lead servizi con endpoint server validato e honeypot;
+  console `/admin/richieste` per stato e note interne.
 - `robots.txt` e `sitemap.xml` dinamica; ambienti non production configurati
   come `noindex, nofollow` e disallow completo via robots.
 
 ## Lavoro in corso
 
-Restano da implementare nella Phase 3 il modulo richieste servizi, la gestione
-admin di eventi/catalogo, upload asset e i contenuti editoriali reali/assets di
-QUALITY e produzione.
+Restano da implementare nella Phase 3 la gestione admin di eventi/catalogo,
+upload asset e i contenuti editoriali reali/assets di QUALITY e produzione.
 
 ## Verifiche
 
 - `pnpm db:reset` -> PASS: migration e seed applicati localmente.
 - `pnpm db:types` -> PASS: tipi generati dal database locale.
-- `pnpm db:test` -> PASS: 37 test pgTAP.
+- `pnpm db:test` -> PASS: 39 test pgTAP.
 - `pnpm lint` -> PASS.
 - `pnpm format:check` -> PASS.
 - `pnpm typecheck` -> PASS; resta warning non bloccante Volar/vue-router.
@@ -52,6 +53,8 @@ QUALITY e produzione.
 - `pnpm build` -> PASS, preset `node-server`.
 - Smoke SSR bundle -> PASS: tutte le route pubbliche, robots e sitemap
   rispondono 200; fixture evento/news/servizio presenti; JSON-LD evento presente.
+- Smoke lead -> PASS: form servizio presente, payload invalido rifiutato con
+  400 e route admin richieste protetta.
 
 ## Problemi aperti
 
