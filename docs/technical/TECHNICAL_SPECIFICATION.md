@@ -2,7 +2,7 @@
 
 > **Documento principale di progetto / Source of Truth per agenti AI**
 >
-> Versione: **1.2 — AI Execution Hardened + Content Policy**
+> Versione: **1.3 — AI Execution Hardened + Environment Strategy**
 >
 > Data: **29 agosto 2026**
 >
@@ -3427,6 +3427,15 @@ Al momento della stesura:
 
 Adeguato per beta.
 
+Il piano Free consente attualmente due progetti attivi gratuiti. Per VRSUS gli slot remoti vengono riservati a:
+
+```text
+vrsus-quality
+vrsus-prod
+```
+
+DEV usa Supabase locale via CLI/Docker e non consuma un progetto remoto.
+
 Upgrade previsto quando necessario:
 
 - Supabase Pro da circa **$25/mese** secondo pricing corrente.
@@ -3499,17 +3508,365 @@ L'acquisto del dominio non obbliga al passaggio a hosting a pagamento.
 
 ---
 
-# 39. Configurazione ambienti
+# 39. Environment Strategy — DEV / QUALITY / PRODUCTION
 
-Minimo:
+La separazione degli ambienti è un requisito architetturale.
+
+Il progetto usa **tre ambienti logici**, ma soltanto due progetti Supabase remoti.
 
 ```text
-local
-beta/staging
-production
+DEV
+Nuxt localhost
++
+Supabase CLI / Docker locale
+
+        ↓ migration promotion
+
+QUALITY
+Cloudflare Pages
++
+Supabase project: vrsus-quality
+
+        ↓ release promotion
+
+PRODUCTION
+Cloudflare Pages / dominio ufficiale
++
+Supabase project: vrsus-prod
 ```
 
-La beta può inizialmente coincidere con il primo ambiente cloud.
+Questa scelta consente di mantenere sviluppo, collaudo e produzione realmente separati restando inizialmente entro il modello low-cost.
+
+Al momento della stesura, il piano Supabase Free consente due progetti attivi gratuiti: i due slot remoti sono quindi riservati a **QUALITY** e **PRODUCTION**.
+
+## 39.1 Regola fondamentale
+
+Il codice applicativo deve essere lo stesso nei tre ambienti.
+
+Devono cambiare soltanto:
+
+- configurazione;
+- environment variables;
+- URL;
+- credenziali;
+- database;
+- integrazioni esterne specifiche dell'ambiente;
+- dati.
+
+NON creare implementazioni separate del tipo:
+
+```ts
+if (production) {
+  // business logic diversa
+}
+```
+
+salvo casi infrastrutturali realmente necessari e documentati.
+
+L'ambiente deve essere determinato dalla configurazione, non da duplicazione di codice.
+
+---
+
+## 39.2 DEV — ambiente predefinito di sviluppo
+
+DEV è l'ambiente utilizzato normalmente dall'agente per sviluppare e testare il codice.
+
+Stack:
+
+```text
+Nuxt
+→ localhost
+
+Supabase
+→ Supabase CLI
+→ Docker / container runtime locale
+→ PostgreSQL locale
+→ Auth locale
+→ Storage locale
+→ Realtime locale
+```
+
+Requisiti:
+
+- usare `supabase init`;
+- usare `supabase start`;
+- schema creato esclusivamente tramite migration versionate;
+- seed/demo data locali;
+- `supabase db reset` consentito;
+- reset distruttivi consentiti;
+- nessun dato reale;
+- nessuna dipendenza dal progetto `vrsus-prod`;
+- nessun secret production.
+
+DEV è il luogo predefinito per:
+
+- sviluppo feature;
+- database migration;
+- RLS;
+- RPC;
+- unit test;
+- integration test;
+- test di concorrenza;
+- test distruttivi;
+- seed;
+- refactoring.
+
+L'agente deve preferire DEV finché una feature non richiede esplicitamente un ambiente remoto/reale.
+
+### Configurazione locale
+
+Usare:
+
+```text
+.env
+```
+
+derivato da:
+
+```text
+.env.example
+```
+
+Le credenziali locali fornite da Supabase CLI possono essere usate nell'ambiente DEV.
+
+`.env` reale non deve essere committato.
+
+---
+
+## 39.3 QUALITY — ambiente remoto di collaudo
+
+Nome progetto Supabase previsto:
+
+```text
+vrsus-quality
+```
+
+QUALITY rappresenta staging/quality assurance.
+
+Deve utilizzare:
+
+- progetto Supabase remoto separato;
+- database separato da produzione;
+- Auth separato;
+- Storage separato;
+- secret separati;
+- deployment Cloudflare Pages separato;
+- utenti e dati esclusivamente di test.
+
+URL indicativo:
+
+```text
+https://<vrsus-quality>.pages.dev
+```
+
+Il nome effettivo può cambiare senza modificare l'architettura.
+
+QUALITY è il luogo predefinito per test che richiedono condizioni reali o remote, ad esempio:
+
+- PWA installata;
+- smartphone reale;
+- fotocamera / QR;
+- HTTPS;
+- OAuth;
+- redirect Auth;
+- Web Push / OneSignal;
+- Edge Functions remote;
+- Realtime tra dispositivi diversi;
+- verifica deployment Cloudflare;
+- test manuali descritti in `docs/dev/guideline_test_features.md`;
+- smoke test prima della promozione a produzione.
+
+QUALITY può contenere seed/test data.
+
+Reset distruttivi remoti sono consentiti **soltanto con cautela** e dopo aver verificato esplicitamente che il progetto collegato sia `vrsus-quality`.
+
+Mai eseguire un reset remoto basandosi soltanto sulla memoria dell'agente.
+
+Prima di qualsiasi comando distruttivo remoto:
+
+1. verificare il project ref collegato;
+2. verificare che NON sia production;
+3. documentare l'operazione se significativa.
+
+---
+
+## 39.4 PRODUCTION — ambiente reale
+
+Nome progetto Supabase previsto:
+
+```text
+vrsus-prod
+```
+
+PRODUCTION contiene:
+
+- utenti reali;
+- prenotazioni reali;
+- eventi reali;
+- dati reali;
+- storage reale;
+- configurazioni production;
+- secret production.
+
+Deployment:
+
+```text
+Cloudflare Pages
+→ inizialmente eventuale URL pages.dev
+→ successivamente dominio ufficiale VRSUS
+```
+
+Regole obbligatorie:
+
+- NON usare production per sviluppo;
+- NON usare production per test esplorativi;
+- NON caricare seed/demo data;
+- NON eseguire `db reset --linked`;
+- NON eseguire `db push --include-seed`;
+- NON usare account reali come fixture di test;
+- NON copiare dati production verso DEV/QUALITY senza sanitizzazione esplicita;
+- ogni migration deve essere stata verificata almeno in DEV e QUALITY prima di PROD;
+- ogni operazione manuale distruttiva richiede verifica esplicita dell'ambiente.
+
+Supabase Free può essere usato inizialmente anche per `vrsus-prod`, ma prima che VRSUS dipenda operativamente dall'app durante eventi reali deve essere rivalutata l'opportunità di Supabase Pro, backup e garanzie operative.
+
+---
+
+## 39.5 Environment isolation — regola di sicurezza
+
+È vietato configurare:
+
+```text
+DEV      → vrsus-prod
+QUALITY  → vrsus-prod
+```
+
+anche temporaneamente.
+
+DEV deve puntare al Supabase locale.
+
+QUALITY deve puntare esclusivamente a `vrsus-quality`.
+
+PRODUCTION deve puntare esclusivamente a `vrsus-prod`.
+
+L'agente deve trattare un mismatch tra ambiente e Supabase URL/project ref come un errore critico di configurazione.
+
+Quando possibile, implementare un controllo non sensibile basato su:
+
+```text
+APP_ENV
+```
+
+e su un identificatore pubblico/configurabile dell'ambiente, così da rendere evidente nella UI amministrativa se ci si trova in DEV, QUALITY o PRODUCTION.
+
+Non esporre secret per realizzare questo controllo.
+
+---
+
+## 39.6 Promotion flow
+
+Il flusso standard è:
+
+```text
+IMPLEMENT
+    ↓
+DEV
+    ↓
+automated tests
+    ↓
+migration verified
+    ↓
+QUALITY
+    ↓
+integration / E2E / manual tests
+    ↓
+release approved
+    ↓
+PRODUCTION
+```
+
+Una feature non deve essere promossa direttamente da sviluppo a produzione saltando QUALITY, salvo emergenza esplicita approvata dall'utente.
+
+### Database
+
+La source of truth dello schema è:
+
+```text
+supabase/migrations/
+```
+
+Le stesse migration devono essere applicate, nello stesso ordine, a:
+
+```text
+DEV
+QUALITY
+PRODUCTION
+```
+
+Non ricreare manualmente lo schema ambiente per ambiente.
+
+### Dati
+
+```text
+DEV
+→ seed/demo data consentiti
+
+QUALITY
+→ test/seed data consentiti
+
+PRODUCTION
+→ solo dati reali/configurazioni production
+```
+
+---
+
+## 39.7 Supabase CLI e collegamento ai remoti
+
+Il repository deve supportare lo sviluppo locale senza essere permanentemente legato a production.
+
+Quando si utilizzano comandi remoti:
+
+```text
+supabase link --project-ref <project-ref>
+```
+
+l'agente deve verificare quale progetto sia collegato prima di:
+
+```text
+supabase db push
+supabase db reset --linked
+supabase functions deploy
+```
+
+Per migration verso QUALITY:
+
+```text
+link/check → vrsus-quality
+dry-run quando disponibile
+push migrations
+verify
+```
+
+Per migration verso PRODUCTION:
+
+```text
+link/check → vrsus-prod
+verify migration history
+dry-run quando disponibile
+push migrations
+NO seed
+smoke test
+```
+
+Qualunque script di automazione futuro deve rendere difficile confondere QUALITY e PRODUCTION.
+
+---
+
+## 39.8 Environment variables
+
+Usare gli stessi nomi di variabili in tutti gli ambienti.
+
+Valori diversi, codice uguale.
 
 Variabili concettuali:
 
@@ -3517,22 +3874,152 @@ Variabili concettuali:
 NUXT_PUBLIC_SUPABASE_URL
 NUXT_PUBLIC_SUPABASE_KEY
 
-SUPABASE_SERVICE_ROLE_KEY       # server only
+SUPABASE_SERVICE_ROLE_KEY       # SERVER-ONLY / SECRET
 
 ONESIGNAL_APP_ID
-ONESIGNAL_REST_API_KEY          # server only
+ONESIGNAL_REST_API_KEY          # SERVER-ONLY / SECRET
 
-RESEND_API_KEY                  # server only, quando introdotto
+RESEND_API_KEY                  # SERVER-ONLY / SECRET, quando introdotto
 
 APP_BASE_URL
 APP_ENV
 ```
 
-I nomi effettivi devono rispettare il runtime Nuxt scelto.
+Valori `APP_ENV` ammessi:
 
-Creare `.env.example`.
+```text
+development
+quality
+production
+```
 
-Mai committare `.env` reali.
+### DEV
+
+Configurazione locale tramite `.env`.
+
+### QUALITY
+
+Configurazione tramite environment variables/secrets del deployment Cloudflare Quality e dei servizi Quality.
+
+### PRODUCTION
+
+Configurazione tramite environment variables/secrets del deployment Cloudflare Production e dei servizi Production.
+
+Non committare:
+
+```text
+.env
+.env.quality
+.env.production
+```
+
+se contengono valori reali.
+
+Committare esclusivamente:
+
+```text
+.env.example
+```
+
+con placeholder e descrizione delle variabili.
+
+---
+
+## 39.9 Integrazioni esterne per ambiente
+
+Quando possibile separare anche le integrazioni che possono produrre effetti esterni.
+
+Esempio preferito:
+
+```text
+OneSignal
+├── VRSUS Quality
+└── VRSUS Production
+```
+
+Così una push di test non raggiunge utenti reali.
+
+Stessa logica per:
+
+- OAuth redirect;
+- email;
+- webhook;
+- analytics futuri;
+- eventuali integrazioni esterne.
+
+Se il free tier di un provider impedisce ambienti completamente separati, documentare la limitazione e implementare una protezione equivalente prima di usare produzione.
+
+---
+
+## 39.10 Responsabilità documentale dell'agente
+
+La Technical Specification definisce **come sono separati gli ambienti**.
+
+I documenti operativi devono invece spiegare come utilizzarli.
+
+### `docs/ai/DECISIONS.md`
+
+Registrare la decisione persistente:
+
+```text
+DEV = Supabase locale via Docker
+QUALITY = Supabase vrsus-quality
+PRODUCTION = Supabase vrsus-prod
+```
+
+Motivazione:
+
+- isolamento reale;
+- sviluppo riproducibile;
+- due soli progetti Supabase remoti;
+- contenimento costi.
+
+### `docs/dev/guideline_implementations.md`
+
+Deve spiegare passo passo al proprietario almeno:
+
+- come installare/avviare DEV;
+- come creare/configurare `vrsus-quality`;
+- come creare/configurare `vrsus-prod`;
+- dove recuperare URL/key;
+- come configurare Cloudflare per QUALITY/PROD;
+- come configurare OAuth/push/email per ambiente;
+- quali valori sono PUBLIC/SERVER-ONLY/SECRET;
+- come verificare a quale ambiente si è collegati.
+
+### `docs/dev/guideline_test_features.md`
+
+Ogni procedura di test deve indicare:
+
+```text
+Environment: DEV | QUALITY | PRODUCTION
+```
+
+Default:
+
+```text
+DEV
+```
+
+Usare QUALITY quando il test richiede ambiente remoto/reale.
+
+Usare PRODUCTION soltanto per smoke test non distruttivi esplicitamente previsti dopo una release.
+
+### `docs/ai/TEST_REPORT.md`
+
+Ogni verifica significativa deve indicare l'ambiente nel quale è stata eseguita.
+
+Esempio:
+
+```text
+Booking concurrency
+Environment: DEV
+Result: PASS
+
+Push notification smartphone
+Environment: QUALITY
+Result: PASS
+```
 
 ---
 
@@ -4646,11 +5133,11 @@ Rendere VRSUS installabile e mobile-ready.
 
 ---
 
-# 56. FASE 7 — Deployment beta €0
+# 56. FASE 7 — Deployment QUALITY beta €0
 
 ## Obiettivo
 
-Avere una versione usabile dal team.
+Avere una versione QUALITY remota usabile dal team e separata dalla futura produzione.
 
 ## Servizi
 
@@ -4662,14 +5149,17 @@ Avere una versione usabile dal team.
 
 ## Implementare
 
-- ambiente cloud Supabase;
-- deployment Cloudflare;
-- variabili environment;
-- redirect auth;
+- creare/configurare progetto Supabase `vrsus-quality`;
+- applicare migration a QUALITY;
+- deployment Cloudflare Quality separato;
+- configurare environment variables Quality;
+- redirect auth Quality;
 - HTTPS;
-- seed/tester;
-- noindex beta se desiderato;
-- smoke test completo.
+- seed/tester esclusivamente non reali;
+- noindex Quality;
+- configurare integrazioni esterne di test quando necessarie;
+- smoke test completo;
+- documentare setup manuale in `guideline_implementations.md`.
 
 ## Exit criteria
 
@@ -4898,6 +5388,11 @@ Prima dell'apertura ampia al pubblico:
 
 ## Infrastruttura
 
+- creare/configurare progetto Supabase `vrsus-prod` se non ancora esistente;
+- creare deployment Cloudflare Production separato;
+- applicare soltanto migration già validate in QUALITY;
+- configurare secret/environment production;
+- verificare assenza di seed/demo data;
 - dominio;
 - SMTP custom;
 - Resend;
@@ -5216,6 +5711,9 @@ Le versioni e i pricing possono cambiare. Prima di upgrade o rilascio verificare
 
 - Home/docs: https://supabase.com/
 - Pricing: https://supabase.com/pricing
+- Billing / project limits: https://supabase.com/docs/guides/platform/billing-faq
+- Local development workflow: https://supabase.com/docs/guides/local-development/cli-workflows
+- Supabase CLI: https://supabase.com/docs/guides/local-development/cli/getting-started
 - Billing/quotas: https://supabase.com/docs/guides/platform/billing-on-supabase
 - Auth: https://supabase.com/docs/guides/auth
 - SMTP: https://supabase.com/docs/guides/auth/auth-smtp

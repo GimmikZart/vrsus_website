@@ -1,4 +1,4 @@
-# VRSUS — AGENT_START_HERE
+# VRSUS — AGENT_START_HERE V_1.2
 
 > Entry point operativo per qualsiasi agente AI che sviluppa il progetto.
 >

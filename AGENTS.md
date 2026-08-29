@@ -17,6 +17,12 @@ Prima di lavorare sul codice leggi, in questo ordine:
 
 Consulta `docs/ai/WORKLOG.md` solo quando serve ricostruire informazioni storiche.
 
+Consulta inoltre quando pertinenti:
+
+- `docs/ai/TEST_REPORT.md`
+- `docs/dev/guideline_test_features.md`
+- `docs/dev/guideline_implementations.md`
+
 Il repository corrente rappresenta l'effettivo stato dell'implementazione.
 
 ---
@@ -122,6 +128,39 @@ presenza di blocker o necessità di una decisione esplicita dell'utente.
 
 ---
 
+# DOCUMENTAZIONE TEST E CONFIGURAZIONE
+
+Mantieni questi documenti quando pertinenti al lavoro svolto:
+
+- `docs/ai/TEST_REPORT.md`: registra sinteticamente test/verifiche eseguiti,
+  esito, failure e verifiche ancora pendenti. Non segnare come eseguito un test
+  che non è stato realmente effettuato.
+
+- `docs/dev/guideline_test_features.md`: quando una feature diventa testabile
+  manualmente, descrivi come verificarla passo passo. Indica prerequisiti,
+  account/ruolo necessario, percorso UI, azioni da eseguire, risultato atteso
+  e una checklist Markdown con spazio per commenti dell'utente. Non cancellare
+  successivamente note o checklist compilate manualmente dall'utente.
+
+- `docs/dev/guideline_implementations.md`: documenta passo passo le operazioni
+  che l'utente deve eseguire personalmente e che l'agente non può o non deve
+  compiere, ad esempio creazione/configurazione di Supabase, OneSignal,
+  Cloudflare, OAuth, `.env`, secret, DNS o altri servizi esterni. Indica dove
+  trovare i valori, dove inserirli, se sono `PUBLIC`, `SERVER-ONLY` o `SECRET`,
+  come verificare la configurazione e fornisci una checklist.
+
+Non inserire mai credenziali o secret reali nei documenti: usa placeholder.
+
+Aggiorna questi file solo quando esiste nuova informazione utile; non generare
+documentazione ridondante dopo ogni task.
+
+Se un'azione manuale è necessaria per proseguire, documentala in
+`guideline_implementations.md`, riportala in `CURRENT_STATE.md` e aggiungila a
+`NEXT_STEPS.md` come `USER ACTION REQUIRED`. Continua su attività indipendenti
+se possibile.
+
+---
+
 # DECISIONI TECNICHE
 
 Le decisioni tecniche persistenti devono essere registrate in:
@@ -166,6 +205,9 @@ Durante il progetto mantieni aggiornati, secondo le regole del protocollo:
 - `docs/ai/NEXT_STEPS.md`
 - `docs/ai/DECISIONS.md`
 - `docs/ai/WORKLOG.md`
+- `docs/ai/TEST_REPORT.md` quando pertinente
+- `docs/dev/guideline_test_features.md` quando pertinente
+- `docs/dev/guideline_implementations.md` quando pertinente
 
 Non lasciare informazioni necessarie alla prosecuzione solamente nella
 conversazione.
@@ -198,6 +240,7 @@ Durante il lavoro comunica brevemente:
 - quale modifica rilevante stai applicando;
 - quale verifica hai eseguito;
 - quale sarà il prossimo passo.
+- a che percentuale stimi essere rispetto al completamento del progetto.
 
 Evita aggiornamenti su operazioni banali.
 
@@ -210,8 +253,9 @@ Quando tutti i requisiti della Technical Specification risultano implementati:
 1. esegui la build completa;
 2. esegui tutti i test disponibili;
 3. verifica gli Acceptance Criteria e la Definition of Done della specifica;
-4. esegui il protocollo di handoff finale;
-5. documenta eventuali limitazioni residue.
+4. verifica che la documentazione di test/configurazione pertinente sia aggiornata;
+5. esegui il protocollo di handoff finale;
+6. documenta eventuali limitazioni residue.
 
 Inserisci in `CURRENT_STATE.md`:
 
