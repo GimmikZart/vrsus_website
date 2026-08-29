@@ -68,6 +68,20 @@ body {
   outline-offset: 3px;
 }
 
+.vrsus-select {
+  min-height: 2.25rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 0.5rem;
+  background: rgb(255 255 255 / 6%);
+  padding: 0.5rem 0.75rem;
+  color: var(--color-text);
+}
+
+.vrsus-select option {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
 .font-display {
   font-family: var(--font-display);
 }

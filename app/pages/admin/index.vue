@@ -10,6 +10,11 @@ const { user, roles, hasRole, signOut } = useVrsusAuth()
 
 const adminSections = [
   {
+    label: 'Catalogo',
+    description: 'Gestisci attività, postazioni e categorie riutilizzabili.',
+    to: '/admin/catalogo',
+  },
+  {
     label: 'Eventi',
     description: 'Prepara date, prenotazioni e visibilità del prossimo evento.',
     to: '/admin/eventi',
