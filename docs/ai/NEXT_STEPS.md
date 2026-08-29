@@ -2,12 +2,10 @@
 
 ## Prossima attivita
 
-Completare la Phase 3 con la gestione admin del catalogo e delle associazioni
-evento/postazione/attività.
+Completare la Phase 3 con le associazioni evento/postazione/attività.
 
 ### Area interessata
 
-- console `/admin/catalogo` per attività, postazioni e categorie;
 - associazioni per evento tra postazioni e attività, con override pubblici e
   capienze coerenti con il modello many-to-many;
 - upload asset con storage configurabile;
@@ -45,6 +43,7 @@ evento/postazione/attività.
 - form servizio, endpoint server validato e console `/admin/richieste`.
 - console `/admin/eventi` con date, stato, prenotazioni, prezzo e visibilità
   capienza privata.
+- console `/admin/catalogo` con CRUD globale di attività/postazioni e categorie.
 
 ### Verifica
 

@@ -244,6 +244,45 @@ date ISO, prezzo in centesimi e capienza privata secondo i vincoli del database.
 
 <!-- Inserire qui eventuali osservazioni -->
 
+## Console admin catalogo
+
+**Stato:** READY TO TEST
+
+### Prerequisiti
+
+- Docker Desktop e Supabase DEV attivi.
+- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+
+### Procedura di test
+
+- [ ] 1. Accedere a `/login` con l’utente DEV e aprire `/admin/catalogo`.
+- [ ] 2. Verificare i tab `Attività` e `Postazioni` e la presenza dei fixture
+      locali.
+- [ ] 3. Creare un’attività con nome, slug e categoria; salvarla e verificare
+      che compaia nell’elenco come attiva.
+- [ ] 4. Modificare l’attività, disattivarla e verificare che il valore resti
+      conservato dopo il reload.
+- [ ] 5. Creare una postazione con categoria e capienza standard positiva;
+      modificare poi la capienza e verificare il salvataggio.
+- [ ] 6. Aprire la parte pubblica e verificare che gli elementi inattivi non
+      siano esposti dalle view pubbliche.
+
+### Risultato atteso
+
+Solo admin e super-admin possono leggere/scrivere il catalogo raw. Attività e
+postazioni inattive restano disponibili per configurazioni amministrative ma
+non vengono pubblicate nelle view pubbliche.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
 ## Autenticazione e RBAC
 
 **Stato:** READY TO TEST

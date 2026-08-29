@@ -346,3 +346,24 @@ eventi/catalogo, upload asset e test manuale autenticato.
 Phase 3 avanzata: gestione admin eventi pronta per test manuale DEV. Restano
 catalogo e associazioni evento/postazione/attività, upload asset e contenuti
 reali.
+
+## 2026-08-29 — Sessione 11
+
+### Lavoro svolto
+
+- Aggiunta `/admin/catalogo` con tab per attività e postazioni globali.
+- Implementati CRUD, slug normalizzato, categorie Supabase, stato attivo,
+  capienza standard e metadati SEO per le attività.
+- Collegata la nuova sezione alla dashboard `/admin`; le scritture usano il
+  client autenticato e le policy RLS del catalogo.
+
+### Verifiche
+
+- Prettier mirato -> PASS.
+- `pnpm test` -> PASS, 1 test unitario.
+- `pnpm build` -> PASS, preset `node-server`.
+
+### Stato finale della sessione
+
+Phase 3 avanzata: catalogo globale pronto per test manuale DEV. Restano le
+associazioni evento/postazione/attività, upload asset e contenuti reali.
