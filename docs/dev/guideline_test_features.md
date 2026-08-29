@@ -206,6 +206,50 @@ non mostra capienza o note interne e collega ogni evento al proprio slug.
 Per ogni nuova feature aggiungere prerequisiti, procedura passo-passo,
 risultato atteso, esito e spazio per i commenti utente.
 
+## Upload asset nelle console CMS
+
+**Stato:** READY TO TEST in DEV.
+
+### Prerequisiti
+
+- Docker Desktop e Supabase DEV attivi con migration applicate.
+- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+- Un file immagine di test JPEG, PNG, WebP, AVIF o SVG sotto i 5 MB.
+- Applicazione avviata con `pnpm dev`.
+
+### Procedura di test
+
+- [ ] 1. Aprire `/admin/news`, `/admin/servizi`, `/admin/eventi` oppure
+      `/admin/catalogo`.
+- [ ] 2. Selezionare un file immagine valido dal controllo asset e verificare
+      preview e messaggio di upload riuscito.
+- [ ] 3. Salvare il record e ricaricare la pagina; verificare che il path
+      dell'asset sia conservato e che la preview venga ricostruita.
+- [ ] 4. Se il contenuto è pubblicabile, aprire la relativa route pubblica e
+      verificare che l'immagine sia raggiungibile dal bucket.
+- [ ] 5. Provare un file non immagine e un file oltre 5 MB; verificare che
+      vengano rifiutati senza scritture indesiderate.
+- [ ] 6. Usare il pulsante di rimozione, salvare e verificare che il campo
+      venga svuotato. La pulizia fisica dell'oggetto può essere gestita in un
+      passaggio amministrativo successivo se il file era già stato caricato.
+
+### Risultato atteso
+
+Il browser carica soltanto file immagine consentiti nel bucket `vrsus-assets`;
+la sessione admin è necessaria per scrivere e il database conserva solo il
+path. Gli utenti anonimi possono leggere gli asset del bucket pubblico ma non
+possono caricare, modificare o cancellare oggetti.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
 ## Console admin eventi
 
 **Stato:** READY TO TEST

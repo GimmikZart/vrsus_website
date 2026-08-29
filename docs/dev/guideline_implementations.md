@@ -62,3 +62,27 @@ Studio è disponibile su `http://127.0.0.1:54333`.
 Per QUALITY e PROD usare i progetti remoti separati definiti nella specifica;
 non riutilizzare le credenziali DEV e non committare `.env`. Le fixture di
 `supabase/seed.sql` sono esclusivamente fittizie e locali.
+
+## Supabase Storage — asset CMS
+
+**Stato:** CONFIGURATO in DEV locale il 2026-08-29.
+
+La migration `20260829230000_storage_assets.sql` crea il bucket pubblico
+`vrsus-assets` con limite di 5 MB e MIME type immagine consentiti. La lettura è
+pubblica per gli asset pubblicati; upload, modifica e cancellazione richiedono
+un ruolo `admin` o `super_admin`. Le console CMS memorizzano nel database solo
+il path dell'oggetto, mai una credenziale o un URL segreto.
+
+### Operazioni per QUALITY/PROD
+
+- [ ] 1. Applicare la migration al progetto Supabase remoto corretto tramite il
+      workflow di deploy approvato; non usare `db reset` su QUALITY/PROD.
+- [ ] 2. Verificare nel dashboard Storage il bucket `vrsus-assets`, la lettura
+      pubblica e il limite di 5 MB.
+- [ ] 3. Verificare che le policy di insert/update/delete restino limitate ai
+      ruoli admin e super-admin.
+- [ ] 4. Configurare nell'app solo le variabili del progetto remoto indicato
+      dall'ambiente; le chiavi restano nel secret manager o nel provider di
+      deploy e non vanno inserite nei documenti.
+- [ ] 5. Eseguire il test manuale dell'upload descritto in
+      `docs/dev/guideline_test_features.md`.

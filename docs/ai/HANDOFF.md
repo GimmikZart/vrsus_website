@@ -5,8 +5,8 @@
 Phase 2 e completata e verificata. La Phase 3 e in corso: eventi pubblici, SEO
 tecnico, pagine pubbliche CMS, console editoriale news/servizi, flusso lead
 servizi, gestione admin eventi e catalogo globale sono implementati; sono
-implementate anche le associazioni operative e gli override per singolo evento.
-Restano gli asset e i contenuti reali.
+implementate anche le associazioni operative, gli override per singolo evento
+e l'upload asset tramite Supabase Storage. Restano i contenuti e gli asset reali.
 Non inserire `IMPLEMENTAZIONE COMPLETATA`.
 
 ## Ultimo lavoro
@@ -33,6 +33,8 @@ Non inserire `IMPLEMENTAZIONE COMPLETATA`.
   tra attività e postazioni.
 - Override per evento di contenuti, capienze, visibilità, stato, orari e access
   mode.
+- Bucket `vrsus-assets` e componente uploader CMS per news, servizi, eventi e
+  catalogo; le policy storage consentono scritture soltanto ai ruoli admin.
 - `robots.txt`, sitemap dinamica e JSON-LD evento.
 
 ## File importanti
@@ -49,14 +51,14 @@ Non inserire `IMPLEMENTAZIONE COMPLETATA`.
 ## Verifiche
 
 Consultare `docs/ai/TEST_REPORT.md`. Ultimi gate lint, format, typecheck, unit,
-build, 39 test pgTAP e 5 test E2E sono PASS. Smoke Auth, role management e SSR
+build, 43 test pgTAP e 5 test E2E sono PASS. Smoke Auth, role management e SSR
 pubblico sono PASS; gli utenti locali temporanei sono stati rimossi.
 
 ## Prossima azione
 
-Implementare l’upload asset e preparare i contenuti reali. Eseguire anche il
-test manuale autenticato delle console CMS, eventi, catalogo, configurazione
-evento e del flusso lead.
+Preparare i contenuti reali e completare il test manuale autenticato delle
+console CMS, dell'upload asset, eventi, catalogo, configurazione evento e del
+flusso lead.
 Seguire
 `docs/ai/NEXT_STEPS.md`.
 

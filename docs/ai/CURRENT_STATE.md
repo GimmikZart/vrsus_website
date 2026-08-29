@@ -41,17 +41,22 @@ caricamento/errore/vuoto e metadata SEO. Phase 2 resta completata e verificata.
   come `noindex, nofollow` e disallow completo via robots.
 - Override per evento di nomi, descrizioni, capienze, visibilita, stato,
   modalita d'accesso e orari delle attivita.
+- Storage asset Supabase locale con bucket `vrsus-assets`, lettura pubblica e
+  scrittura/modifica/cancellazione limitate a `admin` e `super_admin` tramite
+  policy RLS.
+- Componente `AssetUploader` riutilizzabile collegato alle console news,
+  servizi, eventi e catalogo; il database memorizza il solo path dell'asset.
 
 ## Lavoro in corso
 
-Restano da implementare nella Phase 3 l'upload asset e i contenuti editoriali
-reali/assets di QUALITY e produzione.
+Restano i contenuti editoriali e gli asset reali di QUALITY e produzione, oltre
+alla verifica manuale autenticata del percorso di upload.
 
 ## Verifiche
 
 - `pnpm db:reset` -> PASS: migration e seed applicati localmente.
 - `pnpm db:types` -> PASS: tipi generati dal database locale.
-- `pnpm db:test` -> PASS: 39 test pgTAP.
+- `pnpm db:test` -> PASS: 43 test pgTAP.
 - `pnpm lint` -> PASS.
 - `pnpm format:check` -> PASS.
 - `pnpm typecheck` -> PASS; resta warning non bloccante Volar/vue-router.
@@ -59,6 +64,9 @@ reali/assets di QUALITY e produzione.
 - `pnpm test:e2e` -> PASS, 5 test Chromium, inclusi catalogo -> dettaglio e
   pagine CMS pubbliche.
 - `pnpm build` -> PASS, preset `node-server`.
+- `pnpm db:reset` post-storage -> PASS: bucket e policy asset applicati.
+- Typecheck uploader post-storage -> PASS; resta warning non bloccante Volar.
+- Build uploader post-storage -> PASS; componente incluso nel bundle server.
 - Build di produzione successiva alla console eventi -> PASS; route `/admin/eventi`
   inclusa nel bundle server.
 - Smoke SSR bundle -> PASS: tutte le route pubbliche, robots e sitemap

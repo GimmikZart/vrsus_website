@@ -410,3 +410,26 @@ Restano override per evento, upload asset e contenuti reali.
 
 Phase 3 avanzata: configurazione evento completa per associazioni e override.
 Restano upload asset, contenuti reali e test manuale autenticato.
+
+## 2026-08-29 — Sessione 14
+
+### Lavoro svolto
+
+- Aggiunta migration Supabase Storage per il bucket `vrsus-assets`, con lettura
+  pubblica e policy di scrittura limitate a `admin` e `super_admin`.
+- Aggiunto `AssetUploader` riutilizzabile con validazione MIME/dimensione,
+  preview, rimozione del campo e persistenza del solo path.
+- Collegato l'uploader alle console news, servizi, eventi e catalogo.
+
+### Verifiche
+
+- `pnpm db:reset` -> PASS; bucket e policy applicati localmente.
+- `pnpm db:test` -> PASS, 43 test pgTAP.
+- `vue-tsc --noEmit -p .nuxt/tsconfig.json` -> PASS; warning Volar noto.
+- `pnpm build` -> PASS, componente uploader incluso nel bundle server.
+
+### Stato finale della sessione
+
+Phase 3 avanzata: upload asset pronto per test manuale autenticato DEV.
+Restano contenuti e asset reali QUALITY/PROD e le verifiche manuali delle
+console.

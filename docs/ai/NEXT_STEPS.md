@@ -2,11 +2,12 @@
 
 ## Prossima attivita
 
-Completare la Phase 3 con l’upload asset e la preparazione dei contenuti reali.
+Completare la Phase 3 con la preparazione dei contenuti reali e la verifica
+manuale del flusso asset.
 
 ### Area interessata
 
-- upload asset con storage configurabile;
+- verifica manuale autenticata dell'upload asset in DEV;
 - test autenticato manuale di `/admin/news` e `/admin/servizi`;
 - test autenticato manuale di `/admin/richieste` e invio form servizio;
 - sostituzione dei fixture editoriali con contenuti e asset approvati;
@@ -46,6 +47,12 @@ Completare la Phase 3 con l’upload asset e la preparazione dei contenuti reali
   e postazioni.
 - override per evento di nome, descrizione, capienza, visibilità, disponibilità,
   orari e modalità d’accesso.
+
+### Gia verificato: asset CMS
+
+- bucket Supabase Storage `vrsus-assets` con lettura pubblica;
+- uploader CMS collegato a news, servizi, eventi e catalogo;
+- policy RLS di insert/update/delete limitate ad admin e super-admin.
 
 ### Verifica
 

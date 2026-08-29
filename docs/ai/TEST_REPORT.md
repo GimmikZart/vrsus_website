@@ -8,7 +8,7 @@ Ultimo aggiornamento: 2026-08-29
 | --- | --- | --- |
 | Reset database DEV | `pnpm db:reset` | PASS — migration e seed applicati |
 | Tipi database | `pnpm db:types` | PASS — generati da Supabase locale |
-| Test database/RLS | `pnpm db:test` | PASS — 39 test pgTAP |
+| Test database/RLS | `pnpm db:test` | PASS — 43 test pgTAP |
 | Lint | `pnpm lint` | PASS |
 | Formattazione | `pnpm format:check` | PASS |
 | Typecheck | `pnpm typecheck` | PASS |
@@ -24,6 +24,9 @@ Ultimo aggiornamento: 2026-08-29
 | Build configurazione evento | `pnpm build` | PASS — route dinamica `/admin/eventi/[id]` compilata nel bundle server |
 | Typecheck configurazione evento | `vue-tsc --noEmit -p .nuxt/tsconfig.json` | PASS — nessun errore TypeScript; warning Volar non bloccante |
 | Build override evento | `pnpm build` | PASS — override attività/postazioni compilati nel bundle server |
+| Storage asset locale | `pnpm db:reset` | PASS — bucket `vrsus-assets` e policy storage applicati |
+| Typecheck uploader asset | `vue-tsc --noEmit -p .nuxt/tsconfig.json` | PASS — nessun errore TypeScript; warning Volar non bloccante |
+| Build uploader asset | `pnpm build` | PASS — componente e integrazioni CMS compilati nel bundle |
 | Verifica manuale landing | Procedura in guideline | DA ESEGUIRE |
 | Verifica manuale database | Procedura in guideline | DA ESEGUIRE |
 
@@ -51,6 +54,8 @@ Ultimo aggiornamento: 2026-08-29
   many-to-many tra attività e postazioni.
 - Override evento: la stessa console gestisce contenuti, capienze, visibilità,
   stato, modalità d'accesso e orari senza alterare il catalogo globale.
+- Asset CMS: `AssetUploader` carica immagini nel bucket `vrsus-assets`, mostra
+  preview e salva nel form soltanto il path Supabase Storage.
 - Schema V1: tabelle, vincoli, ruoli seed, trigger `updated_at` e mapping
   evento/stazione/attivita.
 - Sicurezza della foundation: RLS abilitata, tabelle raw di eventi e booking
@@ -89,4 +94,6 @@ Ultimo aggiornamento: 2026-08-29
 - Verifica manuale autenticata delle associazioni evento in `/admin/eventi/[id]`.
 - Verifica manuale autenticata degli override attività/postazioni in
   `/admin/eventi/[id]`.
+- Verifica manuale autenticata dell'upload immagini in `/admin/news`,
+  `/admin/servizi`, `/admin/eventi` e `/admin/catalogo`.
 - Reset password, SMTP custom e Google OAuth in ambiente QUALITY.
