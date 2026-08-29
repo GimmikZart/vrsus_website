@@ -83,6 +83,8 @@ reali/assets di QUALITY e produzione.
   eseguire con un account DEV.
 - Il retry di `pnpm typecheck` e del lint mirato è stato interrotto dopo il
   bootstrap Nuxt senza errori TypeScript emessi; resta il warning noto Volar.
+- Typecheck diretto post-correzione della configurazione evento -> PASS (exit
+  code 0); restano soltanto i warning non bloccanti Volar.
 
 ## Ultimo aggiornamento
 

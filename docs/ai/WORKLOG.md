@@ -382,6 +382,8 @@ associazioni evento/postazione/attività, upload asset e contenuti reali.
 
 - Prettier mirato -> PASS.
 - `pnpm build` -> PASS, preset `node-server`.
+- `vue-tsc --noEmit -p .nuxt/tsconfig.json` -> PASS dopo correzione di
+  narrowing e gestione dei ref nel template; restano warning Volar noti.
 
 ### Stato finale della sessione
 

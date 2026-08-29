@@ -22,6 +22,7 @@ Ultimo aggiornamento: 2026-08-29
 | Build console eventi | `pnpm build` | PASS — route `/admin/eventi` compilata nel bundle server |
 | Build console catalogo | `pnpm build` | PASS — route `/admin/catalogo` compilata nel bundle server |
 | Build configurazione evento | `pnpm build` | PASS — route dinamica `/admin/eventi/[id]` compilata nel bundle server |
+| Typecheck configurazione evento | `vue-tsc --noEmit -p .nuxt/tsconfig.json` | PASS — nessun errore TypeScript; warning Volar non bloccante |
 | Verifica manuale landing | Procedura in guideline | DA ESEGUIRE |
 | Verifica manuale database | Procedura in guideline | DA ESEGUIRE |
 

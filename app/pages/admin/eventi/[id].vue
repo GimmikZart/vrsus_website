@@ -106,8 +106,8 @@ function syncSelections() {
   for (const mapping of configuration.value.mappings) {
     const stationId = eventStationById.get(mapping.event_station_id)
     if (stationId) {
-      mappingByActivity[mapping.event_activity_id] ??= []
-      mappingByActivity[mapping.event_activity_id].push(stationId)
+      const stations = mappingByActivity[mapping.event_activity_id] ?? []
+      mappingByActivity[mapping.event_activity_id] = [...stations, stationId]
     }
   }
   mappingSelection.value = mappingByActivity
@@ -115,10 +115,10 @@ function syncSelections() {
 
 syncSelections()
 
-function toggleValue(values: Ref<string[]>, value: string) {
-  values.value = values.value.includes(value)
-    ? values.value.filter((item) => item !== value)
-    : [...values.value, value]
+function toggleValue(values: string[], value: string) {
+  const index = values.indexOf(value)
+  if (index >= 0) values.splice(index, 1)
+  else values.push(value)
 }
 
 function isMappingSelected(activityId: string, stationId: string) {
