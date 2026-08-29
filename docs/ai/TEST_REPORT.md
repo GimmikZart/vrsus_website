@@ -19,6 +19,7 @@ Ultimo aggiornamento: 2026-08-29
 | Smoke SSR pubblico | bundle `node .output/server/index.mjs` + richieste HTTP | PASS — route pubbliche, CMS, robots e sitemap |
 | Smoke lead servizi | bundle preview + POST invalido | PASS — form SSR presente e payload invalido restituisce 400 |
 | Protezione route CMS admin | bundle preview + richieste anonime | PASS — `/admin/news`, `/admin/servizi` e `/admin/richieste` restituiscono redirect al login |
+| Build console eventi | `pnpm build` | PASS — route `/admin/eventi` compilata nel bundle server |
 | Verifica manuale landing | Procedura in guideline | DA ESEGUIRE |
 | Verifica manuale database | Procedura in guideline | DA ESEGUIRE |
 
@@ -38,6 +39,8 @@ Ultimo aggiornamento: 2026-08-29
   tabelle raw protette da RLS.
 - Lead servizi: il form pubblico invia a un endpoint server validato; il pannello
   `/admin/richieste` permette aggiornamento di stato e note interne.
+- Console eventi: `/admin/eventi` gestisce il ciclo editoriale/operativo di base
+  dell’evento e mantiene privata la capienza salvo configurazione esplicita.
 - Schema V1: tabelle, vincoli, ruoli seed, trigger `updated_at` e mapping
   evento/stazione/attivita.
 - Sicurezza della foundation: RLS abilitata, tabelle raw di eventi e booking
@@ -71,4 +74,5 @@ Ultimo aggiornamento: 2026-08-29
   `/admin/servizi`.
 - Verifica manuale autenticata delle richieste in `/admin/richieste` e invio del
   form da un dettaglio servizio.
+- Verifica manuale autenticata della creazione/modifica evento in `/admin/eventi`.
 - Reset password, SMTP custom e Google OAuth in ambiente QUALITY.

@@ -206,6 +206,44 @@ non mostra capienza o note interne e collega ogni evento al proprio slug.
 Per ogni nuova feature aggiungere prerequisiti, procedura passo-passo,
 risultato atteso, esito e spazio per i commenti utente.
 
+## Console admin eventi
+
+**Stato:** READY TO TEST
+
+### Prerequisiti
+
+- Docker Desktop e Supabase DEV attivi.
+- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+
+### Procedura di test
+
+- [ ] 1. Accedere a `/login` con l’utente DEV e aprire `/admin/eventi`.
+- [ ] 2. Verificare che l’evento seed `VRSUS Demo` sia presente nell’elenco.
+- [ ] 3. Creare un evento in stato `draft` con titolo, slug, date e fine dopo
+      l’inizio; salvare e verificare che compaia nell’elenco.
+- [ ] 4. Modificare l’evento e verificare che prezzo, capienza, luogo e stato
+      vengano conservati dopo il reload.
+- [ ] 5. Verificare che `Pubblica sul sito` e `Visibilità capienza` siano scelte
+      esplicite e che la capienza non venga mostrata dalla route pubblica quando
+      la visibilità è `hidden`.
+- [ ] 6. Provare una data di fine precedente all’inizio e verificare il messaggio
+      di validazione senza scrittura nel database.
+
+### Risultato atteso
+
+Solo admin e super-admin possono leggere/scrivere gli eventi raw. Il form salva
+date ISO, prezzo in centesimi e capienza privata secondo i vincoli del database.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
 ## Autenticazione e RBAC
 
 **Stato:** READY TO TEST

@@ -31,13 +31,16 @@ caricamento/errore/vuoto e metadata SEO. Phase 2 resta completata e verificata.
   pubblicazione/archiviazione news e attivazione/disattivazione servizi.
 - Form pubblico per lead servizi con endpoint server validato e honeypot;
   console `/admin/richieste` per stato e note interne.
+- Console `/admin/eventi` per creazione e modifica degli eventi, date, stato,
+  prenotazioni, capienza privata/visibilità e dati del luogo.
 - `robots.txt` e `sitemap.xml` dinamica; ambienti non production configurati
   come `noindex, nofollow` e disallow completo via robots.
 
 ## Lavoro in corso
 
-Restano da implementare nella Phase 3 la gestione admin di eventi/catalogo,
-upload asset e i contenuti editoriali reali/assets di QUALITY e produzione.
+Restano da implementare nella Phase 3 la gestione admin del catalogo e delle
+associazioni evento/postazione/attività, upload asset e i contenuti editoriali
+reali/assets di QUALITY e produzione.
 
 ## Verifiche
 
@@ -51,6 +54,8 @@ upload asset e i contenuti editoriali reali/assets di QUALITY e produzione.
 - `pnpm test:e2e` -> PASS, 5 test Chromium, inclusi catalogo -> dettaglio e
   pagine CMS pubbliche.
 - `pnpm build` -> PASS, preset `node-server`.
+- Build di produzione successiva alla console eventi -> PASS; route `/admin/eventi`
+  inclusa nel bundle server.
 - Smoke SSR bundle -> PASS: tutte le route pubbliche, robots e sitemap
   rispondono 200; fixture evento/news/servizio presenti; JSON-LD evento presente.
 - Smoke lead -> PASS: form servizio presente, payload invalido rifiutato con
@@ -66,6 +71,10 @@ upload asset e i contenuti editoriali reali/assets di QUALITY e produzione.
   pipeline futura dovra essere completamente offline.
 - Test manuale autenticato della creazione/pubblicazione in `/admin/news` e
   `/admin/servizi` ancora da eseguire con un account DEV.
+- Test manuale autenticato della creazione/modifica evento in `/admin/eventi`
+  ancora da eseguire con un account DEV.
+- Il retry di `pnpm typecheck` e del lint mirato è stato interrotto dopo il
+  bootstrap Nuxt senza errori TypeScript emessi; resta il warning noto Volar.
 
 ## Ultimo aggiornamento
 

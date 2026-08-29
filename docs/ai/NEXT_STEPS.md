@@ -2,12 +2,15 @@
 
 ## Prossima attivita
 
-Completare la Phase 3 con la gestione admin di eventi/catalogo.
+Completare la Phase 3 con la gestione admin del catalogo e delle associazioni
+evento/postazione/attività.
 
 ### Area interessata
 
-- console `/admin/eventi` e `/admin/catalogo` per completare la gestione
-  operativa;
+- console `/admin/catalogo` per attività, postazioni e categorie;
+- associazioni per evento tra postazioni e attività, con override pubblici e
+  capienze coerenti con il modello many-to-many;
+- upload asset con storage configurabile;
 - test autenticato manuale di `/admin/news` e `/admin/servizi`;
 - test autenticato manuale di `/admin/richieste` e invio form servizio;
 - sostituzione dei fixture editoriali con contenuti e asset approvati;
@@ -40,6 +43,8 @@ Completare la Phase 3 con la gestione admin di eventi/catalogo.
 - sitemap dinamica con slug di eventi, news e servizi pubblicati.
 - console CMS news/servizi con scritture protette da RLS e ruoli admin.
 - form servizio, endpoint server validato e console `/admin/richieste`.
+- console `/admin/eventi` con date, stato, prenotazioni, prezzo e visibilità
+  capienza privata.
 
 ### Verifica
 

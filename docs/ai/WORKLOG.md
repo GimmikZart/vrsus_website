@@ -323,3 +323,26 @@ servizi, gestione admin eventi/catalogo, upload asset e test manuale autenticato
 
 Phase 3 avanzata: flusso lead servizi pronto in DEV. Restano gestione admin
 eventi/catalogo, upload asset e test manuale autenticato.
+
+## 2026-08-29 — Sessione 10
+
+### Lavoro svolto
+
+- Aggiunta `/admin/eventi` con elenco, creazione e modifica degli eventi.
+- Gestiti stato, date, finestra prenotazioni, prezzo sul posto, capienza,
+  visibilità capienza, waiting list, luogo e metadati SEO.
+- Collegata la nuova sezione alla dashboard `/admin`; la scrittura resta
+  protetta da middleware ruolo e policy RLS `events_admin_manage`.
+
+### Verifiche
+
+- Prettier mirato -> PASS.
+- `pnpm build` -> PASS, preset `node-server`.
+- Retry lint/typecheck mirato -> interrotto dopo bootstrap Nuxt senza errori
+  emessi; resta warning noto `vue-router/volar/sfc-route-blocks`.
+
+### Stato finale della sessione
+
+Phase 3 avanzata: gestione admin eventi pronta per test manuale DEV. Restano
+catalogo e associazioni evento/postazione/attività, upload asset e contenuti
+reali.
