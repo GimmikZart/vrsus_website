@@ -2,16 +2,21 @@
 
 ## Prossima attivita
 
-Completare la Phase 3 con la preparazione dei contenuti reali e la verifica
-manuale del flusso asset.
+Completare la verifica operativa V1/V2 e preparare il passaggio a QUALITY.
 
 ### Area interessata
 
+- verifica manuale autenticata di booking, QR, check-in, live e tornei in DEV;
+- verifica manuale autenticata di duplicazione/archiviazione eventi e gestione
+  no-show in DEV;
+- verifica installazione PWA e fallback offline su dispositivo;
 - verifica manuale autenticata dell'upload asset in DEV;
 - test autenticato manuale di `/admin/news` e `/admin/servizi`;
 - test autenticato manuale di `/admin/richieste` e invio form servizio;
 - sostituzione dei fixture editoriali con contenuti e asset approvati;
-- `docs/dev/guideline_test_features.md` per le procedure manuali.
+- `docs/dev/guideline_test_features.md` per le procedure manuali;
+- configurazione manuale Supabase remoto, Cloudflare e OneSignal secondo
+  `docs/dev/guideline_implementations.md`.
 
 ### Comportamento atteso
 
@@ -36,7 +41,9 @@ manuale del flusso asset.
 - view pubbliche `public_activities`, `public_news_posts` e
   `public_service_pages`, con filtering dei soli contenuti `published`;
 - route pubbliche esperienze/news/servizi/regolamento con fixture DEV e
-  dettagli editoriali;
+  dettagli editoriali, incluso `/esperienze/[slug]`;
+- disponibilita evento nella vista pubblica secondo `hidden`, `status` ed
+  `exact`, con soglia `booking.almost-full-threshold` e test privacy;
 - sitemap dinamica con slug di eventi, news e servizi pubblicati.
 - console CMS news/servizi con scritture protette da RLS e ruoli admin.
 - form servizio, endpoint server validato e console `/admin/richieste`.
@@ -47,6 +54,8 @@ manuale del flusso asset.
   e postazioni.
 - override per evento di nome, descrizione, capienza, visibilità, disponibilità,
   orari e modalità d’accesso.
+- workflow admin eventi per duplicazione/archiviazione e no-show operativo,
+  con test database delle autorizzazioni e degli audit.
 
 ### Gia verificato: asset CMS
 
@@ -54,7 +63,25 @@ manuale del flusso asset.
 - uploader CMS collegato a news, servizi, eventi e catalogo;
 - policy RLS di insert/update/delete limitate ad admin e super-admin.
 
+### Implementato nel repository
+
+- booking V1, waiting list FIFO, QR hash-only, check-in idempotente e pagamenti
+  sul posto;
+- dashboard utente, inbox notifiche, console live e check-in;
+- torneo V2 single-elimination, registrazione, check-in, bracket, risultati e
+  ranking da ledger, con operazioni match, realtime e notifica chiamata
+  giocatori.
+- adapter OneSignal server-side, mapping subscription e preferenze push con
+  fallback inbox.
+- console `/admin/ranking` per adjustment auditabili da admin/super-admin.
+- route area utente `/app/eventi`, `/app/tornei`, `/app/tornei/[id]` e
+  `/app/profilo`.
+- console `/admin/impostazioni` per `site_settings` con validazione JSON e
+  protezione admin/super-admin.
+
 ### Verifica
 
-Dopo il prossimo blocco eseguire `pnpm db:test`, `pnpm lint`,
-`pnpm typecheck`, `pnpm test`, `pnpm test:e2e` e `pnpm build`.
+La verifica finale del 2026-08-30 e PASS: `corepack pnpm db:test` (169), lint
+senza warning, format, typecheck, unit (1), E2E seriale (7/7), build standard e
+build Cloudflare. Restano esclusivamente i test manuali autenticati/device, la
+configurazione OneSignal e il deploy QUALITY/PRODUCTION.

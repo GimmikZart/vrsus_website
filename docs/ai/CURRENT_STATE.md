@@ -2,9 +2,13 @@
 
 ## Stato sintetico
 
-Phase 3 e in corso: il sito pubblico legge eventi e contenuti editoriali dalle
-view Supabase `public_*`, con catalogo, dettagli, stati di
-caricamento/errore/vuoto e metadata SEO. Phase 2 resta completata e verificata.
+Phase 10 e implementata nel repository: le milestone V1 di eventi, prenotazioni,
+QR, check-in e PWA sono implementate; il sistema V2 di tornei, bracket,
+realtime, notifiche in-app/push e ranking e implementato nel repository. Sono
+inoltre presenti duplicazione/archiviazione eventi, gestione no-show e guardie
+database delle transizioni operative.
+Restano prove manuali su account e dispositivi reali e il deploy
+QUALITY/PRODUCTION.
 
 ## Lavoro completato
 
@@ -25,7 +29,8 @@ caricamento/errore/vuoto e metadata SEO. Phase 2 resta completata e verificata.
 - Dettaglio con postazioni/attivita pubblicabili, JSON-LD `Event`, canonical URL.
 - View pubbliche sicure per attivita, news e servizi, con fixture DEV pubblicate.
 - Route pubbliche `/esperienze`, `/news`, `/news/[slug]`, `/servizi` e
-  `/servizi/[slug]`, con dettaglio editoriale e canonical URL.
+  `/servizi/[slug]`, con dettaglio editoriale e canonical URL; aggiunto anche
+  `/esperienze/[slug]` con immagine/placeholder, canonical e stati di errore.
 - Regolamento pubblico con placeholder esplicito in attesa del testo ufficiale.
 - Console admin `/admin/news` e `/admin/servizi` per creazione, modifica,
   pubblicazione/archiviazione news e attivazione/disattivazione servizi.
@@ -46,23 +51,58 @@ caricamento/errore/vuoto e metadata SEO. Phase 2 resta completata e verificata.
   policy RLS.
 - Componente `AssetUploader` riutilizzabile collegato alle console news,
   servizi, eventi e catalogo; il database memorizza il solo path dell'asset.
+- Route area utente `/app/eventi`, `/app/tornei`, `/app/tornei/[id]` e
+  `/app/profilo`, con dati filtrati dall'utente autenticato e azioni torneo
+  collegate alle RPC esistenti.
+- Console `/admin/impostazioni` per configurazioni leggere `site_settings`, con
+  validazione JSON e accesso limitato ad admin/super-admin.
+- Proiezione pubblica della disponibilita evento: capienza nascosta di default,
+  stato derivato per `status` e numeri soltanto per `exact`, con soglia
+  configurabile e fallback all'80%.
+- Workflow admin eventi: duplicazione con copia della configurazione e delle
+  associazioni, senza copiare prenotazioni/check-in/tornei, e archiviazione
+  auditabile con pubblicazione e booking disabilitati.
+- Gestione `no_show` da `/admin/live` tramite RPC staff/admin, con revoca del QR
+  e audit dell'operazione.
+- Guardie database per le transizioni evento/torneo/match e avanzamento bracket
+  corretto per distinguere un bye reale da un feeder ancora incompleto.
+
+## Milestone V1/V2 implementate nel repository
+
+- RPC booking atomiche per creazione, cancellazione, promozione waiting list,
+  QR hash-only, check-in idempotente e pagamento sul posto.
+- Area utente con lista prenotazioni, QR, stato waiting list e inbox notifiche.
+- Console staff `/admin/checkin` e `/admin/live` per scanner, check-in e metriche
+  operative senza esporre note interne.
+- Modello V2 per tornei, iscrizioni, check-in, bracket single-elimination,
+  risultati, assegnazione postazioni, chiamata giocatori, realtime e ledger
+  ranking, con RPC e test pgTAP.
+- Adapter OneSignal server-side, mapping delle subscription, preferenze push e
+  fallback persistente nell'inbox notifiche.
+- Route pubbliche `/tornei`, `/tornei/[slug]` e `/ranking`, console
+  `/admin/tornei`, `/admin/tornei/[id]` e `/admin/ranking`.
+- Fallback offline PWA su `/offline`; operazioni booking/check-in/risultati sono
+  esplicitamente online-only.
 
 ## Lavoro in corso
 
-Restano i contenuti editoriali e gli asset reali di QUALITY e produzione, oltre
-alla verifica manuale autenticata del percorso di upload.
+Restano contenuti e asset reali di QUALITY/produzione, prove manuali autenticati
+multiutente, verifica PWA/fotocamera su dispositivo e configurazione esterna del
+deploy/push provider.
 
 ## Verifiche
 
 - `pnpm db:reset` -> PASS: migration e seed applicati localmente.
 - `pnpm db:types` -> PASS: tipi generati dal database locale.
-- `pnpm db:test` -> PASS: 43 test pgTAP.
-- `pnpm lint` -> PASS.
+- `pnpm db:test` -> PASS: 169 test pgTAP, inclusi workflow booking, torneo V2,
+  operazioni match, push/preferenze, torneo demo a 8 partecipanti e proiezione
+  pubblica della capienza.
+- `pnpm lint` -> PASS, senza errori ne warning.
 - `pnpm format:check` -> PASS.
 - `pnpm typecheck` -> PASS; resta warning non bloccante Volar/vue-router.
 - `pnpm test` -> PASS, 1 test unitario.
-- `pnpm test:e2e` -> PASS, 5 test Chromium, inclusi catalogo -> dettaglio e
-  pagine CMS pubbliche.
+- `pnpm test:e2e` -> PASS, 7 test Chromium, inclusi catalogo -> dettaglio
+  esperienza/evento e pagine CMS pubbliche.
 - `pnpm build` -> PASS, preset `node-server`.
 - `pnpm db:reset` post-storage -> PASS: bucket e policy asset applicati.
 - Typecheck uploader post-storage -> PASS; resta warning non bloccante Volar.
@@ -73,6 +113,14 @@ alla verifica manuale autenticata del percorso di upload.
   rispondono 200; fixture evento/news/servizio presenti; JSON-LD evento presente.
 - Smoke lead -> PASS: form servizio presente, payload invalido rifiutato con
   400 e route admin richieste protetta.
+- `corepack pnpm build` -> PASS, preset `node-server`, incluse route torneo,
+  check-in, live admin e fallback PWA.
+- `corepack pnpm exec nuxt build --preset=cloudflare_pages` -> PASS; worker
+  Pages generato, con warning non bloccante sulla compatibilita Node.
+- Verifica finale 2026-08-30: migration da zero, 169 test pgTAP, lint pulito, format, typecheck,
+  unit (1), E2E Chromium seriale (7/7), build `node-server` e build
+  `cloudflare_pages` tutti PASS. Restano soltanto il warning Volar/vue-router e
+  warning Cloudflare sulla compatibilità Node.
 
 ## Problemi aperti
 
@@ -94,7 +142,12 @@ alla verifica manuale autenticata del percorso di upload.
   account DEV.
 - Typecheck diretto post-correzione della configurazione evento -> PASS (exit
   code 0); restano soltanto i warning non bloccanti Volar.
+- Test automatici ranking/bracket/booking -> PASS; test manuali V1/V2 e PWA da
+  eseguire con account e dispositivi DEV/QUALITY.
+- `corepack pnpm exec playwright test --workers=1` -> PASS, 7 test Chromium.
+- Test pgTAP guardie transizioni/bye -> PASS; test manuale delle nuove azioni
+  admin duplicazione/archiviazione e no-show ancora da eseguire su account DEV.
 
 ## Ultimo aggiornamento
 
-2026-08-29
+2026-08-30

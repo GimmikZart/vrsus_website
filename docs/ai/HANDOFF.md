@@ -2,12 +2,14 @@
 
 ## Stato
 
-Phase 2 e completata e verificata. La Phase 3 e in corso: eventi pubblici, SEO
-tecnico, pagine pubbliche CMS, console editoriale news/servizi, flusso lead
-servizi, gestione admin eventi e catalogo globale sono implementati; sono
-implementate anche le associazioni operative, gli override per singolo evento
-e l'upload asset tramite Supabase Storage. Restano i contenuti e gli asset reali.
-Non inserire `IMPLEMENTAZIONE COMPLETATA`.
+Phase 10 e implementata nel repository e verificata automaticamente. V1 copre
+eventi, prenotazioni, waiting list, QR, check-in, live admin e PWA; V2 copre
+tornei, iscrizioni, check-in torneo, bracket single-elimination, risultati,
+realtime, notifiche in-app/push e ranking. Sono inclusi anche duplicazione e
+archiviazione eventi, gestione no-show e guardie database delle transizioni.
+Restano test manuali su dispositivi/account,
+contenuti reali e configurazione remota QUALITY/PRODUCTION. Non inserire
+`IMPLEMENTAZIONE COMPLETATA` finché questi gate non sono chiusi.
 
 ## Ultimo lavoro
 
@@ -20,8 +22,9 @@ Non inserire `IMPLEMENTAZIONE COMPLETATA`.
   esclusivamente dopo verifica del ruolo.
 - Test RLS reali con user A/B e test super-admin/utente normale.
 - Catalogo eventi pubblico e dettaglio `/eventi/[slug]` da view `public_*`.
-- Pagine pubbliche `/esperienze`, `/news`, `/servizi` e relativi dettagli da
-  view Supabase pubblicate; `/regolamento` esplicita l'attesa del testo ufficiale.
+- Pagine pubbliche `/esperienze`, `/esperienze/[slug]`, `/news`, `/servizi` e
+  relativi dettagli da view Supabase pubblicate; `/regolamento` esplicita
+  l'attesa del testo ufficiale.
 - Console `/admin/news` e `/admin/servizi` per authoring e pubblicazione protetti
   da middleware, ruolo e RLS.
 - Form pubblico servizi, endpoint server validato e console `/admin/richieste`
@@ -36,6 +39,29 @@ Non inserire `IMPLEMENTAZIONE COMPLETATA`.
 - Bucket `vrsus-assets` e componente uploader CMS per news, servizi, eventi e
   catalogo; le policy storage consentono scritture soltanto ai ruoli admin.
 - `robots.txt`, sitemap dinamica e JSON-LD evento.
+- `supabase/migrations/20260830100000_booking_workflows.sql` per booking, QR,
+  waiting list, check-in e pagamento.
+- `supabase/migrations/20260830110000_tournament_v2.sql` per tornei, bracket,
+  risultati, notifiche collegate e ranking ledger.
+- `supabase/migrations/20260830120000_v2_operations_push.sql` per stato
+  check-in, operazioni match, notifiche applicative, preferenze/subscription
+  push, ranking per attività e correzioni auditabili.
+- `app/pages/tornei/`, `app/pages/ranking.vue`, `app/pages/admin/tornei/` e
+  `app/pages/admin/ranking.vue`, `app/pages/app/notifiche.vue` per le superfici
+  V2; `server/utils/push-provider.ts` contiene l'adapter OneSignal.
+- `app/pages/app/eventi.vue`, `app/pages/app/tornei.vue`,
+  `app/pages/app/tornei/[id].vue`, `app/pages/app/profilo.vue` e
+  `app/pages/admin/impostazioni/index.vue` completano le route protette
+  previste dal contratto.
+- `supabase/migrations/20260830130000_public_capacity_projection.sql` mantiene
+  privati i dati grezzi di capienza e pubblica solo lo stato consentito dalla
+  configurazione dell'evento.
+- `supabase/migrations/20260830140000_booking_notifications_no_show.sql` aggiunge
+  il no-show staff/admin con revoca QR e audit.
+- `supabase/migrations/20260830150000_event_admin_workflows.sql` aggiunge
+  duplicazione/archiviazione evento con copia delle associazioni e audit.
+- `supabase/migrations/20260830160000_state_machine_guards.sql` applica le
+  transizioni operative e corregge l'avanzamento dei bye nel bracket.
 
 ## File importanti
 
@@ -51,14 +77,21 @@ Non inserire `IMPLEMENTAZIONE COMPLETATA`.
 ## Verifiche
 
 Consultare `docs/ai/TEST_REPORT.md`. Ultimi gate lint, format, typecheck, unit,
-build, 43 test pgTAP e 5 test E2E sono PASS. Smoke Auth, role management e SSR
-pubblico sono PASS; gli utenti locali temporanei sono stati rimossi.
+build e 169 test pgTAP sono PASS; il warning Volar/vue-router non è bloccante.
+Gli E2E storici restano PASS, mentre i nuovi journey V1/V2 richiedono test
+manuale autenticato.
+
+## Verifica conclusiva 2026-08-30
+
+Lint, format, typecheck, unit, build standard, build Cloudflare, E2E seriale
+(7/7) e la suite aggiornata da 169 test pgTAP sono PASS. Restano test manuali
+autenticati su account/device e la configurazione QUALITY/PRODUCTION dei
+servizi esterni.
 
 ## Prossima azione
 
-Preparare i contenuti reali e completare il test manuale autenticato delle
-console CMS, dell'upload asset, eventi, catalogo, configurazione evento e del
-flusso lead.
+Eseguire i test manuali booking/QR/check-in/live/tornei/notifiche/PWA, poi
+completare i test CMS e asset e configurare QUALITY seguendo le checklist.
 Seguire
 `docs/ai/NEXT_STEPS.md`.
 

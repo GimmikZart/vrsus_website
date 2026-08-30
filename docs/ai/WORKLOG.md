@@ -433,3 +433,155 @@ Restano upload asset, contenuti reali e test manuale autenticato.
 Phase 3 avanzata: upload asset pronto per test manuale autenticato DEV.
 Restano contenuti e asset reali QUALITY/PROD e le verifiche manuali delle
 console.
+
+## 2026-08-30 — Sessione 15
+
+### Lavoro svolto
+
+- Implementate RPC V1 per prenotazione race-safe, cancellazione, promozione
+  waiting list, QR hash-only, check-in idempotente e pagamento sul posto.
+- Aggiunte dashboard utente prenotazioni, inbox notifiche e console admin
+  `/admin/checkin` e `/admin/live`.
+- Implementato il modello V2 tornei con iscrizione, check-in, bracket
+  single-elimination deterministico con bye, risultati e ranking ledger.
+- Aggiunte route pubbliche `/tornei`, `/tornei/[slug]`, `/ranking` e console
+  `/admin/tornei`.
+- Aggiunto fallback offline PWA e checklist manuali V1/V2/PWA/QUALITY.
+
+### Verifiche
+
+- `corepack pnpm db:reset` -> PASS dopo un retry per 502 transitorio del reset.
+- `corepack pnpm db:test` -> PASS, 87 test pgTAP.
+- `corepack pnpm test` -> PASS, 1 test unitario.
+- `corepack pnpm lint` -> PASS, sei warning HTML preesistenti/non bloccanti.
+- `corepack pnpm format:check` -> PASS.
+- `corepack pnpm typecheck` -> PASS; warning Volar/vue-router non bloccante.
+- `corepack pnpm build` -> PASS, preset `node-server` e service worker PWA.
+
+### Stato finale della sessione
+
+Le milestone implementative V1/V2 sono presenti nel repository. Restano test
+manuali autenticati su DEV/QUALITY, installazione PWA/fotocamera su device e
+configurazione dei servizi remoti, documentati nelle checklist.
+
+## 2026-08-30 — Sessione 17: estensione operativa V2 e push
+
+- Aggiunta migration `20260830120000_v2_operations_push.sql` con stato
+  `checkin`, operazioni match, notifiche applicative automatiche, preferenze e
+  subscription push, ranking per attività e adjustment admin.
+- Implementato adapter OneSignal server-side con retry limitati e fallback
+  inbox; aggiunta UI utente per abilitare/disabilitare le push.
+- Estesa console torneo con assegnazione postazione, `Call players`, avvio
+  match, score JSON e nuova route di dispatch autorizzata.
+- Estesa classifica generale/per attività e dashboard con riepilogo personale.
+- Aggiunta console `/admin/ranking` con selezione utente/attività e adjustment
+  positivo o negativo auditabile.
+- Aggiunti test pgTAP per operazioni/push e torneo single-elimination a 8
+  partecipanti; la suite locale passa 122 test.
+- La verifica visuale autenticata non e stata eseguita perché il backend
+  browser integrato non era disponibile nella sessione.
+- Verifica finale automatica: db reset e 122 test pgTAP, lint, format, typecheck,
+  unit, E2E seriale 6/6, build Node e build Cloudflare PASS.
+
+## 2026-08-30 — Sessione 16
+
+- Corretto il rilevamento dell’iscrizione personale nella pagina pubblica del
+  torneo: ora viene risolta tramite `tournament_entry_members` dell’utente
+  autenticato e non tramite il primo partecipante pubblico.
+- Eseguita la verifica conclusiva: lint PASS con 9 warning HTML non bloccanti,
+  format PASS, typecheck PASS, unit PASS (1), pgTAP PASS (87), E2E seriale PASS
+  (5/5) e build standard PASS (`node-server`, PWA inclusa).
+- Aggiornato l’handoff con gli esiti finali e lasciate come `USER ACTION
+  REQUIRED` soltanto le verifiche manuali su account/device e la configurazione
+  dei servizi remoti QUALITY/PROD.
+
+## 2026-08-30 - Sessione 18: completamento route protette
+
+- L'audit della specifica ha rilevato le route previste ma ancora mancanti
+  `/app/eventi`, `/app/tornei`, `/app/tornei/[id]`, `/app/profilo` e
+  `/admin/impostazioni`.
+- Implementate le nuove superfici con query Supabase tipizzate, RLS per i dati
+  utente, azioni torneo tramite RPC e gestione JSON validata per `site_settings`.
+- Aggiunta una regression E2E per i redirect anonimi delle nuove route.
+- Typecheck e lint PASS; build standard e Cloudflare PASS; E2E seriale PASS
+  (7/7). Lint segnala 10 warning HTML non bloccanti.
+
+## 2026-08-30 - Sessione 19: audit pubblico e chiusura gate automatici
+
+- L’audit della specifica ha rilevato la route pubblica mancante
+  `/esperienze/[slug]`; aggiunto il dettaglio CMS con query tipizzata, SEO,
+  fallback visuale controllato e regression E2E.
+- Estesa la proiezione `public_events` con capienza pubblica privacy-safe:
+  modalità `hidden`, `status` ed `exact`, stati derivati e soglia
+  quasi-completo configurabile; aggiunta la decisione DEC-015 e 11 test pgTAP.
+- Aggiornati tipi Supabase, card pubblica eventi, lint config e timeout del
+  web server Playwright per il cold start Nuxt su Windows.
+- Durante il reset locale il container realtime/storage non è ripartito
+  automaticamente; riavvio Docker non distruttivo eseguito e ambiente
+  ripristinato.
+- Gate verificati: db:test PASS (133/133), unit PASS (1/1), E2E seriale PASS
+  (7/7), typecheck PASS, lint PASS senza warning, format PASS, build
+  `node-server` PASS e build `cloudflare_pages` PASS.
+- Restano USER ACTION REQUIRED i test manuali autenticati/device e la
+  configurazione/deploy dei servizi remoti QUALITY/PRODUCTION; warning Volar/
+  vue-router, Cloudflare Node compatibility e ciclo di re-export Supabase
+  restano non bloccanti.
+
+## 2026-08-30 - Sessione 20: workflow eventi, no-show e guardie di stato
+
+### Lavoro svolto
+
+- Implementato il no-show operativo per staff/admin con RPC atomica, revoca del
+  QR, controllo evento terminato/in corso e audit log; aggiornata la console
+  `/admin/live`.
+- Implementate duplicazione e archiviazione eventi per admin/super-admin, con
+  copia di configurazione e associazioni ma senza prenotazioni, check-in o
+  tornei; aggiunti audit e UI in `/admin/eventi`.
+- Aggiunte guardie database per le macchine a stati di eventi, tornei e match.
+- Corretto l'avanzamento single-elimination: un match a un solo partecipante
+  viene chiuso automaticamente soltanto se l'altro feeder è un bye reale;
+  i bracket a 4 e 8 partecipanti ora attendono correttamente il secondo
+  risultato.
+- Aggiunta copertura pgTAP dedicata per le transizioni e aggiornate le
+  procedure manuali e i documenti di handoff.
+
+### File principali modificati
+
+- `supabase/migrations/20260830140000_booking_notifications_no_show.sql`
+- `supabase/migrations/20260830150000_event_admin_workflows.sql`
+- `supabase/migrations/20260830160000_state_machine_guards.sql`
+- `supabase/tests/booking_workflows.test.sql`
+- `supabase/tests/event_admin_workflows.test.sql`
+- `supabase/tests/state_machine_guards.test.sql`
+- `app/pages/admin/eventi.vue`
+- `app/pages/admin/live.vue`
+- `app/composables/useBookings.ts`
+- `docs/dev/guideline_test_features.md`
+
+### Verifiche
+
+- `corepack pnpm db:reset` -> PASS.
+- `corepack pnpm db:test` -> PASS, 169/169 test pgTAP.
+- `corepack pnpm db:types` -> PASS.
+- `corepack pnpm lint` -> PASS.
+- `corepack pnpm format:check` -> PASS.
+- `corepack pnpm typecheck` -> PASS; warning Volar/vue-router non bloccante.
+- `corepack pnpm test` -> PASS, 1/1 unit test.
+- `corepack pnpm exec playwright test --workers=1` -> PASS, 7/7 Chromium.
+- `corepack pnpm build` -> PASS, preset `node-server`.
+- `corepack pnpm exec nuxt build --preset=cloudflare_pages` -> PASS; warning
+  Node compatibility/re-export Supabase non bloccante.
+
+### Problemi emersi
+
+Il primo test delle guardie ha rilevato la chiusura prematura dei match a valle
+nei bracket a più round; il comportamento è stato corretto e verificato con i
+test a 4 e 8 partecipanti. Restano i gate manuali autenticati/device e le
+configurazioni remote QUALITY/PRODUCTION.
+
+### Stato finale della sessione
+
+Le milestone implementative locali risultano verificate automaticamente. Il
+repository è pronto per la verifica manuale delle nuove azioni admin e per il
+passaggio a QUALITY; non viene marcato `IMPLEMENTAZIONE COMPLETATA` finché i
+gate manuali e remoti restano aperti.

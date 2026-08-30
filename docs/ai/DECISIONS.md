@@ -231,3 +231,122 @@ integrazioni email.
 Il frontend riceve solo un esito `ok` e non dati di lead. La console admin legge
 e aggiorna le richieste con la sessione autenticata e le policy di ruolo; le
 note interne non vengono mai incluse nelle projection view pubbliche.
+
+## DEC-012 — Punteggio ranking V2 derivato dal ledger
+
+**Status:** Accepted
+
+### Decisione
+
+Il primo formato torneo assegna 100 punti al vincitore e 60 al secondo
+classificato. I punti vengono inseriti da `record_match_result` al completamento
+della finale e protetti da un indice univoco per torneo, utente e motivo.
+
+### Motivazione
+
+La regola minima è deterministica, comprensibile nella beta e rende il risultato
+idempotente senza introdurre una cache totale dei punteggi. Le future regole per
+partecipazione, piazzamenti o attività possono aggiungere nuovi reason code senza
+modificare i risultati storici.
+
+### Conseguenze
+
+La classifica pubblica deriva da `public_ranking`; ogni correzione passa da una
+nuova procedura auditabile e non da una modifica manuale di un totale aggregato.
+
+## DEC-013 — OneSignal dietro adapter server-side e inbox persistente
+
+**Status:** Accepted
+
+### Decisione
+
+La UI registra il consenso e la subscription OneSignal tramite RPC protette,
+mentre l'invio passa da `server/utils/push-provider.ts` e dalla route server di
+dispatch. Ogni evento applicativo crea prima una riga in `notifications`; la
+push e opzionale e non puo far fallire l'azione business.
+
+### Motivazione
+
+La separazione evita di esporre la REST API key nel browser, mantiene una fonte
+consultabile anche senza permesso push e consente di sostituire OneSignal in
+futuro. Retry limitati su 429/503 riducono gli errori transitori senza bloccare
+le operazioni torneo.
+
+### Conseguenze
+
+La configurazione reale di App ID e REST API key resta un'azione manuale per
+ambiente. In DEV senza credenziali la feature degrada alla sola inbox.
+
+## DEC-014 — Operazioni torneo esplicite e ranking per attività
+
+**Status:** Accepted
+
+### Decisione
+
+Le azioni operative di match (assegnazione postazione, chiamata giocatori,
+avvio e correzione del solo payload score) sono RPC autorizzate e auditabili.
+Il ranking conserva l'attività sottostante del torneo e viene esposto sia in
+forma generale sia filtrabile per attività; il riepilogo personale e gli
+adjustment admin derivano sempre dal ledger.
+
+### Motivazione
+
+Le azioni operative richiedono controlli atomici lato database e devono essere
+idempotenti. Conservare l'attività reale evita di usare per errore l'ID della
+configurazione evento al posto dell'ID del catalogo attività.
+
+### Conseguenze
+
+La modifica di un risultato completato non ricalcola vincitore o punti: la
+correzione prevista in beta aggiorna soltanto il punteggio e registra un audit.
+
+## DEC-015 - Proiezione pubblica della disponibilita evento
+
+**Status:** Accepted
+
+### Decisione
+
+La vista `public_events` mantiene privati i campi amministrativi grezzi di
+capienza. Espone invece una proiezione derivata secondo `capacity_visibility`:
+nessun segnale in modalita `hidden`, il solo stato `available`, `almost_full` o
+`full` in modalita `status`, e la coppia confermati/capienza soltanto in
+modalita `exact`. La soglia `almost_full` viene letta da
+`site_settings['booking.almost-full-threshold']`, e limitata tra 0 e 1 e vale
+0.8 se non configurata.
+
+### Motivazione
+
+Il contratto UI richiede di comunicare la disponibilita senza rendere pubblica
+la capienza di default. Calcolare lo stato lato database mantiene la fonte di
+verita coerente con le prenotazioni e impedisce al client di ricostruire o
+mostrare accidentalmente dati amministrativi.
+
+### Conseguenze
+
+Le pagine pubbliche usano esclusivamente `public_capacity_status`,
+`public_confirmed_count` e `public_max_capacity`; nessuna pagina anonima legge
+la tabella `events` o `bookings` grezza. Le modifiche alla soglia sono
+configurazione applicativa amministrativa e richiedono test della proiezione.
+
+## DEC-016 - Guardie database per transizioni operative e bye torneo
+
+**Status:** Accepted
+
+### Decisione
+
+Le transizioni di stato di eventi, tornei e match sono validate da trigger
+`before update` nel database. L'avanzamento di un bracket single-elimination
+propaga un vincitore a valle, ma considera un match chiuso automaticamente solo
+quando gli altri feeder sono vuoti o completati senza vincitore; un match
+parzialmente alimentato resta `pending` fino al secondo risultato.
+
+### Motivazione
+
+Le UI e le RPC sono più sicure quando il vincolo è applicato anche al confine
+del database. La distinzione tra bye reale e feeder ancora in corso evita di
+chiudere prematuramente semifinali o finali nei bracket con più round.
+
+### Conseguenze
+
+Le RPC operative devono rispettare la macchina a stati esplicita e i test
+pgTAP coprono transizioni valide, salti non consentiti e bracket a 4/8 entry.

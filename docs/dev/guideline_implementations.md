@@ -84,5 +84,36 @@ il path dell'oggetto, mai una credenziale o un URL segreto.
 - [ ] 4. Configurare nell'app solo le variabili del progetto remoto indicato
       dall'ambiente; le chiavi restano nel secret manager o nel provider di
       deploy e non vanno inserite nei documenti.
-- [ ] 5. Eseguire il test manuale dell'upload descritto in
+- [ ] 5. Eseguire il test manuale dell’upload descritto in
       `docs/dev/guideline_test_features.md`.
+
+## QUALITY/PRODUCTION — integrazioni esterne e deploy
+
+**Stato:** USER ACTION REQUIRED.
+
+L’agente ha preparato migrazioni, UI, adapter e checklist, ma non deve usare o
+inventare credenziali di progetti remoti, provider push, DNS o secret manager.
+
+- [ ] 1. Creare/verificare i progetti Supabase QUALITY e PRODUCTION separati,
+      applicando le migration con il workflow approvato; non usare `db reset`.
+- [ ] 2. Configurare nel secret manager `NUXT_PUBLIC_SUPABASE_URL`,
+      `NUXT_PUBLIC_SUPABASE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_ENV` e
+      `APP_BASE_URL` per il rispettivo ambiente.
+- [ ] 3. Configurare Cloudflare Pages/Workers con preset compatibile e dominio
+      corretto; verificare HTTPS, redirect e variabili runtime.
+- [ ] 4. Creare/verificare il progetto OneSignal e il sito web origin corretto;
+      salvare App ID e REST API key esclusivamente nei secret del provider.
+- [ ] 5. Impostare `NUXT_PUBLIC_ONESIGNAL_APP_ID` come variabile PUBLIC e
+      `ONESIGNAL_REST_API_KEY` come SERVER-ONLY/SECRET. Non inserire la REST API
+      key in `.env` committati, bundle client o documentazione.
+- [ ] 6. Verificare l'abilitazione push da `/app/notifiche` e il flusso `Call
+      players`: il record `notifications` deve restare disponibile anche se la
+      chiamata OneSignal fallisce; gli errori sono restituiti/loggati dall'adapter.
+- [ ] 7. Eseguire la suite manuale QUALITY, inclusi installazione PWA,
+      fotocamera/QR, test multiutente e verifica privacy.
+
+### Verifica
+
+La configurazione è completa solo quando i checklist di deploy e test QUALITY
+sono compilati dal responsabile dell’ambiente. Nessun valore reale va inserito
+qui o committato nel repository.
