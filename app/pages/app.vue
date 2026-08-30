@@ -3,7 +3,46 @@ definePageMeta({ middleware: ['auth'] })
 
 const route = useRoute()
 const { user, roles, isAdmin, loadRoles, signOut } = useVrsusAuth()
+const { data: bookings } = await useMyBookings()
+const { data: notifications } = await useMyNotifications()
+const supabase = useSupabaseClient()
 const pending = ref(false)
+const { data: rankingSummary } = await useAsyncData(
+  'my-ranking-summary',
+  async () => {
+    const { data, error } = await supabase.rpc('get_my_ranking_summary')
+    if (error) return []
+    return data ?? []
+  },
+)
+
+const bookingEvents = await useAsyncData('my-booking-events', async () => {
+  const eventIds = [
+    ...new Set((bookings.value ?? []).map((item) => item.event_id)),
+  ]
+  if (!eventIds.length) return []
+
+  const { data, error } = await supabase
+    .from('public_events')
+    .select('*')
+    .in('id', eventIds)
+
+  if (error) return []
+  return data ?? []
+})
+
+const activeBookings = computed(() =>
+  (bookings.value ?? []).filter((booking) =>
+    ['confirmed', 'waitlisted'].includes(booking.status),
+  ),
+)
+const unreadNotifications = computed(() =>
+  (notifications.value ?? []).filter((notification) => !notification.read_at),
+)
+
+function eventForBooking(eventId: string) {
+  return bookingEvents.data.value?.find((event) => event.id === eventId)
+}
 
 await loadRoles()
 
@@ -69,7 +108,47 @@ async function logout() {
       :description="statusMessage"
     />
 
-    <section class="mt-10 grid gap-4 md:grid-cols-2">
+    <section v-if="activeBookings.length" class="mt-10 space-y-4">
+      <div>
+        <p class="text-sm text-white/45">Le tue prenotazioni</p>
+        <h2 class="font-display mt-2 text-2xl font-semibold text-white">
+          Ci vediamo all’evento
+        </h2>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <NuxtLink
+          v-for="booking in activeBookings"
+          :key="booking.id"
+          :to="`/app/prenotazioni/${booking.id}`"
+          class="hover:border-brand-blue-400/50 block rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition-colors"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="font-medium text-white">
+                {{ eventForBooking(booking.event_id)?.title ?? 'Evento VRSUS' }}
+              </p>
+              <p
+                v-if="eventForBooking(booking.event_id)?.starts_at"
+                class="mt-1 text-xs text-white/45"
+              >
+                {{
+                  formatPublicEventDate(
+                    eventForBooking(booking.event_id)?.starts_at ?? null,
+                  )
+                }}
+              </p>
+            </div>
+            <UBadge
+              :color="booking.status === 'confirmed' ? 'success' : 'secondary'"
+              variant="subtle"
+              :label="formatBookingStatus(booking.status)"
+            />
+          </div>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <section class="mt-10 grid gap-4 md:grid-cols-3">
       <UCard class="border border-white/10 bg-white/[0.04]">
         <p class="text-sm text-white/45">Prossimo passo</p>
         <h2 class="font-display mt-3 text-2xl font-semibold text-white">
@@ -84,6 +163,13 @@ async function logout() {
           variant="soft"
           color="secondary"
           label="Vai all’evento"
+        />
+        <UButton
+          to="/app/notifiche"
+          class="mt-3"
+          variant="ghost"
+          color="neutral"
+          :label="`Notifiche${unreadNotifications.length ? ` (${unreadNotifications.length} nuove)` : ''}`"
         />
       </UCard>
 
@@ -107,6 +193,24 @@ async function logout() {
           class="mt-6"
           variant="outline"
           label="Apri console admin"
+        />
+      </UCard>
+
+      <UCard class="border border-white/10 bg-white/[0.04]">
+        <p class="text-sm text-white/45">Il tuo ranking</p>
+        <p class="font-display mt-3 text-3xl font-semibold text-white">
+          {{ rankingSummary?.[0]?.points ?? 0 }} pt
+        </p>
+        <p class="mt-2 text-sm text-white/55">
+          {{ rankingSummary?.[0]?.wins ?? 0 }} vittorie ·
+          {{ rankingSummary?.[0]?.runner_ups ?? 0 }} podi
+        </p>
+        <UButton
+          to="/ranking"
+          class="mt-6"
+          variant="soft"
+          color="secondary"
+          label="Vedi classifica"
         />
       </UCard>
     </section>

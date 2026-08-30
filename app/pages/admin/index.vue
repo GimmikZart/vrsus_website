@@ -10,6 +10,11 @@ const { user, roles, hasRole, signOut } = useVrsusAuth()
 
 const adminSections = [
   {
+    label: 'Check-in',
+    description: 'Scansiona i QR e registra l’ingresso dei partecipanti.',
+    to: '/admin/checkin',
+  },
+  {
     label: 'Catalogo',
     description: 'Gestisci attività, postazioni e categorie riutilizzabili.',
     to: '/admin/catalogo',
@@ -18,6 +23,16 @@ const adminSections = [
     label: 'Eventi',
     description: 'Prepara date, prenotazioni e visibilità del prossimo evento.',
     to: '/admin/eventi',
+  },
+  {
+    label: 'Tornei',
+    description: 'Gestisci iscrizioni, bracket e risultati della VRSUS Arena.',
+    to: '/admin/tornei',
+  },
+  {
+    label: 'Ranking',
+    description: 'Registra correzioni punti con motivazione e audit interno.',
+    to: '/admin/ranking',
   },
   {
     label: 'News',
@@ -33,6 +48,11 @@ const adminSections = [
     label: 'Richieste servizi',
     description: 'Segui i lead ricevuti e aggiorna il loro stato operativo.',
     to: '/admin/richieste',
+  },
+  {
+    label: 'Impostazioni',
+    description: 'Gestisci configurazioni applicative leggere e strutturate.',
+    to: '/admin/impostazioni',
   },
 ] as const
 

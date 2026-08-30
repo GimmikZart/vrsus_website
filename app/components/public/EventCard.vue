@@ -14,6 +14,22 @@ const eventStatusLabel = computed(() => {
   if (props.event?.status === 'completed') return 'Concluso'
   return 'In programma'
 })
+
+const bookingStatusLabel = computed(() => {
+  if (!props.event) return ''
+  if (props.event.status !== 'scheduled' || !props.event.booking_enabled) {
+    return 'Prenotazioni chiuse'
+  }
+  if (props.event.public_confirmed_count !== null) {
+    return `${props.event.public_confirmed_count} / ${props.event.public_max_capacity ?? '—'} posti`
+  }
+  if (props.event.public_capacity_status === 'full') return 'Completo'
+  if (props.event.public_capacity_status === 'almost_full') {
+    return 'Quasi completo'
+  }
+  if (props.event.public_capacity_status === 'available') return 'Disponibile'
+  return ''
+})
 </script>
 
 <template>
@@ -58,6 +74,7 @@ const eventStatusLabel = computed(() => {
           <span>{{
             formatPublicEventPrice(event.price_cents, event.payment_required)
           }}</span>
+          <span v-if="bookingStatusLabel">{{ bookingStatusLabel }}</span>
         </div>
       </div>
       <UButton

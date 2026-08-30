@@ -9,6 +9,13 @@ export async function requireServerRole(
   event: H3Event,
   requiredRole: RoleCode,
 ) {
+  return requireServerAnyRole(event, [requiredRole])
+}
+
+export async function requireServerAnyRole(
+  event: H3Event,
+  requiredRoles: readonly RoleCode[],
+) {
   let user
 
   try {
@@ -25,8 +32,8 @@ export async function requireServerRole(
   }
 
   const client = await serverSupabaseClient<Database>(event)
-  const { data, error } = await client.rpc('has_role', {
-    required_role: requiredRole,
+  const { data, error } = await client.rpc('has_any_role', {
+    required_roles: [...requiredRoles],
   })
 
   if (error) {

@@ -52,10 +52,11 @@ useSeoMeta({
         Non ci sono ancora esperienze pubblicate.
       </div>
       <div v-else class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <article
+        <NuxtLink
           v-for="activity in activities"
           :key="activity.id || activity.slug || activity.name || 'activity'"
-          class="rounded-3xl border border-white/10 bg-white/[0.04] p-6 sm:p-8"
+          :to="activity.slug ? `/esperienze/${activity.slug}` : '/esperienze'"
+          class="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 transition-colors hover:border-white/25 hover:bg-white/[0.07] sm:p-8"
         >
           <p
             v-if="activity.category_name"
@@ -72,7 +73,13 @@ useSeoMeta({
           >
             {{ activity.short_description || activity.description }}
           </p>
-        </article>
+          <span
+            class="mt-7 inline-flex items-center gap-2 text-sm text-white/45 transition-colors group-hover:text-white"
+          >
+            Scopri l’esperienza
+            <UIcon name="i-lucide-arrow-up-right" class="size-4" />
+          </span>
+        </NuxtLink>
       </div>
     </div>
   </div>

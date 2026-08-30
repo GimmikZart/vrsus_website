@@ -29,6 +29,12 @@
           <NuxtLink to="/eventi" class="transition-colors hover:text-white"
             >Eventi</NuxtLink
           >
+          <NuxtLink to="/tornei" class="transition-colors hover:text-white"
+            >Tornei</NuxtLink
+          >
+          <NuxtLink to="/ranking" class="transition-colors hover:text-white"
+            >Ranking</NuxtLink
+          >
           <NuxtLink to="/news" class="transition-colors hover:text-white"
             >News</NuxtLink
           >

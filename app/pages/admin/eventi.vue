@@ -53,7 +53,9 @@ const {
 })
 
 const editingId = ref<string | null>(null)
+const duplicateSourceId = ref<string | null>(null)
 const saving = ref(false)
+const archivingId = ref<string | null>(null)
 const errorMessage = ref('')
 const successMessage = ref('')
 const statusOptions: EventStatus[] = [
@@ -126,6 +128,7 @@ function formatDate(value: string) {
 
 function editEvent(event: Event) {
   editingId.value = event.id
+  duplicateSourceId.value = null
   Object.assign(form, {
     title: event.title,
     slug: event.slug,
@@ -156,6 +159,7 @@ function editEvent(event: Event) {
 
 function startNew() {
   editingId.value = null
+  duplicateSourceId.value = null
   Object.assign(form, emptyForm())
   errorMessage.value = ''
   successMessage.value = ''
@@ -225,9 +229,28 @@ async function saveEvent() {
     seo_description: form.seoDescription.trim() || null,
   }
 
-  const result = editingId.value
-    ? await client.from('events').update(payload).eq('id', editingId.value)
-    : await client.from('events').insert(payload)
+  let result: { error: { code?: string } | null }
+  if (duplicateSourceId.value) {
+    const { data: duplicateId, error: duplicateError } = await client.rpc(
+      'duplicate_event',
+      {
+        p_source_event_id: duplicateSourceId.value,
+        p_new_slug: slug,
+        p_new_title: title,
+        p_new_starts_at: startsAt.toISOString(),
+        p_new_ends_at: endsAt.toISOString(),
+      },
+    )
+    if (duplicateError || !duplicateId) {
+      result = { error: duplicateError ?? { code: 'DUPLICATE_FAILED' } }
+    } else {
+      result = await client.from('events').update(payload).eq('id', duplicateId)
+    }
+  } else {
+    result = editingId.value
+      ? await client.from('events').update(payload).eq('id', editingId.value)
+      : await client.from('events').insert(payload)
+  }
 
   if (result.error) {
     errorMessage.value =
@@ -242,7 +265,41 @@ async function saveEvent() {
   saving.value = false
   await refresh()
   editingId.value = null
+  duplicateSourceId.value = null
   Object.assign(form, emptyForm())
+}
+
+function duplicateEvent(event: Event) {
+  editEvent(event)
+  editingId.value = null
+  duplicateSourceId.value = event.id
+  form.title = event.title + ' — copia'
+  form.slug = event.slug + '-copia'
+  form.status = 'draft'
+  form.isPublic = false
+  form.bookingOpensAt = ''
+  form.bookingClosesAt = ''
+  successMessage.value = ''
+}
+
+async function archiveEvent(event: Event) {
+  if (event.archived_at || archivingId.value) return
+  archivingId.value = event.id
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  const { error } = await client.rpc('archive_event', {
+    p_event_id: event.id,
+  })
+
+  if (error) {
+    errorMessage.value = 'Archiviazione non riuscita. Riprova.'
+  } else {
+    successMessage.value = 'Evento archiviato.'
+    await refresh()
+  }
+
+  archivingId.value = null
 }
 </script>
 
@@ -307,6 +364,12 @@ async function saveEvent() {
                   variant="subtle"
                   :label="event.status"
                 />
+                <UBadge
+                  v-if="event.archived_at"
+                  color="neutral"
+                  variant="subtle"
+                  label="archiviato"
+                />
                 <span class="text-xs text-white/35">/{{ event.slug }}</span>
               </div>
               <h2 class="font-display mt-3 text-xl font-semibold text-white">
@@ -322,6 +385,22 @@ async function saveEvent() {
               size="sm"
               label="Modifica"
               @click="editEvent(event)"
+            />
+            <UButton
+              variant="soft"
+              color="secondary"
+              size="sm"
+              label="Duplica"
+              @click="duplicateEvent(event)"
+            />
+            <UButton
+              v-if="!event.archived_at"
+              variant="ghost"
+              color="neutral"
+              size="sm"
+              :loading="archivingId === event.id"
+              label="Archivia"
+              @click="archiveEvent(event)"
             />
             <UButton
               :to="`/admin/eventi/${event.id}`"
@@ -341,7 +420,13 @@ async function saveEvent() {
 
       <UCard class="h-fit border border-white/10 bg-white/[0.04]">
         <h2 class="font-display text-xl font-semibold text-white">
-          {{ editingId ? 'Modifica evento' : 'Nuovo evento' }}
+          {{
+            duplicateSourceId
+              ? 'Duplica evento'
+              : editingId
+                ? 'Modifica evento'
+                : 'Nuovo evento'
+          }}
         </h2>
         <form class="mt-6 space-y-4" @submit.prevent="saveEvent">
           <UFormField label="Titolo" name="title"

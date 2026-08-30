@@ -26,9 +26,14 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    oneSignalRestApiKey: process.env.ONESIGNAL_REST_API_KEY,
     public: {
       appEnv: process.env.APP_ENV || 'development',
       appBaseUrl: process.env.APP_BASE_URL || 'http://127.0.0.1:3000',
+      oneSignalAppId:
+        process.env.NUXT_PUBLIC_ONESIGNAL_APP_ID ||
+        process.env.ONESIGNAL_APP_ID ||
+        '',
       supabase: {
         url: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
         key: process.env.NUXT_PUBLIC_SUPABASE_KEY || '',
@@ -51,9 +56,36 @@ export default defineNuxtConfig({
       display: 'standalone',
       lang: 'it-IT',
       start_url: '/',
+      icons: [
+        {
+          src: '/favicon.svg',
+          sizes: 'any',
+          type: 'image/svg+xml',
+          purpose: 'any maskable',
+        },
+      ],
     },
     workbox: {
+      navigateFallback: '/offline',
       navigateFallbackDenylist: [/^\/admin/],
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'vrsus-fonts',
+            expiration: { maxEntries: 16, maxAgeSeconds: 60 * 60 * 24 * 30 },
+          },
+        },
+        {
+          urlPattern: /^\/(_nuxt|favicon\.svg|.*\.(?:png|jpg|jpeg|webp|svg))$/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'vrsus-assets',
+            expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7 },
+          },
+        },
+      ],
     },
   },
   app: {

@@ -173,6 +173,30 @@ useHead(() => ({
         </div>
       </header>
 
+      <section
+        v-if="event.id && event.status === 'scheduled'"
+        class="border-brand-red-500/25 bg-brand-red-500/[0.08] mt-10 flex flex-col gap-4 rounded-3xl border p-6 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div>
+          <p
+            class="text-xs font-semibold tracking-[0.18em] text-white/45 uppercase"
+          >
+            Partecipa all’evento
+          </p>
+          <p class="mt-2 text-sm leading-6 text-white/70">
+            Prenota il tuo posto. Il pagamento, quando previsto, avviene sul
+            posto.
+          </p>
+        </div>
+        <PublicEventBookingButton
+          :event-id="event.id"
+          :event-slug="slug"
+          :booking-enabled="event.booking_enabled"
+          :booking-opens-at="event.booking_opens_at"
+          :booking-closes-at="event.booking_closes_at"
+        />
+      </section>
+
       <div class="mt-16 grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
         <div>
           <div

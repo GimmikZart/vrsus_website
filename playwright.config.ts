@@ -15,18 +15,21 @@ const inheritedPath = process.env.PATH ?? process.env.Path ?? ''
 
 export default defineConfig({
   testDir: './tests/e2e',
+  timeout: 120_000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: 'html',
   use: {
     baseURL: 'http://127.0.0.1:3000',
+    navigationTimeout: 120_000,
     trace: 'on-first-retry',
   },
   webServer: {
     command: `"${nvmNodeExecutable}" node_modules/nuxt/bin/nuxt.mjs dev --host 127.0.0.1`,
     url: 'http://127.0.0.1:3000',
-    timeout: 240_000,
+    // Nuxt + Nuxt UI can need several minutes on a cold Windows cache.
+    timeout: 360_000,
     env: {
       PATH: [nodeRuntimeDirectory, inheritedPath]
         .filter(Boolean)
