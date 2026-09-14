@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('home presents the VRSUS event call to action', async ({ page }) => {
+test('la home presenta la locandina e la call to action', async ({ page }) => {
   await page.goto('/')
 
   await expect(page).toHaveTitle(/VRSUS/)
@@ -8,21 +8,33 @@ test('home presents the VRSUS event call to action', async ({ page }) => {
     page.getByRole('heading', { name: /Il gioco è il punto di partenza/i }),
   ).toBeVisible()
   await expect(
-    page.getByRole('link', { name: /Scopri il prossimo evento/i }),
+    page.getByRole('link', { name: /Scopri le postazioni/i }),
   ).toBeVisible()
+  // La locandina viene da Supabase, non da copy nel frontend. Il titolo dipende
+  // da quale evento e il prossimo, quindi si verifica che ci sia e che porti
+  // alla sua scheda, non quale evento sia (DEC-030).
+  const poster = page.getByTestId('home-next-event-title')
+  await expect(poster).toBeVisible()
+  await expect(poster).not.toBeEmpty()
+  await expect(page.getByRole('link', { name: /^Dettagli$/ })).toHaveAttribute(
+    'href',
+    /^\/eventi\/[a-z0-9-]+$/,
+  )
 })
 
-test('public event catalog and detail use the Supabase fixture', async ({
+test('il catalogo eventi e il dettaglio leggono da Supabase', async ({
   page,
 }) => {
   await page.goto('/eventi')
 
   await expect(
-    page.getByRole('heading', { name: /Eventi da vivere insieme/i }),
+    page.getByRole('link', { name: /VRSUS Demo/i }).first(),
   ).toBeVisible()
-  await expect(page.getByRole('link', { name: /VRSUS Demo/i })).toBeVisible()
 
-  await page.getByRole('link', { name: /VRSUS Demo/i }).click()
+  await page
+    .getByRole('link', { name: /VRSUS Demo/i })
+    .first()
+    .click()
   await expect(page).toHaveURL(/\/eventi\/vrsus-demo$/)
   await expect(page.getByRole('heading', { name: /VRSUS Demo/i })).toBeVisible()
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(
@@ -30,47 +42,74 @@ test('public event catalog and detail use the Supabase fixture', async ({
   )
 })
 
-test('public CMS pages render published content from Supabase views', async ({
+test('le postazioni pubbliche escludono quelle interne', async ({ page }) => {
+  await page.goto('/postazioni')
+
+  await expect(
+    page.getByRole('heading', { name: /Il catalogo delle postazioni/i }),
+  ).toBeVisible()
+  await expect(page.getByRole('link', { name: /PlayStation 5/i })).toBeVisible()
+
+  // `Postazione regia` e marcata come interna: non deve mai comparire.
+  await expect(page.getByText('Postazione regia')).toHaveCount(0)
+
+  await page.getByRole('link', { name: /PlayStation 5/i }).click()
+  await expect(page).toHaveURL(/\/postazioni\/playstation-5$/)
+  await expect(
+    page.getByRole('heading', { name: 'Tekken 8', exact: true }),
+  ).toBeVisible()
+})
+
+test('chi siamo e servizi rendono il contenuto della vetrina', async ({
   page,
 }) => {
-  await page.goto('/esperienze')
+  await page.goto('/chi-siamo')
   await expect(
-    page.getByRole('heading', { name: /Gioca come vuoi/i }),
-  ).toBeVisible()
-  await expect(page.getByText('Tekken 8 Demo')).toBeVisible()
-
-  await page.getByRole('link', { name: /Tekken 8 Demo/i }).click()
-  await expect(page).toHaveURL(/\/esperienze\/demo-tekken-8$/)
-  await expect(
-    page.getByRole('heading', { name: /Tekken 8 Demo/i }),
-  ).toBeVisible()
-
-  await page.goto('/news')
-  await expect(
-    page.getByRole('heading', { name: /Le storie di VRSUS/i }),
-  ).toBeVisible()
-  await expect(
-    page.getByRole('link', { name: /Benvenuti in VRSUS/i }),
+    page.getByRole('heading', { name: /VRSUS nasce da una convinzione/i }),
   ).toBeVisible()
 
   await page.goto('/servizi')
   await expect(
-    page.getByRole('heading', { name: /Porta VRSUS nel tuo gruppo/i }),
-  ).toBeVisible()
-  await expect(
-    page.getByRole('link', { name: /Eventi privati/i }),
+    page.getByRole('link', { name: /Team building/i }).first(),
   ).toBeVisible()
 
-  await page.getByRole('link', { name: /Eventi privati/i }).click()
+  await page
+    .getByRole('link', { name: /Team building/i })
+    .first()
+    .click()
   await expect(
-    page.getByRole('heading', { name: /Eventi privati/i }),
+    page.getByRole('heading', { name: /Team building/i }),
   ).toBeVisible()
   await expect(
     page.getByRole('button', { name: /Invia richiesta/i }),
   ).toBeVisible()
 })
 
-test('anonymous users are redirected away from protected areas', async ({
+test('la registrazione chiede il consenso solo ai minorenni', async ({
+  page,
+}) => {
+  await page.goto('/registrati')
+  // La sezione compare per reattivita lato client: serve l'idratazione.
+  await page.waitForLoadState('networkidle')
+
+  await expect(
+    page.getByRole('heading', { name: /Registrati a VRSUS/i }),
+  ).toBeVisible()
+
+  const consentHeading = page.getByRole('heading', {
+    name: /Consenso di un genitore o tutore/i,
+  })
+  await expect(consentHeading).toHaveCount(0)
+
+  // La sezione compare al variare della data di nascita, senza ricaricare.
+  await page.locator('input[type="date"]').fill('2012-04-15')
+  await expect(consentHeading).toBeVisible()
+
+  await page.locator('input[type="date"]').fill('1990-04-15')
+  await expect(consentHeading).toHaveCount(0)
+})
+
+test('gli utenti anonimi vengono respinti dalle aree protette', async ({
   page,
 }) => {
   await page.goto('/app')
@@ -83,33 +122,38 @@ test('anonymous users are redirected away from protected areas', async ({
   await expect(page).toHaveURL(/\/login\?redirect=(%2F|\/)admin/)
 })
 
-test('anonymous users cannot call the admin users endpoint', async ({
-  page,
-}) => {
-  const response = await page.request.get('/api/admin/users')
+test('gli endpoint admin rifiutano le chiamate anonime', async ({ page }) => {
+  const placeholderId = '00000000-0000-4000-8000-000000000000'
 
-  expect(response.status()).toBe(401)
+  for (const endpoint of [
+    '/api/admin/users',
+    '/api/admin/ranking-users',
+    '/api/admin/events',
+    '/api/admin/platforms',
+    '/api/admin/board',
+    '/api/admin/summary',
+    '/api/admin/dashboard',
+    // Gli endpoint dinamici verificano il ruolo prima del parametro: un id
+    // qualunque, purche ben formato, deve comunque fermarsi a 401.
+    `/api/admin/users/${placeholderId}`,
+    `/api/admin/tournaments/${placeholderId}`,
+  ]) {
+    const response = await page.request.get(endpoint)
+    expect(response.status(), endpoint).toBe(401)
+  }
 })
 
-test('anonymous users cannot access ranking adjustment tools', async ({
-  page,
-}) => {
-  await page.goto('/admin/ranking')
-  await expect(page).toHaveURL(/\/login\?redirect=\/admin\/ranking$/)
-
-  const response = await page.request.get('/api/admin/ranking-users')
-  expect(response.status()).toBe(401)
-})
-
-test('anonymous users are redirected from user subareas and admin settings', async ({
-  page,
-}) => {
+test('le sottoaree utente e admin restano protette', async ({ page }) => {
   for (const path of [
-    '/app/eventi',
+    '/app/ranking',
     '/app/tornei',
-    '/app/tornei/demo',
-    '/app/profilo',
+    '/app/bacheca',
+    '/app/impostazioni',
+    '/admin/piattaforme',
+    '/admin/giochi',
     '/admin/impostazioni',
+    '/admin/utenti',
+    '/admin/tornei',
   ]) {
     await page.goto(path)
     await expect(page).toHaveURL(

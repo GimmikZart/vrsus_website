@@ -1,6 +1,6 @@
 begin;
 
-select plan(23);
+select plan(24);
 
 select has_table('public', 'tournaments', 'tournaments table exists');
 select has_table('public', 'tournament_entries', 'tournament entries table exists');
@@ -12,8 +12,9 @@ select has_view('public', 'public_tournaments', 'public tournaments projection e
 select has_view('public', 'public_tournament_matches', 'public tournament matches projection exists');
 select has_view('public', 'public_ranking', 'public ranking projection exists');
 select has_function('public', 'register_tournament_entry', array['uuid']::text[], 'registration RPC exists');
-select has_function('public', 'create_single_elimination_bracket', array['uuid']::text[], 'bracket RPC exists');
-select has_function('public', 'record_match_result', array['uuid', 'jsonb', 'uuid']::text[], 'result RPC exists');
+select has_function('public', 'generate_tournament_schedule', array['uuid']::text[], 'schedule RPC exists');
+select has_function('public', 'record_match_results', array['uuid', 'jsonb']::text[], 'result RPC exists');
+select has_table('public', 'match_participants', 'match participants table exists');
 
 insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at)
 values
@@ -26,14 +27,37 @@ values
 insert into public.user_roles (user_id, role_id)
 select '00000000-0000-0000-0000-0000000000aa', id from public.roles where code = 'tournament_admin';
 
-create temp table tournament_fixture (id uuid primary key, event_activity_id uuid);
+-- Chiude una partita facendo vincere chi occupa il primo posto: serve tante
+-- volte e scriverlo per esteso renderebbe illeggibile il test.
+create function pg_temp.win_first_slot(p_match_id uuid)
+returns uuid
+language sql
+as $$
+  select public.record_match_results(
+    p_match_id,
+    (select jsonb_agg(jsonb_build_object(
+        'entry_id', part.entry_id,
+        'outcome', case when part.slot = 1 then 'win' else 'loss' end))
+     from public.match_participants part
+     where part.match_id = p_match_id and part.entry_id is not null));
+$$;
+
+create temp table tournament_fixture (id uuid primary key, game_id uuid);
 grant select on tournament_fixture to authenticated;
-insert into public.tournaments (event_id, slug, name, status, max_entries, checkin_required, ranking_enabled, is_public)
-select id, 'demo-tournament', 'Demo Tournament', 'registration_open', 8, true, true, true
-from public.events where slug = 'vrsus-demo'
+insert into public.tournaments (
+  event_id, platform_id, game_id, point_scheme_id, name, status,
+  max_entries, checkin_required, ranking_enabled, is_public)
+select event.id, game.platform_id, game.id, scheme.id,
+  'Demo Tournament', 'registration_open', 8, true, true, true
+from public.events event
+cross join public.games game
+cross join public.point_schemes scheme
+where event.slug = 'vrsus-demo'
+  and game.slug = 'tekken-8'
+  and scheme.slug = 'eliminazione-diretta-standard'
 returning id;
 insert into tournament_fixture (id)
-select id from public.tournaments where slug = 'demo-tournament';
+select id from public.tournaments where name = 'Demo Tournament';
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000c1', true);
 set local role authenticated;
@@ -72,7 +96,7 @@ update public.tournaments
 set status = 'registration_closed'
 where id = (select id from tournament_fixture);
 select lives_ok(
-  $$select public.create_single_elimination_bracket((select id from tournament_fixture))$$,
+  $$select public.generate_tournament_schedule((select id from tournament_fixture))$$,
   'tournament admin can create a bracket'
 );
 set local role postgres;
@@ -101,15 +125,11 @@ select public.start_tournament_match(
 select public.start_tournament_match(
   (select id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 1 and bracket_position = 2)
 );
-select public.record_match_result(
-  (select id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 1 and bracket_position = 1),
-  '{"a": 2, "b": 1}'::jsonb,
-  (select entry_a_id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 1 and bracket_position = 1)
+select pg_temp.win_first_slot(
+  (select id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 1 and bracket_position = 1)
 );
-select public.record_match_result(
-  (select id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 1 and bracket_position = 2),
-  '{"a": 2, "b": 0}'::jsonb,
-  (select entry_a_id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 1 and bracket_position = 2)
+select pg_temp.win_first_slot(
+  (select id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 1 and bracket_position = 2)
 );
 set local role postgres;
 select is(
@@ -125,15 +145,14 @@ select public.call_tournament_match(
 select public.start_tournament_match(
   (select id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 2)
 );
-select public.record_match_result(
-  (select id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 2),
-  '{"a": 3, "b": 2}'::jsonb,
-  (select entry_a_id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 2)
+select pg_temp.win_first_slot(
+  (select id from public.matches where tournament_id = (select id from tournament_fixture) and round_number = 2)
 );
 set local role postgres;
 select is((select status from public.tournaments where id = (select id from tournament_fixture)), 'completed', 'final result completes tournament');
-select is((select count(*)::integer from public.ranking_points_ledger where tournament_id = (select id from tournament_fixture)), 2, 'winner and runner-up receive ranking points');
-select is((select sum(points)::integer from public.ranking_points_ledger where tournament_id = (select id from tournament_fixture)), 160, 'ranking points follow initial scoring rules');
+-- Quattro iscritti: 100 al primo, 60 al secondo, 10 di partecipazione a testa.
+select is((select count(*)::integer from public.ranking_points_ledger where tournament_id = (select id from tournament_fixture)), 8, 'placement and participation rows are written');
+select is((select sum(points)::integer from public.ranking_points_ledger where tournament_id = (select id from tournament_fixture)), 270, 'ranking points follow the configured scheme');
 select is((select count(*)::integer from public.audit_logs where entity_type = 'match' and entity_id in (select id from public.matches where tournament_id = (select id from tournament_fixture))), 9, 'match operations and results are audited');
 
 select * from finish();

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'site' })
+
 useSeoMeta({
   title: 'Regolamento — VRSUS',
   description:

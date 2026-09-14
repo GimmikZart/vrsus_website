@@ -1,5 +1,8 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ['auth'] })
+definePageMeta({
+  layout: 'app',
+  middleware: ['auth'],
+})
 
 const {
   data: notifications,
@@ -70,9 +73,7 @@ useSeoMeta({ title: 'Notifiche — VRSUS', robots: 'noindex, nofollow' })
 </script>
 
 <template>
-  <main
-    class="mx-auto min-h-[calc(100vh-9rem)] max-w-4xl px-5 py-16 sm:px-8 lg:py-24"
-  >
+  <div>
     <div
       class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
     >
@@ -187,5 +188,5 @@ useSeoMeta({ title: 'Notifiche — VRSUS', robots: 'noindex, nofollow' })
         </p>
       </NuxtLink>
     </div>
-  </main>
+  </div>
 </template>

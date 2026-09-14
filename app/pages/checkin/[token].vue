@@ -1,9 +1,11 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'site' })
+
 const route = useRoute()
 const token = computed(() => String(route.params.token || ''))
 
 useSeoMeta({
-  title: 'Codice ingresso â€” VRSUS',
+  title: 'Codice ingresso — VRSUS',
   robots: 'noindex, nofollow',
 })
 </script>

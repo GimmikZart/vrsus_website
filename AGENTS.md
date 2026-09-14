@@ -9,11 +9,12 @@ il progetto descritto nella specifica tecnica.
 
 Prima di lavorare sul codice leggi, in questo ordine:
 
-1. `docs/technical/TECHNICAL_SPECIFICATION.md`
-2. `docs/ai/HANDOFF_PROTOCOL.md`
-3. `docs/ai/DECISIONS.md`
-4. `docs/ai/CURRENT_STATE.md`
-5. `docs/ai/NEXT_STEPS.md`
+1. `docs/technical/VRSUS_APP_SPEC_V2.md` (specifica operativa corrente)
+2. `docs/technical/TECHNICAL_SPECIFICATION.md`
+3. `docs/ai/HANDOFF_PROTOCOL.md`
+4. `docs/ai/DECISIONS.md`
+5. `docs/ai/CURRENT_STATE.md`
+6. `docs/ai/NEXT_STEPS.md`
 
 Consulta `docs/ai/WORKLOG.md` solo quando serve ricostruire informazioni storiche.
 
@@ -32,13 +33,15 @@ Il repository corrente rappresenta l'effettivo stato dell'implementazione.
 In caso di informazioni contrastanti usa questo ordine di priorità:
 
 1. istruzioni esplicite dell'utente nella sessione corrente;
-2. `docs/technical/TECHNICAL_SPECIFICATION.md`;
-3. `docs/ai/DECISIONS.md`;
-4. stato effettivo del repository;
-5. `docs/ai/CURRENT_STATE.md`;
-6. `docs/ai/NEXT_STEPS.md`;
-7. `docs/ai/WORKLOG.md`;
-8. `README.md`.
+2. `docs/technical/VRSUS_APP_SPEC_V2.md` per prodotto, rotte e UX;
+3. `docs/technical/TECHNICAL_SPECIFICATION.md` per sicurezza, RLS,
+   booking/check-in, QR e capienza;
+4. `docs/ai/DECISIONS.md`;
+5. stato effettivo del repository;
+6. `docs/ai/CURRENT_STATE.md`;
+7. `docs/ai/NEXT_STEPS.md`;
+8. `docs/ai/WORKLOG.md`;
+9. `README.md`.
 
 `HANDOFF_PROTOCOL.md` definisce il processo operativo di handoff e deve essere
 rispettato, ma non sostituisce i requisiti della Technical Specification.

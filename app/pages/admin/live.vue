@@ -39,6 +39,7 @@ type LiveResponse = {
 }
 
 definePageMeta({
+  layout: 'admin',
   middleware: ['auth', 'role'],
   requiredRoles: ['staff', 'admin', 'super_admin'] satisfies VrsusRole[],
 })
@@ -58,7 +59,7 @@ const { data, error, refresh } = await useFetch<LiveResponse>(
   },
 )
 
-useSeoMeta({ title: 'Live evento â€” VRSUS', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Live evento — VRSUS', robots: 'noindex, nofollow' })
 
 async function selectEvent() {
   await refresh()
@@ -101,9 +102,7 @@ async function markNoShow(bookingId: string) {
 </script>
 
 <template>
-  <main
-    class="mx-auto min-h-[calc(100vh-9rem)] max-w-7xl px-5 py-12 sm:px-8 lg:py-20"
-  >
+  <div>
     <div
       class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
     >
@@ -275,5 +274,5 @@ async function markNoShow(bookingId: string) {
         </p>
       </section>
     </template>
-  </main>
+  </div>
 </template>

@@ -7,6 +7,7 @@ type RankingUser = {
 }
 
 definePageMeta({
+  layout: 'admin',
   middleware: ['auth', 'role'],
   requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
 })
@@ -16,11 +17,11 @@ const { data: users, error: usersError } = await useFetch<RankingUser[]>(
   '/api/admin/ranking-users',
   { default: () => [] },
 )
-const { data: activities, error: activitiesError } = await useAsyncData(
-  'admin-ranking-activities',
+const { data: games, error: gamesError } = await useAsyncData(
+  'admin-ranking-games',
   async () => {
     const { data, error } = await client
-      .from('activities')
+      .from('games')
       .select('id, name')
       .eq('active', true)
       .is('archived_at', null)
@@ -32,7 +33,7 @@ const { data: activities, error: activitiesError } = await useAsyncData(
 
 const form = reactive({
   userId: '',
-  activityId: '',
+  gameId: '',
   points: 0,
   reason: '',
   description: '',
@@ -42,8 +43,8 @@ const message = ref('')
 const errorMessage = ref('')
 
 async function adjustPoints() {
-  if (!form.userId || !form.activityId || !form.points || !form.reason.trim()) {
-    errorMessage.value = 'Compila utente, attività, punti e motivazione.'
+  if (!form.userId || !form.gameId || !form.points || !form.reason.trim()) {
+    errorMessage.value = 'Compila utente, gioco, punti e motivazione.'
     return
   }
 
@@ -53,7 +54,7 @@ async function adjustPoints() {
   try {
     const { error } = await client.rpc('adjust_ranking_points', {
       p_user_id: form.userId,
-      p_activity_id: form.activityId,
+      p_game_id: form.gameId,
       p_points: form.points,
       p_reason: form.reason.trim(),
       p_description: form.description.trim() || undefined,
@@ -78,7 +79,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <main class="mx-auto max-w-5xl px-5 py-16 sm:px-8 lg:py-24">
+  <div>
     <NuxtLink to="/admin" class="text-sm text-white/45 hover:text-white"
       >← Console</NuxtLink
     >
@@ -105,7 +106,7 @@ useSeoMeta({
       :description="message"
     />
     <UAlert
-      v-if="errorMessage || usersError || activitiesError"
+      v-if="errorMessage || usersError || gamesError"
       class="mt-8"
       color="error"
       variant="subtle"
@@ -133,16 +134,16 @@ useSeoMeta({
             placeholder="Seleziona utente"
           />
         </UFormField>
-        <UFormField label="Attività" name="activity">
+        <UFormField label="Gioco" name="game">
           <USelect
-            v-model="form.activityId"
+            v-model="form.gameId"
             :items="
-              (activities ?? []).map((activity) => ({
-                label: activity.name,
-                value: activity.id,
+              (games ?? []).map((game) => ({
+                label: game.name,
+                value: game.id,
               }))
             "
-            placeholder="Seleziona attività"
+            placeholder="Seleziona gioco"
           />
         </UFormField>
         <UFormField label="Punti" name="points">
@@ -176,5 +177,5 @@ useSeoMeta({
       I punti negativi sono consentiti per correggere un errore. Il ledger resta
       immutabile e l’operazione conserva attore, motivo e descrizione.
     </p>
-  </main>
+  </div>
 </template>

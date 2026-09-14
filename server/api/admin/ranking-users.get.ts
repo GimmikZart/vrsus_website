@@ -2,7 +2,9 @@ import type { Database } from '~/types/database.types'
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin', 'super_admin'])
+  // Anche lo staff ne ha bisogno: e chi registra i punteggi delle sfide
+  // durante la serata, e deve poter scegliere il giocatore.
+  await requireServerAnyRole(event, ['staff', 'admin', 'super_admin'])
 
   const client = serverSupabaseServiceRole<Database>(event)
   const { data, error } = await client

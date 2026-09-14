@@ -1,210 +1,330 @@
 <script setup lang="ts">
-const {
-  data: nextEvent,
-  status: nextEventStatus,
-  error: nextEventError,
-} = await usePublicNextEvent()
+import { HOME_CONTENT } from '~~/shared/constants/site-content'
+import {
+  formatPublicEventDate,
+  formatPublicEventPrice,
+  publicEventsRobots,
+} from '~/composables/usePublicEvents'
+import {
+  usePublicPlatforms,
+  usePublicServicePages,
+} from '~/composables/usePublicCatalog'
+
+definePageMeta({ layout: 'site' })
+
+const { data: nextEvent } = await usePublicNextEvent()
+const { data: platforms } = await usePublicPlatforms()
+const { data: services } = await usePublicServicePages()
+const { isAuthenticated } = useVrsusAuth()
+
+const eventTypeLabels: Record<string, string> = {
+  birthday: 'Compleanno',
+  all_you_can_play: 'All you can play',
+  team_building: 'Team building',
+  private_day: 'Giornata privata',
+}
+
+// Da anonimo la CTA porta alla registrazione: prenotare richiede un account.
+// Da autenticato porta alla scheda della giornata in area personale, dove si
+// prenota con una conferma esplicita (DEC-042).
+const bookingTarget = computed(() =>
+  isAuthenticated.value && nextEvent.value?.id
+    ? `/app/eventi/${nextEvent.value.id}`
+    : '/registrati',
+)
+
+const previewPlatforms = computed(() => (platforms.value ?? []).slice(0, 4))
+const previewServices = computed(() => (services.value ?? []).slice(0, 4))
 
 useSeoMeta({
-  robots: publicEventsRobots(),
   title: 'VRSUS — Gioco e socialità',
-  description:
-    'VRSUS è il centro digitale per eventi, esperienze e tornei dedicati al gioco e alla socialità.',
+  description: HOME_CONTENT.hero.body,
+  robots: publicEventsRobots(),
 })
 </script>
 
 <template>
   <div>
-    <section class="relative isolate">
-      <div
-        class="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-        aria-hidden="true"
-      >
+    <!-- Locandina del prossimo evento: la prima cosa che si vede. -->
+    <section class="px-5 pt-10 pb-14 sm:px-8 lg:pt-16">
+      <div class="mx-auto max-w-7xl">
         <div
-          class="bg-brand-red-500/12 absolute top-16 left-[12%] size-64 rounded-full blur-[100px]"
-        />
-        <div
-          class="bg-brand-blue-500/12 absolute top-40 right-[8%] size-80 rounded-full blur-[120px]"
-        />
-      </div>
-      <div
-        class="mx-auto grid min-h-[620px] max-w-7xl items-center gap-16 px-5 py-20 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:py-28"
-      >
-        <div>
-          <p
-            class="text-brand-red-400 mb-7 flex items-center gap-3 text-xs font-semibold tracking-[0.28em] uppercase"
-          >
-            <span class="bg-brand-red-500 h-px w-8" />
-            VRSUS community events
-          </p>
-          <h1
-            class="font-display max-w-3xl text-5xl leading-[0.98] font-semibold tracking-[-0.04em] text-white sm:text-7xl"
-          >
-            Il gioco è il punto di partenza<span class="text-brand-red-500"
-              >.</span
+          class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12"
+        >
+          <div>
+            <p
+              class="text-brand-red-400 text-xs font-semibold tracking-[0.24em] uppercase"
             >
-          </h1>
-          <p class="mt-8 max-w-xl text-lg leading-8 text-white/62">
-            Un evento ricorrente dedicato al gioco e alla socialità, con
-            esperienze da vivere insieme e un luogo digitale per orientarsi
-            prima, durante e dopo.
-          </p>
-          <div class="mt-10 flex flex-col gap-3 sm:flex-row">
-            <UButton
-              to="/evento"
-              color="primary"
-              size="xl"
-              trailing-icon="i-lucide-arrow-right"
-              label="Scopri il prossimo evento"
-            />
-            <UButton
-              to="#esperienze"
-              color="neutral"
-              variant="ghost"
-              size="xl"
-              label="Esplora le esperienze"
-            />
-          </div>
-        </div>
+              {{ HOME_CONTENT.hero.eyebrow }}
+            </p>
+            <h1
+              class="font-display mt-4 text-4xl leading-[1.05] font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl"
+            >
+              {{ HOME_CONTENT.hero.title }}
+            </h1>
+            <p class="mt-5 max-w-xl text-base leading-7 text-white/60">
+              {{ HOME_CONTENT.hero.body }}
+            </p>
 
-        <div class="relative mx-auto w-full max-w-lg">
-          <div
-            class="border-brand-blue-500/15 bg-brand-blue-500/5 absolute -inset-5 rounded-[2.5rem] border blur-sm"
-            aria-hidden="true"
-          />
-          <div
-            class="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/10 bg-[#11141d] p-5 shadow-2xl shadow-black/50 sm:p-7"
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <UButton
+                v-if="nextEvent"
+                :to="bookingTarget"
+                color="primary"
+                size="lg"
+                label="Prenota il tuo posto"
+              />
+              <UButton
+                to="/postazioni"
+                color="neutral"
+                variant="outline"
+                size="lg"
+                label="Scopri le postazioni"
+              />
+            </div>
+          </div>
+
+          <article
+            v-if="nextEvent"
+            class="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30 sm:p-8"
           >
             <div
-              class="flex items-center justify-between text-xs text-white/45"
-            >
-              <span
-                class="font-display font-semibold tracking-[0.22em] text-white/75"
-                >VRSUS / 01</span
-              >
-              <span class="flex items-center gap-2"
-                ><span class="bg-brand-red-500 size-2 rounded-full" /> LIVE
-                SPIRIT</span
-              >
-            </div>
-            <div
-              class="mt-12 flex h-[68%] items-center justify-center rounded-2xl border border-white/8 bg-[radial-gradient(circle_at_50%_45%,rgb(47_128_237/20%),transparent_24%),linear-gradient(145deg,#171a24,#0c0e14)]"
-            >
-              <div class="text-center">
-                <div
-                  class="font-display text-8xl font-bold tracking-[-0.12em] text-white/90"
+              class="bg-brand-red-500/15 absolute -top-20 -right-16 size-52 rounded-full blur-3xl"
+            />
+            <div class="relative">
+              <div class="flex flex-wrap items-center gap-2">
+                <span
+                  class="bg-brand-red-500/15 text-brand-red-300 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase"
                 >
-                  V<span class="text-brand-red-500">/</span>
+                  Prossimo evento
+                </span>
+                <span
+                  v-if="nextEvent.event_type"
+                  class="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70"
+                >
+                  {{
+                    eventTypeLabels[nextEvent.event_type] ??
+                    nextEvent.event_type
+                  }}
+                </span>
+              </div>
+
+              <h2
+                data-testid="home-next-event-title"
+                class="font-display mt-5 text-2xl font-semibold text-white sm:text-3xl"
+              >
+                {{ nextEvent.title }}
+              </h2>
+              <p v-if="nextEvent.short_description" class="mt-3 text-white/60">
+                {{ nextEvent.short_description }}
+              </p>
+
+              <dl class="mt-6 space-y-3 text-sm">
+                <div class="flex items-start gap-3">
+                  <UIcon
+                    name="i-lucide-calendar-days"
+                    class="mt-0.5 size-4 text-white/40"
+                  />
+                  <dd class="text-white/80">
+                    {{
+                      formatPublicEventDate(
+                        nextEvent.starts_at,
+                        nextEvent.ends_at,
+                      )
+                    }}
+                  </dd>
                 </div>
-                <p
-                  class="mt-3 text-xs tracking-[0.32em] text-white/45 uppercase"
-                >
-                  play together
-                </p>
+                <div v-if="nextEvent.venue_name" class="flex items-start gap-3">
+                  <UIcon
+                    name="i-lucide-map-pin"
+                    class="mt-0.5 size-4 text-white/40"
+                  />
+                  <dd class="text-white/80">{{ nextEvent.venue_name }}</dd>
+                </div>
+                <div class="flex items-start gap-3">
+                  <UIcon
+                    name="i-lucide-ticket"
+                    class="mt-0.5 size-4 text-white/40"
+                  />
+                  <dd class="text-white/80">
+                    {{
+                      formatPublicEventPrice(
+                        nextEvent.price_cents,
+                        nextEvent.payment_required,
+                      )
+                    }}
+                  </dd>
+                </div>
+              </dl>
+
+              <div class="mt-7 flex flex-col gap-2 sm:flex-row">
+                <UButton
+                  :to="bookingTarget"
+                  color="primary"
+                  block
+                  label="Prenota ora"
+                />
+                <UButton
+                  :to="`/eventi/${nextEvent.slug}`"
+                  color="neutral"
+                  variant="ghost"
+                  block
+                  label="Dettagli"
+                />
               </div>
             </div>
-            <div class="mt-5 grid grid-cols-2 gap-3">
-              <div class="rounded-xl border border-white/8 bg-white/[0.03] p-4">
-                <p class="text-xs text-white/40">FORMAT</p>
-                <p class="mt-2 font-medium text-white/80">Esperienze</p>
-              </div>
-              <div class="rounded-xl border border-white/8 bg-white/[0.03] p-4">
-                <p class="text-xs text-white/40">ACCESSO</p>
-                <p class="mt-2 font-medium text-white/80">Per tutti</p>
-              </div>
-            </div>
+          </article>
+
+          <!-- Senza eventi pubblicati non si inventa una locandina. -->
+          <div
+            v-else
+            class="rounded-3xl border border-dashed border-white/15 bg-white/[0.02] p-8 text-center"
+          >
+            <UIcon
+              name="i-lucide-calendar-off"
+              class="mx-auto size-8 text-white/30"
+            />
+            <p class="mt-4 font-medium text-white/80">
+              Nessun evento in programma
+            </p>
+            <p class="mt-2 text-sm text-white/50">
+              Stiamo preparando la prossima data. Torna a trovarci fra poco.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="prossimo-evento" class="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-      <PublicSectionHeading
-        eyebrow="Prossimo appuntamento"
-        title="Tutto quello che serve, in un unico posto."
-        description="Il centro digitale VRSUS accompagnerà ogni appuntamento: scoperta, prenotazione e accesso alle esperienze."
-      />
-      <div class="mt-9">
-        <div
-          v-if="nextEventStatus === 'pending'"
-          class="h-52 animate-pulse rounded-3xl border border-white/10 bg-white/[0.04]"
-          aria-label="Caricamento prossimo evento"
+    <section class="border-t border-white/10 px-5 py-14 sm:px-8 lg:py-20">
+      <div class="mx-auto max-w-7xl">
+        <PublicSectionHeading
+          :eyebrow="HOME_CONTENT.intro.eyebrow"
+          :title="HOME_CONTENT.intro.title"
+          :description="HOME_CONTENT.intro.description"
         />
-        <div
-          v-else-if="nextEventError"
-          class="border-brand-red-500/30 bg-brand-red-500/10 rounded-3xl border p-6 text-sm text-white/75"
-          role="alert"
-        >
-          Non è stato possibile caricare il prossimo evento. Riprova tra poco.
-        </div>
-        <div
-          v-else-if="!nextEvent"
-          class="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-white/60"
-        >
-          Non ci sono ancora eventi pubblicati. Torna presto per scoprire il
-          prossimo appuntamento.
-        </div>
-        <PublicEventCard v-else :event="nextEvent" />
-      </div>
-    </section>
 
-    <section
-      id="esperienze"
-      class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-24"
-    >
-      <PublicSectionHeading
-        eyebrow="Il mondo VRSUS"
-        title="Esperienze diverse. La stessa voglia di esserci."
-        description="Videogiochi, VR, tavoli, tornei e attività organizzate: il catalogo cresce intorno alle persone e all'evento."
-      />
-      <div class="mt-10 grid gap-4 sm:grid-cols-3">
-        <div
-          v-for="(item, index) in [
-            'Gioco libero',
-            'Esperienze organizzate',
-            'Tornei',
-          ]"
-          :key="item"
-          class="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/20 hover:bg-white/[0.05]"
-        >
-          <span class="font-display text-sm text-white/35"
-            >0{{ index + 1 }}</span
+        <div class="mt-10 grid gap-4 sm:grid-cols-3">
+          <div
+            v-for="(step, index) in HOME_CONTENT.steps"
+            :key="step.title"
+            class="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
           >
-          <h3 class="font-display mt-14 text-xl font-semibold text-white">
-            {{ item }}
-          </h3>
-          <p class="mt-3 text-sm leading-6 text-white/50">
-            Una sezione dedicata per trovare il modo giusto di partecipare.
-          </p>
+            <div class="flex items-center gap-3">
+              <span
+                class="grid size-9 place-items-center rounded-xl bg-white/10 text-sm font-semibold text-white"
+                >{{ index + 1 }}</span
+              >
+              <UIcon :name="step.icon" class="text-brand-red-400 size-5" />
+            </div>
+            <h3 class="font-display mt-4 text-lg font-semibold text-white">
+              {{ step.title }}
+            </h3>
+            <p class="mt-2 text-sm leading-6 text-white/55">{{ step.body }}</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="servizi" class="border-y border-white/10 bg-white/[0.025]">
-      <div
-        class="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-16 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:py-20"
-      >
-        <div>
-          <p
-            class="text-brand-red-400 text-xs font-semibold tracking-[0.24em] uppercase"
-          >
-            Oltre l'evento
-          </p>
-          <h2 class="font-display mt-4 text-3xl font-semibold text-white">
-            Un'esperienza da portare anche altrove.
-          </h2>
-          <p class="mt-3 max-w-xl text-white/55">
-            Compleanni, team building ed eventi privati: scopri i servizi VRSUS
-            dedicati ai gruppi.
-          </p>
+    <section class="border-t border-white/10 px-5 py-14 sm:px-8 lg:py-20">
+      <div class="mx-auto max-w-7xl">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <PublicSectionHeading
+            :eyebrow="HOME_CONTENT.platforms.eyebrow"
+            :title="HOME_CONTENT.platforms.title"
+            :description="HOME_CONTENT.platforms.description"
+          />
+          <UButton
+            to="/postazioni"
+            color="neutral"
+            variant="outline"
+            label="Vedi tutte"
+          />
         </div>
-        <UButton
-          to="/servizi"
-          color="neutral"
-          variant="outline"
-          trailing-icon="i-lucide-arrow-up-right"
-          label="Scopri i servizi"
-        />
+
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <NuxtLink
+            v-for="platform in previewPlatforms"
+            :key="String(platform.id ?? platform.slug)"
+            :to="`/postazioni/${platform.slug}`"
+            class="group rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-white/25"
+          >
+            <span
+              class="inline-flex rounded-lg bg-white/10 px-2 py-1 text-[11px] font-semibold tracking-wider text-white/70"
+              >{{ platform.code }}</span
+            >
+            <h3 class="font-display mt-3 text-base font-semibold text-white">
+              {{ platform.name }}
+            </h3>
+            <p
+              v-if="platform.description"
+              class="mt-2 line-clamp-2 text-sm text-white/50"
+            >
+              {{ platform.description }}
+            </p>
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-t border-white/10 px-5 py-14 sm:px-8 lg:py-20">
+      <div class="mx-auto max-w-7xl">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <PublicSectionHeading
+            :eyebrow="HOME_CONTENT.services.eyebrow"
+            :title="HOME_CONTENT.services.title"
+            :description="HOME_CONTENT.services.description"
+          />
+          <UButton
+            to="/servizi"
+            color="neutral"
+            variant="outline"
+            label="Tutti i servizi"
+          />
+        </div>
+
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <NuxtLink
+            v-for="service in previewServices"
+            :key="String(service.id ?? service.slug)"
+            :to="`/servizi/${service.slug}`"
+            class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-white/25"
+          >
+            <h3 class="font-display text-base font-semibold text-white">
+              {{ service.title }}
+            </h3>
+            <p
+              v-if="service.excerpt"
+              class="mt-2 line-clamp-3 text-sm text-white/50"
+            >
+              {{ service.excerpt }}
+            </p>
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-t border-white/10 px-5 py-16 sm:px-8">
+      <div class="mx-auto max-w-3xl text-center">
+        <h2 class="font-display text-3xl font-semibold text-white sm:text-4xl">
+          {{ HOME_CONTENT.closing.title }}
+        </h2>
+        <p class="mt-4 text-white/60">{{ HOME_CONTENT.closing.body }}</p>
+        <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <UButton
+            v-if="!isAuthenticated"
+            to="/registrati"
+            color="primary"
+            size="lg"
+            label="Crea il tuo account"
+          />
+          <UButton
+            v-else
+            to="/app"
+            color="primary"
+            size="lg"
+            label="Vai all’area personale"
+          />
+        </div>
       </div>
     </section>
   </div>

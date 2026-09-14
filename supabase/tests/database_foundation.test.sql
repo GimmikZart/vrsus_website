@@ -1,11 +1,13 @@
 begin;
 
-select plan(43);
+select plan(61);
 
 select has_table('public', 'profiles', 'profiles table exists');
 select has_table('public', 'events', 'events table exists');
 select has_table('public', 'bookings', 'bookings table exists');
-select has_table('public', 'event_station_activities', 'event station activity junction exists');
+select has_table('public', 'platforms', 'platforms table exists');
+select has_table('public', 'games', 'games table exists');
+select has_table('public', 'event_platform_games', 'event platform game junction exists');
 select has_table('public', 'audit_logs', 'audit log table exists');
 
 select results_eq(
@@ -34,6 +36,40 @@ select ok(
   not has_table_privilege('authenticated', 'public.bookings', 'select'),
   'authenticated clients cannot select raw bookings with admin notes'
 );
+
+-- DEC-005 sopravvive alla rinomina del dominio: nessun grant diretto sulle
+-- tabelle che contengono capienza e note amministrative.
+select is(
+  (select count(*)::integer
+   from information_schema.role_table_grants
+   where table_schema = 'public'
+     and grantee in ('anon', 'authenticated')
+     and table_name in ('events', 'bookings', 'event_checkins', 'platforms',
+       'event_platforms', 'event_platform_games', 'platform_categories')),
+  0,
+  'the renamed event domain keeps no direct grants for browser roles'
+);
+
+-- TRUNCATE non e soggetto a RLS: nessun ruolo del browser deve averlo.
+select is(
+  (select count(*)::integer
+   from information_schema.role_table_grants grant_row
+   join information_schema.tables table_row
+     on table_row.table_schema = grant_row.table_schema
+    and table_row.table_name = grant_row.table_name
+   where grant_row.table_schema = 'public'
+     and grant_row.grantee in ('anon', 'authenticated')
+     and table_row.table_type = 'BASE TABLE'
+     and grant_row.privilege_type in ('TRUNCATE', 'REFERENCES', 'TRIGGER')),
+  0,
+  'browser roles hold no truncate, references or trigger privilege'
+);
+
+select ok(
+  not has_table_privilege('authenticated', 'public.guardian_consents', 'select'),
+  'guardian contact details are unreachable from the browser'
+);
+
 set local role anon;
 select is(
   (select count(*)::integer from public.service_inquiries),
@@ -49,13 +85,14 @@ select throws_ok(
 set local role postgres;
 
 select has_view('public', 'public_events', 'public event projection exists');
-select has_view('public', 'public_activities', 'public activity projection exists');
-select has_view('public', 'public_news_posts', 'public news projection exists');
+select has_view('public', 'public_platforms', 'public platform projection exists');
+select has_view('public', 'public_games', 'public game projection exists');
+select has_view('public', 'public_board_posts', 'public board projection exists');
 select has_view('public', 'public_service_pages', 'public service projection exists');
 select hasnt_column('public', 'public_events', 'max_capacity', 'public event projection omits max capacity');
 select hasnt_column('public', 'public_events', 'capacity_visibility', 'public event projection omits capacity visibility');
-select hasnt_column('public', 'public_news_posts', 'push_on_publish', 'public news projection omits push flag');
-select hasnt_column('public', 'public_news_posts', 'author_id', 'public news projection omits author id');
+select hasnt_column('public', 'public_platforms', 'default_capacity', 'public platform projection omits standard capacity');
+select hasnt_column('public', 'public_platforms', 'internal', 'public platform projection omits the internal flag');
 select has_function('public', 'get_my_bookings', array[]::text[], 'safe owner booking function exists');
 select has_function(
   'public',
@@ -63,6 +100,7 @@ select has_function(
   array['uuid', 'text', 'boolean']::text[],
   'super-admin role management function exists'
 );
+select has_function('public', 'is_minor', array['date']::text[], 'minor age helper exists');
 
 select is(
   (select count(*)::integer from storage.buckets where id = 'vrsus-assets' and public = true and file_size_limit = 5242880),
@@ -85,35 +123,101 @@ select ok(
 
 select is(
   (select max_capacity from public.events where slug = 'vrsus-demo'),
-  20,
+  40,
   'local demo event is seeded with the expected capacity'
 );
 select is(
-  (select count(*)::integer from public.event_stations where event_id = (select id from public.events where slug = 'vrsus-demo')),
-  4,
-  'local demo event has four station mappings'
+  (select count(*)::integer from public.event_platforms where event_id = (select id from public.events where slug = 'vrsus-demo')),
+  5,
+  'local demo event has five platform mappings'
 );
 select is(
-  (select count(*)::integer from public.event_station_activities where event_station_id in (
-    select id from public.event_stations where event_id = (select id from public.events where slug = 'vrsus-demo')
+  (select count(*)::integer from public.event_platform_games where event_platform_id in (
+    select id from public.event_platforms where event_id = (select id from public.events where slug = 'vrsus-demo')
   )),
-  4,
-  'local demo event has four station activity mappings'
+  11,
+  'local demo event has eleven platform game mappings'
+);
+
+-- La piattaforma interna esiste ma non deve mai raggiungere la vetrina.
+select ok(
+  (select count(*)::integer from public.platforms) >= 6,
+  'the local platform fixtures are seeded'
 );
 select is(
-  (select count(*)::integer from public.public_activities),
-  4,
-  'public activity projection exposes four active local activities'
-);
-select is(
-  (select count(*)::integer from public.public_news_posts),
+  (select count(*)::integer from public.platforms where internal = true and slug = 'postazione-regia'),
   1,
-  'public news projection exposes published local content'
+  'the internal platform fixture exists'
+);
+select ok(
+  not exists (select 1 from public.public_platforms where slug = 'postazione-regia'),
+  'the internal platform is absent from the public projection'
 );
 select is(
-  (select count(*)::integer from public.public_service_pages),
-  1,
-  'public service projection exposes active local content'
+  (select count(*)::integer from public.public_games game
+   join public.platforms platform on platform.id = game.platform_id
+   where platform.internal = true),
+  0,
+  'the public game projection never exposes games of internal platforms'
+);
+select ok(
+  exists (select 1 from public.public_board_posts where slug = 'benvenuti-in-vrsus')
+  and exists (select 1 from public.public_board_posts where slug = 'quale-torneo-volete'),
+  'public board projection exposes the published local fixtures'
+);
+select ok(
+  (select count(*)::integer from public.public_service_pages) >= 4,
+  'public service projection exposes the active local fixtures'
+);
+
+select ok(
+  public.is_minor((current_date - interval '10 years')::date),
+  'a ten year old is a minor'
+);
+select ok(
+  not public.is_minor((current_date - interval '30 years')::date),
+  'a thirty year old is not a minor'
+);
+select ok(
+  not public.is_minor(null),
+  'an unknown birth date is not treated as a minor'
+);
+
+-- Il motore dei punti risolve sia la posizione singola sia l'intervallo.
+select is(
+  public._scheme_points(
+    (select id from public.point_schemes where slug = 'eliminazione-diretta-standard'),
+    'placement', 1),
+  100,
+  'the knockout scheme awards one hundred points to the winner'
+);
+select is(
+  public._scheme_points(
+    (select id from public.point_schemes where slug = 'eliminazione-diretta-standard'),
+    'placement', 3),
+  35,
+  'a placement range covers third and fourth place'
+);
+select is(
+  public._scheme_points(
+    (select id from public.point_schemes where slug = 'eliminazione-diretta-standard'),
+    'participation', null),
+  10,
+  'participation points are resolved without a placement'
+);
+select is(
+  public._scheme_points(
+    (select id from public.point_schemes where slug = 'girone-standard'),
+    'match_win', null),
+  15,
+  'the group scheme awards points per match won'
+);
+select is(
+  public._scheme_points(
+    (select id from public.point_schemes where slug = 'eliminazione-diretta-standard'),
+    'placement', 99),
+  null,
+  'a placement outside every rule resolves to no points'
 );
 
 insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at)
@@ -179,42 +283,14 @@ select is(
   'super-admin role assignment is persisted'
 );
 
-with fixture as (
-  insert into public.events (slug, title, starts_at, ends_at)
-  values
-    ('rls-fixture-event-a', 'Fixture event A', timezone('utc', now()), timezone('utc', now()) + interval '1 hour'),
-    ('rls-fixture-event-b', 'Fixture event B', timezone('utc', now()), timezone('utc', now()) + interval '1 hour')
-  returning id, slug
-), station as (
-  insert into public.stations (slug, name)
-  values ('rls-fixture-station', 'Fixture station')
-  returning id
-), activity as (
-  insert into public.activities (slug, name)
-  values ('rls-fixture-activity', 'Fixture activity')
-  returning id
-), event_station as (
-  insert into public.event_stations (event_id, station_id)
-  select fixture.id, station.id
-  from fixture cross join station
-  where fixture.slug = 'rls-fixture-event-a'
-  returning id
-), event_activity as (
-  insert into public.event_activities (event_id, activity_id, access_mode)
-  select fixture.id, activity.id, 'free_play'
-  from fixture cross join activity
-  where fixture.slug = 'rls-fixture-event-b'
-  returning id
-)
+-- Il nickname e unico a livello di database, non solo di interfaccia.
 select throws_ok(
-  format(
-    'insert into public.event_station_activities (event_station_id, event_activity_id) values (%L::uuid, %L::uuid)',
-    (select id from event_station),
-    (select id from event_activity)
-  ),
-  '23514',
-  'event station and event activity must belong to the same event',
-  'junction rejects resources from different events'
+  $$update public.profiles
+    set nickname = (select nickname from public.profiles where id = '00000000-0000-0000-0000-0000000000b1')
+    where id = '00000000-0000-0000-0000-0000000000a1'$$,
+  '23505',
+  null,
+  'a duplicate nickname is rejected by the unique index'
 );
 
 select * from finish();

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
 
+definePageMeta({ layout: 'site' })
+
 const route = useRoute()
 const slug = String(route.params.slug)
 const supabase = useSupabaseClient<Database>()
@@ -24,33 +26,54 @@ const {
     return null
   }
 
-  const [stationsResult, activitiesResult] = await Promise.all([
-    supabase
-      .from('public_event_stations')
-      .select('*')
-      .eq('event_id', event.id)
-      .order('sort_order', { ascending: true }),
-    supabase
-      .from('public_event_activities')
-      .select('*')
-      .eq('event_id', event.id)
-      .order('starts_at', { ascending: true }),
-  ])
+  const { data: platformRows, error: platformsError } = await supabase
+    .from('public_event_platforms')
+    .select('*')
+    .eq('event_id', event.id)
+    .order('sort_order', { ascending: true })
 
-  if (stationsResult.error || activitiesResult.error) {
-    throw new Error('Impossibile caricare le esperienze dell’evento.')
+  if (platformsError) {
+    throw new Error('Impossibile caricare le postazioni dell’evento.')
   }
 
-  return {
-    event,
-    stations: stationsResult.data ?? [],
-    activities: activitiesResult.data ?? [],
+  const platformIds = (platformRows ?? [])
+    .map((item) => item.id)
+    .filter((id): id is string => Boolean(id))
+
+  // Senza postazioni non ci sono giochi: si evita una query con lista vuota.
+  let gameRows: Database['public']['Views']['public_event_platform_games']['Row'][] =
+    []
+  if (platformIds.length) {
+    const { data, error: gamesError } = await supabase
+      .from('public_event_platform_games')
+      .select('*')
+      .in('event_platform_id', platformIds)
+      .order('sort_order', { ascending: true })
+
+    if (gamesError) {
+      throw new Error('Impossibile caricare i giochi dell’evento.')
+    }
+    gameRows = data ?? []
   }
+
+  return { event, platforms: platformRows ?? [], games: gameRows }
 })
 
 const event = computed(() => detail.value?.event ?? null)
-const stations = computed(() => detail.value?.stations ?? [])
-const activities = computed(() => detail.value?.activities ?? [])
+const platforms = computed(() => detail.value?.platforms ?? [])
+
+// I giochi si raggruppano sotto la postazione su cui sono disponibili.
+const gamesByPlatform = computed(() => {
+  const map: Record<string, string[]> = {}
+  for (const game of detail.value?.games ?? []) {
+    if (!game.event_platform_id || !game.game_name) continue
+    map[game.event_platform_id] = [
+      ...(map[game.event_platform_id] ?? []),
+      game.game_name,
+    ]
+  }
+  return map
+})
 const pageTitle = computed(() =>
   event.value?.seo_title || event.value?.title
     ? `${event.value?.seo_title || event.value?.title} — VRSUS`
@@ -170,6 +193,7 @@ useHead(() => ({
               formatPublicEventPrice(event.price_cents, event.payment_required)
             }}
           </span>
+          <UiVrsusArciChip :required="event.arci_required" />
         </div>
       </header>
 
@@ -186,6 +210,13 @@ useHead(() => ({
           <p class="mt-2 text-sm leading-6 text-white/70">
             Prenota il tuo posto. Il pagamento, quando previsto, avviene sul
             posto.
+          </p>
+          <p
+            v-if="event.arci_required"
+            class="mt-2 text-sm leading-6 text-amber-200/85"
+          >
+            Per partecipare serve la tessera ARCI in corso di validità. Se non
+            ce l’hai puoi farla da noi all’ingresso.
           </p>
         </div>
         <PublicEventBookingButton
@@ -215,53 +246,37 @@ useHead(() => ({
 
         <aside class="space-y-5">
           <section
-            v-if="stations.length"
+            v-if="platforms.length"
             class="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
           >
             <h2 class="font-display text-xl font-semibold text-white">
-              Postazioni
+              Postazioni e giochi
             </h2>
             <ul class="mt-5 space-y-4">
               <li
-                v-for="station in stations"
-                :key="station.id || station.name || 'station'"
+                v-for="platform in platforms"
+                :key="platform.id || platform.name || 'platform'"
                 class="border-t border-white/10 pt-4 first:border-0 first:pt-0"
               >
-                <p class="font-medium text-white/85">{{ station.name }}</p>
+                <div class="flex items-center gap-2">
+                  <span
+                    v-if="platform.code"
+                    class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-white/70"
+                    >{{ platform.code }}</span
+                  >
+                  <p class="font-medium text-white/85">{{ platform.name }}</p>
+                </div>
                 <p
-                  v-if="station.description"
+                  v-if="platform.description"
                   class="mt-1 text-sm leading-6 text-white/50"
                 >
-                  {{ station.description }}
-                </p>
-              </li>
-            </ul>
-          </section>
-          <section
-            v-if="activities.length"
-            class="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-          >
-            <h2 class="font-display text-xl font-semibold text-white">
-              Attività
-            </h2>
-            <ul class="mt-5 space-y-4">
-              <li
-                v-for="activity in activities"
-                :key="activity.id || activity.name || 'activity'"
-                class="border-t border-white/10 pt-4 first:border-0 first:pt-0"
-              >
-                <p class="font-medium text-white/85">{{ activity.name }}</p>
-                <p
-                  v-if="activity.category_name"
-                  class="text-brand-blue-300 mt-1 text-xs tracking-wide uppercase"
-                >
-                  {{ activity.category_name }}
+                  {{ platform.description }}
                 </p>
                 <p
-                  v-if="activity.description"
-                  class="mt-1 text-sm leading-6 text-white/50"
+                  v-if="platform.id && gamesByPlatform[platform.id]?.length"
+                  class="mt-2 text-sm text-white/45"
                 >
-                  {{ activity.description }}
+                  {{ gamesByPlatform[platform.id]?.join(' · ') }}
                 </p>
               </li>
             </ul>

@@ -1,6 +1,6 @@
 begin;
 
-select plan(13);
+select plan(14);
 
 select has_function(
   'public',
@@ -67,33 +67,41 @@ select is(
 select is(
   (
     select count(*)::integer
-    from public.event_stations station
-    join public.events event on event.id = station.event_id
+    from public.event_platforms platform
+    join public.events event on event.id = platform.event_id
     where event.slug = 'duplicated-event-fixture'
   ),
-  4,
-  'duplicated event copies station mappings'
+  5,
+  'duplicated event copies platform mappings'
+);
+-- Le associazioni gioco/piattaforma devono agganciarsi alle righe nuove, non a
+-- quelle dell'evento di origine.
+select is(
+  (
+    select count(*)::integer
+    from public.event_platform_games link
+    join public.event_platforms platform on platform.id = link.event_platform_id
+    join public.events event on event.id = platform.event_id
+    where event.slug = 'duplicated-event-fixture'
+  ),
+  11,
+  'duplicated event copies platform game links'
 );
 select is(
   (
     select count(*)::integer
-    from public.event_activities activity
-    join public.events event on event.id = activity.event_id
-    where event.slug = 'duplicated-event-fixture'
+    from public.event_platform_games link
+    join public.event_platforms platform on platform.id = link.event_platform_id
+    join public.events event on event.id = platform.event_id
+    where event.slug = 'vrsus-demo'
   ),
-  4,
-  'duplicated event copies activity mappings'
+  11,
+  'the source event keeps its own platform game links'
 );
 select is(
-  (
-    select count(*)::integer
-    from public.event_station_activities link
-    join public.event_stations station on station.id = link.event_station_id
-    join public.events event on event.id = station.event_id
-    where event.slug = 'duplicated-event-fixture'
-  ),
-  4,
-  'duplicated event copies station-activity links'
+  (select event_type from public.events where slug = 'duplicated-event-fixture'),
+  (select event_type from public.events where slug = 'vrsus-demo'),
+  'duplicated event preserves the event type'
 );
 
 set local role authenticated;

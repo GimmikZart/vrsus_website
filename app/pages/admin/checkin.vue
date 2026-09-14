@@ -4,6 +4,7 @@ import type { VrsusRole } from '~/composables/useVrsusAuth'
 import { getBookingErrorCode } from '~/composables/useBookings'
 
 definePageMeta({
+  layout: 'admin',
   middleware: ['auth', 'role'],
   requiredRoles: ['staff', 'admin', 'super_admin'] satisfies VrsusRole[],
 })
@@ -21,8 +22,35 @@ const result = ref<
 const errorMessage = ref('')
 let scannerControls: { stop: () => void } | undefined
 
+// Tessera ARCI: alla porta si vede subito se la giornata la richiede e se il
+// socio ce l ha. Se manca, la si registra da qui appena la mostra.
+const arciPending = ref(false)
+const arciError = ref('')
+
+async function registerArciCard() {
+  const userId = result.value?.user_id
+  if (!userId) return
+
+  arciPending.value = true
+  arciError.value = ''
+
+  const { error } = await client.rpc('set_arci_card', {
+    p_user_id: userId,
+    p_valid: true,
+  })
+
+  arciPending.value = false
+
+  if (error) {
+    arciError.value = 'Non e stato possibile registrare la tessera.'
+    return
+  }
+
+  if (result.value) result.value = { ...result.value, arci_card_valid: true }
+}
+
 useSeoMeta({
-  title: 'Check-in â€” VRSUS',
+  title: 'Check-in — VRSUS',
   robots: 'noindex, nofollow',
 })
 
@@ -53,6 +81,7 @@ async function checkIn() {
 
   pending.value = true
   errorMessage.value = ''
+  arciError.value = ''
   result.value = null
 
   const { data, error } = await client.rpc('check_in_booking', {
@@ -108,9 +137,7 @@ onBeforeUnmount(() => scannerControls?.stop())
 </script>
 
 <template>
-  <main
-    class="mx-auto min-h-[calc(100vh-9rem)] max-w-3xl px-5 py-12 sm:px-8 lg:py-20"
-  >
+  <div>
     <div
       class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
     >
@@ -197,13 +224,70 @@ onBeforeUnmount(() => scannerControls?.stop())
       </UCard>
     </div>
 
-    <UAlert
-      v-if="result"
-      class="mt-6"
-      color="success"
-      variant="subtle"
-      title="Check-in completato"
-      :description="`${result.event_title} · Pagamento: ${result.payment_status}`"
-    />
-  </main>
+    <template v-if="result">
+      <UAlert
+        class="mt-6"
+        color="success"
+        variant="subtle"
+        title="Check-in completato"
+        :description="`${result.event_title} · Pagamento: ${result.payment_status}`"
+      />
+
+      <!--
+        La tessera e il secondo controllo della porta: senza, per le serate
+        pubbliche la persona non puo entrare finche non la fa.
+      -->
+      <div
+        v-if="result.arci_required"
+        class="mt-4 flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between"
+        :class="
+          result.arci_card_valid
+            ? 'border-emerald-500/30 bg-emerald-500/[0.06]'
+            : 'border-amber-500/40 bg-amber-500/[0.07]'
+        "
+      >
+        <div class="flex items-start gap-3">
+          <UIcon
+            name="i-lucide-id-card"
+            class="mt-0.5 size-5 shrink-0"
+            :class="
+              result.arci_card_valid ? 'text-emerald-300' : 'text-amber-300'
+            "
+          />
+          <div>
+            <p class="font-medium text-white">
+              {{
+                result.arci_card_valid
+                  ? 'Tessera ARCI valida'
+                  : 'Tessera ARCI mancante'
+              }}
+            </p>
+            <p class="mt-1 text-sm text-white/55">
+              {{
+                result.arci_card_valid
+                  ? 'Il socio risulta tesserato per la stagione in corso.'
+                  : 'Questa giornata richiede la tessera. Registrala quando la persona la mostra.'
+              }}
+            </p>
+            <p v-if="arciError" class="mt-2 text-sm text-red-300">
+              {{ arciError }}
+            </p>
+          </div>
+        </div>
+        <UButton
+          v-if="!result.arci_card_valid"
+          color="primary"
+          size="lg"
+          class="shrink-0"
+          :loading="arciPending"
+          label="Tessera vista"
+          @click="registerArciCard"
+        />
+      </div>
+
+      <p v-else class="mt-4 text-sm text-white/40">
+        Questa giornata non richiede la tessera ARCI.
+      </p>
+    </template>
+  </div>
 </template>

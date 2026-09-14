@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
 
+definePageMeta({ layout: 'site' })
+
 const route = useRoute()
 const slug = String(route.params.slug)
 const supabase = useSupabaseClient<Database>()

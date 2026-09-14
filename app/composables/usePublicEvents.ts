@@ -1,15 +1,15 @@
 import type { Database } from '~/types/database.types'
 
 export type PublicEvent = Database['public']['Views']['public_events']['Row']
-export type PublicEventStation =
-  Database['public']['Views']['public_event_stations']['Row']
-export type PublicEventActivity =
-  Database['public']['Views']['public_event_activities']['Row']
+export type PublicEventPlatform =
+  Database['public']['Views']['public_event_platforms']['Row']
+export type PublicEventPlatformGame =
+  Database['public']['Views']['public_event_platform_games']['Row']
 
 export interface PublicEventDetail {
   event: PublicEvent
-  stations: PublicEventStation[]
-  activities: PublicEventActivity[]
+  platforms: PublicEventPlatform[]
+  games: PublicEventPlatformGame[]
 }
 
 export function usePublicEvents() {
@@ -66,28 +66,35 @@ export async function fetchPublicEventDetail(
     return null
   }
 
-  const [stationsResult, activitiesResult] = await Promise.all([
-    supabase
-      .from('public_event_stations')
-      .select('*')
-      .eq('event_id', event.id)
-      .order('sort_order', { ascending: true }),
-    supabase
-      .from('public_event_activities')
-      .select('*')
-      .eq('event_id', event.id)
-      .order('starts_at', { ascending: true }),
-  ])
+  const { data: platforms, error: platformsError } = await supabase
+    .from('public_event_platforms')
+    .select('*')
+    .eq('event_id', event.id)
+    .order('sort_order', { ascending: true })
 
-  if (stationsResult.error || activitiesResult.error) {
-    throw new Error('Impossibile caricare le esperienze dell’evento.')
+  if (platformsError) {
+    throw new Error('Impossibile caricare le postazioni dell’evento.')
   }
 
-  return {
-    event,
-    stations: stationsResult.data ?? [],
-    activities: activitiesResult.data ?? [],
+  const platformIds = (platforms ?? []).map((item) => item.id).filter(Boolean)
+
+  // Senza postazioni non esistono giochi da mostrare: si evita una query
+  // con una lista vuota, che PostgREST rifiuterebbe.
+  let games: PublicEventPlatformGame[] = []
+  if (platformIds.length) {
+    const { data, error } = await supabase
+      .from('public_event_platform_games')
+      .select('*')
+      .in('event_platform_id', platformIds as string[])
+      .order('sort_order', { ascending: true })
+
+    if (error) {
+      throw new Error('Impossibile caricare i giochi dell’evento.')
+    }
+    games = data ?? []
   }
+
+  return { event, platforms: platforms ?? [], games }
 }
 
 export function formatPublicEventDate(

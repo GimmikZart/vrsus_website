@@ -3,6 +3,7 @@ import type { Database, Json } from '~/types/database.types'
 import type { VrsusRole } from '~/composables/useVrsusAuth'
 
 definePageMeta({
+  layout: 'admin',
   middleware: ['auth', 'role'],
   requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
 })
@@ -24,6 +25,98 @@ const {
   if (error) throw error
   return data ?? []
 })
+
+// --- Tessere ARCI ----------------------------------------------------------
+// La validita non e un campo che qualcuno deve ricordarsi di azzerare: una
+// tessera vale finche siamo nella stagione in cui e stata vista. Qui si decide
+// quando comincia la stagione nuova, e si puo chiuderla subito a mano.
+const {
+  data: arci,
+  refresh: refreshArci,
+  error: arciLoadError,
+} = await useAsyncData('admin-arci-membership', async () => {
+  const { data, error } = await client.rpc('arci_membership_overview')
+  if (error) throw error
+  return data?.[0] ?? null
+})
+
+const MONTHS = [
+  'gennaio',
+  'febbraio',
+  'marzo',
+  'aprile',
+  'maggio',
+  'giugno',
+  'luglio',
+  'agosto',
+  'settembre',
+  'ottobre',
+  'novembre',
+  'dicembre',
+]
+
+const renewal = reactive({
+  month: arci.value?.renewal_month ?? 10,
+  day: arci.value?.renewal_day ?? 1,
+})
+
+const arciPending = ref(false)
+const arciMessage = ref('')
+const arciError = ref('')
+const askReset = ref(false)
+
+const seasonStartLabel = computed(() => {
+  const value = arci.value?.season_start
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '—'
+  return new Intl.DateTimeFormat('it-IT', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+})
+
+async function saveRenewal() {
+  arciPending.value = true
+  arciMessage.value = ''
+  arciError.value = ''
+
+  const { error } = await client.rpc('set_arci_renewal', {
+    p_month: Number(renewal.month),
+    p_day: Number(renewal.day),
+  })
+
+  arciPending.value = false
+
+  if (error) {
+    arciError.value = 'Data di rinnovo non valida.'
+    return
+  }
+
+  arciMessage.value = 'Data di rinnovo aggiornata.'
+  await refreshArci()
+}
+
+async function resetCards() {
+  arciPending.value = true
+  arciMessage.value = ''
+  arciError.value = ''
+
+  const { error } = await client.rpc('reset_arci_cards')
+
+  arciPending.value = false
+  askReset.value = false
+
+  if (error) {
+    arciError.value = 'Non e stato possibile azzerare le tessere.'
+    return
+  }
+
+  arciMessage.value =
+    'Tessere azzerate: da adesso vanno mostrate di nuovo alla porta.'
+  await refreshArci()
+}
 
 const form = reactive({ key: '', value: '{}' })
 const pending = ref(false)
@@ -84,9 +177,7 @@ useSeoMeta({ title: 'Impostazioni — Admin VRSUS', robots: 'noindex, nofollow' 
 </script>
 
 <template>
-  <main
-    class="mx-auto min-h-[calc(100vh-9rem)] max-w-6xl px-5 py-16 sm:px-8 lg:py-24"
-  >
+  <div>
     <NuxtLink to="/admin" class="text-sm text-white/50 hover:text-white"
       >← Console</NuxtLink
     >
@@ -119,6 +210,112 @@ useSeoMeta({ title: 'Impostazioni — Admin VRSUS', robots: 'noindex, nofollow' 
       variant="subtle"
       :description="errorMessage"
     />
+
+    <section class="mt-10">
+      <UCard class="border border-white/10 bg-white/[0.04]">
+        <template #header>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="font-display text-xl font-semibold text-white">
+              Tessere ARCI
+            </h2>
+            <div v-if="arci" class="text-right">
+              <p class="font-display text-2xl font-semibold text-white">
+                {{ arci.valid_count
+                }}<span class="text-base text-white/30"
+                  >/{{ arci.member_count }}</span
+                >
+              </p>
+              <p class="text-[11px] tracking-wide text-white/40 uppercase">
+                Tesserati
+              </p>
+            </div>
+          </div>
+        </template>
+
+        <UAlert
+          v-if="arciLoadError"
+          color="error"
+          variant="subtle"
+          description="Non è stato possibile leggere lo stato delle tessere."
+        />
+
+        <div v-else class="space-y-5">
+          <p class="max-w-2xl text-sm leading-6 text-white/55">
+            Una tessera vale finché siamo nella stagione associativa in cui lo
+            staff l’ha vista. La stagione corrente è cominciata il
+            <span class="text-white/85">{{ seasonStartLabel }}</span
+            >: chi è stato registrato prima risulta da rinnovare.
+          </p>
+
+          <div class="flex flex-wrap items-end gap-3">
+            <UFormField label="Rinnovo annuale" name="renewalDay">
+              <select v-model.number="renewal.day" class="vrsus-select">
+                <option v-for="day in 31" :key="day" :value="day">
+                  {{ day }}
+                </option>
+              </select>
+            </UFormField>
+            <UFormField label="Mese" name="renewalMonth">
+              <select v-model.number="renewal.month" class="vrsus-select">
+                <option
+                  v-for="(label, index) in MONTHS"
+                  :key="label"
+                  :value="index + 1"
+                >
+                  {{ label }}
+                </option>
+              </select>
+            </UFormField>
+            <UButton
+              color="primary"
+              :loading="arciPending"
+              label="Salva data"
+              @click="saveRenewal"
+            />
+          </div>
+
+          <div class="border-t border-white/10 pt-5">
+            <p class="text-sm text-white/55">
+              Se la scadenza arriva prima del previsto puoi chiudere la stagione
+              adesso: tutte le tessere tornano da mostrare, senza perdere lo
+              storico.
+            </p>
+            <div class="mt-3 flex flex-wrap items-center gap-3">
+              <template v-if="askReset">
+                <span class="text-sm text-white/70"
+                  >Azzerare ora tutte le tessere?</span
+                >
+                <UButton
+                  color="error"
+                  :loading="arciPending"
+                  label="Conferma azzeramento"
+                  @click="resetCards"
+                />
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                  label="Annulla"
+                  @click="askReset = false"
+                />
+              </template>
+              <UButton
+                v-else
+                color="neutral"
+                variant="outline"
+                icon="i-lucide-rotate-ccw"
+                label="Azzera tessere adesso"
+                @click="askReset = true"
+              />
+            </div>
+          </div>
+
+          <p v-if="arciMessage" class="text-sm text-green-400">
+            {{ arciMessage }}
+          </p>
+          <p v-if="arciError" class="text-sm text-red-400">{{ arciError }}</p>
+        </div>
+      </UCard>
+    </section>
 
     <section
       class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.8fr)]"
@@ -194,5 +391,5 @@ useSeoMeta({ title: 'Impostazioni — Admin VRSUS', robots: 'noindex, nofollow' 
         </div>
       </div>
     </section>
-  </main>
+  </div>
 </template>

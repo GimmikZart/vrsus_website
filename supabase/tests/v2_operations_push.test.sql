@@ -3,11 +3,11 @@ begin;
 select plan(25);
 
 select has_table('public', 'notification_preferences', 'notification preferences table exists');
-select has_view('public', 'public_ranking_by_activity', 'activity ranking projection exists');
+select has_view('public', 'public_ranking_by_game', 'game ranking projection exists');
 select has_function('public', 'call_tournament_match', array['uuid']::text[], 'call match RPC exists');
 select has_function('public', 'assign_match_station', array['uuid', 'uuid']::text[], 'assign station RPC exists');
 select has_function('public', 'start_tournament_match', array['uuid']::text[], 'start match RPC exists');
-select has_function('public', 'amend_match_score', array['uuid', 'jsonb']::text[], 'amend score RPC exists');
+select has_function('public', 'amend_match_results', array['uuid', 'jsonb']::text[], 'amend results RPC exists');
 select has_function('public', 'adjust_ranking_points', array['uuid', 'uuid', 'integer', 'text', 'text']::text[], 'ranking adjustment RPC exists');
 
 insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at)
@@ -20,24 +20,29 @@ insert into public.user_roles (user_id, role_id)
 select '00000000-0000-0000-0000-0000000000da', id from public.roles where code = 'admin';
 
 insert into public.tournaments (
-  event_id, event_activity_id, slug, name, status, checkin_required, ranking_enabled, is_public
+  event_id, platform_id, game_id, point_scheme_id, name, status,
+  checkin_required, ranking_enabled, is_public
 )
 select
   event.id,
-  event_activity.id,
-  'operations-tournament',
+  game.platform_id,
+  game.id,
+  scheme.id,
   'Operations Tournament',
   'checkin',
   false,
   true,
   true
 from public.events event
-join public.event_activities event_activity on event_activity.event_id = event.id
+cross join public.games game
+cross join public.point_schemes scheme
 where event.slug = 'vrsus-demo'
+  and game.slug = 'tekken-8'
+  and scheme.slug = 'eliminazione-diretta-standard'
 limit 1;
 
 select is(
-  (select status from public.tournaments where slug = 'operations-tournament'),
+  (select status from public.tournaments where name = 'Operations Tournament'),
   'checkin',
   'tournament check-in status is accepted'
 );
@@ -49,7 +54,7 @@ cross join (values
   ('Operations One', 1),
   ('Operations Two', 2)
 ) as fixture(display_name, seed)
-where tournament.slug = 'operations-tournament';
+where tournament.name = 'Operations Tournament';
 
 insert into public.tournament_entry_members (entry_id, user_id, is_captain)
 select entry.id,
@@ -57,24 +62,27 @@ select entry.id,
   true
 from public.tournament_entries entry
 join public.tournaments tournament on tournament.id = entry.tournament_id
-where tournament.slug = 'operations-tournament';
+where tournament.name = 'Operations Tournament';
 
-insert into public.matches (tournament_id, round_number, bracket_position, entry_a_id, entry_b_id, status)
-select tournament.id, 1, 1,
-  (select entry_a.id from public.tournament_entries entry_a where entry_a.tournament_id = tournament.id and entry_a.seed = 1 limit 1),
-  (select entry_b.id from public.tournament_entries entry_b where entry_b.tournament_id = tournament.id and entry_b.seed = 2 limit 1),
-  'ready'
-from public.tournaments tournament
-join public.tournament_entries entry on entry.tournament_id = tournament.id
-where tournament.slug = 'operations-tournament'
-group by tournament.id;
+-- Una partita ha N posti: qui sono due, scritti in match_participants.
+with created as (
+  insert into public.matches (tournament_id, round_number, bracket_position, status)
+  select tournament.id, 1, 1, 'ready'
+  from public.tournaments tournament
+  where tournament.name = 'Operations Tournament'
+  returning id, tournament_id
+)
+insert into public.match_participants (match_id, entry_id, slot)
+select created.id, entry.id, entry.seed::smallint
+from created
+join public.tournament_entries entry on entry.tournament_id = created.tournament_id;
 
-create temp table operations_fixture (match_id uuid, station_id uuid);
+create temp table operations_fixture (match_id uuid, platform_id uuid);
 grant select on operations_fixture to authenticated;
-insert into operations_fixture (match_id, station_id)
+insert into operations_fixture (match_id, platform_id)
 select
-  (select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'),
-  (select station.id from public.event_stations station join public.events event on event.id = station.event_id where event.slug = 'vrsus-demo' limit 1);
+  (select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament'),
+  (select platform.id from public.event_platforms platform join public.events event on event.id = platform.event_id where event.slug = 'vrsus-demo' limit 1);
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000da', true);
 set local role authenticated;
@@ -82,79 +90,93 @@ set local role authenticated;
 select lives_ok(
   $$select public.assign_match_station(
     (select match_id from operations_fixture),
-    (select station_id from operations_fixture)
+    (select platform_id from operations_fixture)
   )$$,
   'tournament admin can assign a station to a match'
 );
 select ok(
-  (select event_station_id is not null from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'),
+  (select event_platform_id is not null from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament'),
   'match station assignment is persisted'
 );
 
 select ok(
-  (public.call_tournament_match((select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'))->>'match_id') is not null,
+  (public.call_tournament_match((select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament'))->>'match_id') is not null,
   'tournament admin can call both players'
 );
 select is(
-  (select match.status from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'),
+  (select match.status from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament'),
   'called',
   'calling players moves match to called'
 );
 set local role postgres;
 select is(
-  (select count(*)::integer from public.notifications where metadata->>'match_id' = (select match.id::text from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament')),
+  (select count(*)::integer from public.notifications where metadata->>'match_id' = (select match.id::text from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament')),
   2,
   'calling players creates one in-app notification per player'
 );
 set local role authenticated;
 select lives_ok(
-  $$select public.call_tournament_match((select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'))$$,
+  $$select public.call_tournament_match((select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament'))$$,
   'calling an already-called match is idempotent'
 );
 set local role postgres;
 select is(
-  (select count(*)::integer from public.notifications where metadata->>'match_id' = (select match.id::text from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament')),
+  (select count(*)::integer from public.notifications where metadata->>'match_id' = (select match.id::text from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament')),
   2,
   'idempotent call does not duplicate notifications'
 );
 set local role authenticated;
 
 select lives_ok(
-  $$select public.start_tournament_match((select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'))$$,
+  $$select public.start_tournament_match((select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament'))$$,
   'called match can be started'
 );
 select is(
-  (select match.status from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'),
+  (select match.status from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament'),
   'running',
   'starting a match moves it to running'
 );
 update public.tournaments
 set status = 'running'
-where slug = 'operations-tournament';
+where name = 'Operations Tournament';
 
 select lives_ok(
-  $$select public.record_match_result(
-    (select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'),
-    '{"one": 2, "two": 0}'::jsonb,
-    (select entry.id from public.tournament_entries entry join public.tournaments tournament on tournament.id = entry.tournament_id where tournament.slug = 'operations-tournament' and entry.seed = 1)
+  $$select public.record_match_results(
+    (select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament'),
+    (select jsonb_agg(jsonb_build_object(
+        'entry_id', entry.id,
+        'score', case when entry.seed = 1 then 2 else 0 end,
+        'outcome', case when entry.seed = 1 then 'win' else 'loss' end))
+     from public.tournament_entries entry
+     join public.tournaments tournament on tournament.id = entry.tournament_id
+     where tournament.name = 'Operations Tournament')
   )$$,
   'completed match records a winner and ranking points'
 );
 select is(
-  (select status from public.tournaments where slug = 'operations-tournament'),
+  (select status from public.tournaments where name = 'Operations Tournament'),
   'completed',
   'final match completes the tournament'
 );
 select lives_ok(
-  $$select public.amend_match_score(
-    (select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'),
-    '{"one": 3, "two": 0}'::jsonb
+  $$select public.amend_match_results(
+    (select match.id from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.name = 'Operations Tournament'),
+    (select jsonb_agg(jsonb_build_object(
+        'entry_id', entry.id,
+        'score', case when entry.seed = 1 then 3 else 0 end))
+     from public.tournament_entries entry
+     join public.tournaments tournament on tournament.id = entry.tournament_id
+     where tournament.name = 'Operations Tournament')
   )$$,
   'admin can amend a completed match score without changing the winner'
 );
 select is(
-  (select score_payload->>'one' from public.matches match join public.tournaments tournament on tournament.id = match.tournament_id where tournament.slug = 'operations-tournament'),
-  '3',
+  (select part.score::integer
+   from public.match_participants part
+   join public.tournament_entries entry on entry.id = part.entry_id
+   join public.tournaments tournament on tournament.id = entry.tournament_id
+   where tournament.name = 'Operations Tournament' and entry.seed = 1),
+  3,
   'amended match score is persisted'
 );
 

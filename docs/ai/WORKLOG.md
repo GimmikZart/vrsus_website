@@ -585,3 +585,604 @@ Le milestone implementative locali risultano verificate automaticamente. Il
 repository è pronto per la verifica manuale delle nuove azioni admin e per il
 passaggio a QUALITY; non viene marcato `IMPLEMENTAZIONE COMPLETATA` finché i
 gate manuali e remoti restano aperti.
+
+## 2026-09-10 - Ridefinizione prodotto V2
+
+Il proprietario ha ridefinito vetrina, app utente e console admin. Prima della
+redazione sono state chiuse quattro ambiguita con domanda diretta: piattaforma
+e postazione sono la stessa entita; il ranking espone punti e record per gioco;
+i punteggi arcade li registra solo lo staff; le console admin esistenti vengono
+assorbite dove ha senso.
+
+Prodotto: `docs/technical/VRSUS_APP_SPEC_V2.md`, con modello dati, mappa delle
+rotte, specifica schermata per schermata in ottica mobile-first, roadmap in
+dieci fasi con Definition of Done, impatti sul codice esistente e rischi.
+
+Decisioni registrate: DEC-020 (autorita del documento V2), DEC-021 (piattaforma
+= postazione, che supera il vincolo storico di AGENT_START_HERE), DEC-022
+(i giochi sostituiscono le attivita), DEC-023 (ranking a due letture), DEC-024
+(data di nascita al posto dell'eta), DEC-025 (tre shell e navigazione per
+gruppo di rotte).
+
+Aggiornati `AGENTS.md` (ordine di lettura e priorita), `CURRENT_STATE.md` e
+`NEXT_STEPS.md`. Nessuna modifica al codice: la fase A parte dalla migration
+del dominio piattaforme/giochi.
+
+## 2026-09-10 - Chiusura questioni aperte V2
+
+Il proprietario ha risposto alle quattro questioni aperte: minorenni accettati
+con consenso genitoriale, punteggio dei tornei da rendere elastico perche
+dipende dal torneo, politica nickname confermata come proposta, fine riga da
+chiarire.
+
+Specifica V2 estesa con: sezione 3.6 sugli utenti minorenni e le due soglie di
+eta, sezione 3.7 sugli schemi di punteggio, tabelle `guardian_consents`,
+`point_schemes`, `point_scheme_rules` e `profile_nickname_history`, funzione
+`is_minor()`, campo `tournaments.point_scheme_id`, flusso di registrazione di
+un minore, console degli schemi di punteggio, aggiornamento di roadmap
+(fasi B e G), impatti e rischi.
+
+Decisioni: DEC-026 (minorenni e consenso), DEC-027 (punteggio configurabile per
+schema, che supera l'assegnazione cablata in `record_match_result`), DEC-028
+(Prettier con `endOfLine: 'auto'`).
+
+Verificato che i punti oggi sono cablati in `record_match_result` a 100 e 60
+per le sole prime due posizioni: la fase G deve sostituire quella logica, non
+affiancarla, altrimenti i punti verrebbero assegnati due volte.
+
+`pnpm format:check` riportato a PASS su tutti i file.
+
+## 2026-09-11 - Implementazione completa della V2
+
+Realizzate tutte le fasi della roadmap V2.
+
+Database: rinomina del dominio postazioni in piattaforme, ritiro di
+`activities`, introduzione di `games`, `game_scores`, schemi di punteggio,
+bacheca, feedback, consensi genitoriali e storico nickname. Aggiunto hardening
+dei grant di default (TRUNCATE ignora le RLS). Motore dei punti riscritto per
+leggere lo schema collegato al torneo, con piazzamenti derivati dal round di
+eliminazione e supporto ai gironi. Suite pgTAP da 169 a 211 test.
+
+Frontend: tre shell (vetrina, app, console), diciotto pagine nuove o riscritte,
+endpoint service-role per piattaforme, bacheca e riepilogo console.
+
+Difetti trovati durante la verifica funzionale e corretti: incompatibilita fra
+`pageTransition` e pagine async che bloccava la navigazione client-side
+(DEC-029), conflitto di rotte annidate su `/app/tornei/[id]` con test di
+regressione permanente, cinque pagine con `v-if` sulla radice del template,
+test pgTAP dipendente dallo stato mutabile delle fixture (DEC-030).
+
+Tutti i gate verdi: lint, format, typecheck, unit, E2E 8/8, pgTAP 211/211,
+build standard e Cloudflare.
+
+## 2026-09-12 - Console dinamica e schede condivise
+
+Revisione della console richiesta dal proprietario.
+
+Rimosso il passaggio all'area personale dalla shell admin: chi amministra non
+ha un profilo di gioco (DEC-031).
+
+Dashboard `/admin` riscritta come vista dinamica sull'evento che conta adesso:
+quello in corso se esiste, altrimenti il prossimo programmato. Informazioni
+della giornata in alto, poi due schede. A evento programmato: prenotati con
+nome, cognome, eta, tornei e il segno di "prima volta da VRSUS", piu i tornei
+con orario e iscritti; il pulsante `Start evento` porta in modalita live e
+avvisa gli iscritti confermati. A evento in corso: partecipanti effettivamente
+presenti e tornei con conto alla rovescia, cronometro, stato, iscritti,
+presenti e partite giocate.
+
+Introdotta la scheda utente `/admin/utenti/[id]` e riscritta la scheda torneo,
+entrambe con struttura unica riutilizzabile (DEC-032): componenti in
+`app/components/profile/` e `app/components/tournament/`, tipi in
+`shared/types/`, classifica e etichette dei round come funzioni pure in
+`shared/utils/tournament-standings.ts`. La stessa scheda torneo alimenta la
+console (dati anagrafici, comandi riservati) e l'app utente (soli nickname).
+Il tabellone a eliminazione diretta e disegnato a colonne sul modello di
+Challonge, con i collegamenti come pseudo-elementi.
+
+Nuovi endpoint service-role: `/api/admin/dashboard`,
+`/api/admin/events/[id]/start`, `/api/admin/users/[id]`,
+`/api/admin/tournaments/[id]` e la gestione manuale degli iscritti
+(`entries`, `entries/[entryId]`, `candidates`).
+
+### File principali modificati
+
+- `app/layouts/admin.vue`, `app/pages/admin/index.vue`
+- `app/pages/admin/utenti/index.vue`, `app/pages/admin/utenti/[id].vue`
+- `app/pages/admin/tornei/[id].vue`, `app/pages/app/tornei/[id]/index.vue`
+- `app/components/profile/`, `app/components/tournament/`,
+  `app/components/ui/VrsusTabs.vue`
+- `app/composables/useTournamentView.ts`
+- `server/api/admin/`, `server/utils/tournament-detail.ts`
+- `shared/types/`, `shared/utils/tournament-standings.ts`
+- `tests/unit/tournament-standings.test.ts`, `tests/e2e/home.spec.ts`
+- `docs/technical/VRSUS_APP_SPEC_V2.md`, `docs/ai/`, `docs/dev/`
+
+### Difetti trovati durante la verifica funzionale e corretti
+
+- I collegamenti del tabellone erano invisibili: `overflow: hidden` sul
+  riquadro dell'incontro tagliava gli pseudo-elementi che escono dal box.
+- Il pulsante "Salva risultato" compariva su incontri in stato `ready`, dove
+  la guardia di transizione rifiuta il passaggio a `completed`. La sequenza
+  chiama -> avvia -> risultato e ora esplicita nell'interfaccia.
+- Il conto alla rovescia mostrava ore a tre cifre per eventi a giorni di
+  distanza; sopra le ventiquattro ore ora si contano i giorni.
+- Un torneo avviato prima dell'orario previsto mostrava un conto alla rovescia
+  pur essendo in corso.
+
+### Verifiche
+
+- `pnpm lint` -> PASS
+- `pnpm format:check` -> PASS
+- `pnpm typecheck` -> PASS
+- `pnpm test` -> PASS, 10 test (8 nuovi sulla classifica)
+- `pnpm exec playwright test --workers=1` -> PASS, 8/8 Chromium
+- `pnpm db:test` -> PASS, 211/211 pgTAP
+- `pnpm build` -> PASS, preset `node-server`
+- Verifica funzionale nel browser: iscrizione manuale, check-in, avvio torneo,
+  chiamata e avvio incontro, registrazione risultato, corone in classifica,
+  scheda utente con eventi/tornei/ranking, `Start evento` con notifica ai due
+  iscritti confermati, viste mobile e desktop.
+
+### Problemi emersi e non risolti
+
+- `record_match_result` accetta stati che la guardia poi rifiuta: incoerenza
+  di dominio, aggirata dall'interfaccia e annotata in `CURRENT_STATE.md`.
+- Le notifiche di chiamata al match puntano a `/tornei/<slug>`, rotta ritirata.
+
+### Stato finale della sessione
+
+Console rivista e verificata, documentazione allineata, tutti i gate verdi.
+
+## 2026-09-12 - Wizard evento, terza scheda dashboard e spaziature mobile
+
+Secondo giro di modifiche richieste dal proprietario sulla console.
+
+**Dashboard.** Tolte le tre card di riepilogo in fondo (utenti, richieste,
+feedback): non erano state chieste. Le schede restano agganciate in alto
+durante lo scorrimento. Aggiunta la scheda "Piattaforme" con una card per
+postazione dell'evento e l'elenco dei giochi disponibili. La scheda Tornei
+mostra l'orario di inizio in evidenza: il conto alla rovescia compare solo
+nell'ultima ora, il cronometro solo a torneo avviato. I tornei elencati sono
+gia soltanto quelli con `event_id` dell'evento mostrato.
+
+**Eventi.** L'elenco non contiene piu il form di creazione: "Nuovo evento"
+porta a `/admin/eventi/nuovo`. "Duplica" ora funziona con un solo clic e crea
+una copia in bozza non pubblicata. "Archivia" e sostituito da "Elimina", che
+cancella evento, tornei, prenotazioni e check-in previa conferma. Tolto il
+pulsante "Catalogo evento": postazioni e giochi si scelgono dentro il wizard.
+
+**Wizard evento.** Tre schede: Info (solo i campi della giornata), Piattaforme
+(card con casella di selezione e giochi espandibili dentro la card), Tornei
+(elenco piu creazione). Il primo "Avanti" salva la bozza, perche postazioni e
+tornei hanno bisogno di un `event_id` (DEC-033). La creazione di un torneo
+dell'evento filtra le postazioni su quelle scelte e i giochi su quelli resi
+disponibili per quella postazione; l'orario eredita il giorno dell'evento.
+
+**Spaziature mobile.** Dieci pagine avevano un `<main>` con padding proprio
+dentro il `<main>` gia spaziato della shell: 40 px per lato e 64 px sopra su
+uno schermo da 375. Rimosso il doppio contenitore e ridotto il padding della
+shell a 16 px.
+
+### File principali modificati
+
+- `app/pages/admin/index.vue`, `app/pages/admin/eventi/`
+- `app/components/admin/EventInfoForm.vue`,
+  `app/components/admin/EventPlatformPicker.vue`
+- `app/composables/useEventForm.ts`
+- `app/layouts/admin.vue`, `app/layouts/app.vue`, `app/assets/css/main.css`
+- `server/api/admin/dashboard.get.ts`,
+  `server/api/admin/events/[id].delete.ts`
+- `shared/types/admin-dashboard.ts`
+- dieci pagine ripulite dal contenitore con padding duplicato
+
+### Difetti trovati durante la verifica funzionale e corretti
+
+- `overflow-x: hidden` sulla radice delle shell annullava `position: sticky`
+  sui discendenti: l'header della console non restava in alto su mobile e le
+  barre di schede non si sarebbero agganciate (DEC-034).
+- Selezionando una postazione la card non si apriva sui giochi: lo stato veniva
+  riletto dal model subito dopo l'assegnazione, quando ancora conteneva il
+  valore precedente.
+
+### Verifiche
+
+- `pnpm lint`, `pnpm format:check`, `pnpm typecheck` -> PASS
+- `pnpm test` -> PASS, 10 test
+- `pnpm exec playwright test --workers=1` -> PASS, 8/8
+- `pnpm build` -> PASS
+- Verifica funzionale nel browser: dashboard con tre schede e schede
+  agganciate, creazione evento completa dal wizard fino al torneo,
+  duplicazione, eliminazione con dipendenze, viste a 375 px.
+
+### Stato finale della sessione
+
+Console e flusso eventi rivisti come richiesto, documentazione allineata, tutti
+i gate verdi. I due eventi di prova creati durante la verifica sono stati
+eliminati.
+
+## 2026-09-12 - Tema scuro, scheda evento e dati dimostrativi
+
+Terzo giro di modifiche sulla console, piu la giornata di prova richiesta per
+guardare tabellone e gironi con numeri veri.
+
+**Componenti.** I campi di Nuxt UI rendevano il tema chiaro (caselle bianche su
+pagina nera, tendine bianche su bianco) perche la classe `dark` non arrivava
+mai sull'elemento radice. Impostato `colorMode` su `dark` con preferenza su
+cookie e riportati i token della libreria sulla palette VRSUS; le select native
+hanno ora una forma sola (`.vrsus-select`) e la pagina dichiara
+`color-scheme: dark`, senza la quale la tendina di sistema resta chiara
+(DEC-035).
+
+**Dashboard.** Tolto il pulsante "Aggiorna". Le azioni sono due e si alternano:
+`Modifica` con `Start evento` prima dell'avvio, `Modifica` con `Check-in` dopo,
+entrambe in taglia grande.
+
+**Scheda evento.** La card di un evento in elenco ora apre `/admin/eventi/[id]`
+con lo stesso riepilogo della dashboard e senza comandi; il wizard si e
+spostato su `/admin/eventi/[id]/modifica`. Il riepilogo e un componente solo
+(`AdminEventOverview`) alimentato da `buildEventOverview`, condiviso fra
+dashboard e scheda.
+
+**Tornei.** La lista ha tre schede: In corso (nascosta se vuota), In programma,
+Storico. Nella scheda di un torneo la testata mostra di suo solo stato,
+piattaforma, nome e vincitore, con il resto dietro a "Mostra dettagli".
+
+**Giochi.** Griglia a due colonne gia da telefono: a colonna singola le card
+erano enormi.
+
+**Dati dimostrativi.** Sedici utenti demo creati con l'Auth Admin API e la
+giornata "VRSUS Showcase": tre postazioni con i loro giochi, sedici
+prenotazioni di cui dodici gia presenti, un torneo a eliminazione diretta da
+sedici concluso (quindici incontri) e un girone da sedici giocato per due terzi
+(ottanta incontri su centoventi). Lo script sta in
+`supabase/dev/demo_showcase.sql` e si puo rieseguire.
+
+### File principali modificati
+
+- `nuxt.config.ts`, `app/assets/css/main.css`
+- `app/components/admin/EventOverview.vue`, `app/pages/admin/index.vue`
+- `app/pages/admin/eventi/[id]/index.vue`,
+  `app/pages/admin/eventi/[id]/modifica.vue`
+- `app/pages/admin/tornei/index.vue`, `app/components/tournament/Summary.vue`
+- `server/utils/event-overview.ts`,
+  `server/api/admin/events/[id]/overview.get.ts`
+- `shared/types/event-overview.ts` (era `admin-dashboard.ts`)
+- `supabase/dev/demo_showcase.sql`
+
+### Difetti trovati durante la verifica e corretti
+
+- `--ui-radius` non e una variabile della sola libreria: da li dipende tutta la
+  scala `rounded-*` di Tailwind. Portarla a 0.75rem aveva triplicato gli angoli
+  di ogni card dell'applicazione.
+- In tema scuro il colore primario di Nuxt UI usa la tinta 400: il rosso del
+  marchio diventava rosa sui pulsanti pieni.
+- Il test E2E della home asseriva il titolo dell'evento di fixture: con una
+  giornata dimostrativa piu vicina nel tempo falliva senza che nulla fosse
+  rotto. Ora verifica che la locandina esista e porti alla scheda, non quale
+  evento sia (DEC-030).
+
+### Verifiche
+
+- `pnpm lint`, `pnpm format:check`, `pnpm typecheck` -> PASS
+- `pnpm test` -> PASS, 10 test
+- `pnpm exec playwright test --workers=1` -> PASS, 8/8
+- `pnpm db:test` -> PASS, 211/211
+- `pnpm build` -> PASS
+- Verifica funzionale: dashboard live con le due azioni, scheda evento in sola
+  lettura, tabellone a sedici su quattro round, girone a sedici con classifica,
+  select scure, giochi a due colonne su telefono.
+
+### Stato finale della sessione
+
+Console allineata alle richieste, dati dimostrativi disponibili in locale,
+documentazione aggiornata, tutti i gate verdi.
+
+## 2026-09-13 - Plancia Live: pallino, scheda richiudibile e tab bar
+
+### Lavoro svolto
+
+- La dashboard della console diventa la plancia della serata. L'intestazione a
+  evento avviato dice `Live` con il pallino rosso lampeggiante al posto di
+  `Evento in corso`.
+- Nuovo `UiVrsusLiveDot` piu le classi `.vrsus-live-dot` in `main.css`: un solo
+  pallino per tutta l'applicazione, con dimensione parametrica. Lo usano
+  intestazione, pastiglia di stato, pastiglia dei tornei in corso e tab bar.
+- Riscritta la scheda della giornata in `AdminEventOverview`: stato e sede in
+  alto, giorno e fascia oraria come titolo, il numero che conta in grande
+  (presenti su prenotati a evento avviato, prenotati su capienza prima), il
+  resto in una griglia di dati richiudibile con il comando `Dettagli`. Le
+  azioni stanno in un piede separato e restano sempre visibili.
+- La scheda `Partecipanti` mostra `12/36` a evento avviato; il riepilogo
+  numerico che stava sotto le schede e stato tolto perche ripeteva lo stesso
+  dato due volte.
+- I tornei della giornata sono ordinati per stato: prima quelli in corso, poi
+  quelli da giocare, in fondo i conclusi, che restano visibili ma attenuati.
+- Pagina Postazioni a due colonne anche su telefono, in vetrina e in console.
+- La prima voce della tab bar della console si chiama `Live` e accende il
+  pallino quando c'e un evento in corso, letto da `GET /api/admin/live-state`
+  tramite `useAdminLiveEvent()` (DEC-036).
+- `Altro` non elenca piu `Live evento` e `Check-in`; i gruppi senza voci
+  visibili per il ruolo corrente non vengono piu resi.
+
+### File principali modificati
+
+- `app/assets/css/main.css`
+- `app/components/ui/VrsusLiveDot.vue` (nuovo)
+- `app/components/ui/VrsusTabBar.vue`
+- `app/components/ui/VrsusTabs.vue`
+- `app/components/admin/EventOverview.vue`
+- `app/composables/useAdminLiveEvent.ts` (nuovo)
+- `app/layouts/admin.vue`
+- `app/pages/admin/index.vue`
+- `app/pages/admin/altro.vue`
+- `app/pages/admin/piattaforme/index.vue`
+- `app/pages/postazioni/index.vue`
+- `server/api/admin/live-state.get.ts` (nuovo)
+
+### Verifiche
+
+- `pnpm lint`, `pnpm typecheck` -> PASS
+- `pnpm test` -> PASS, 10 test
+- `pnpm build` -> PASS
+- Verifica funzionale in locale con la giornata dimostrativa in corso, a 375 px
+  e su desktop: intestazione `Live` con pallino, scheda che si apre e si
+  chiude, `Partecipanti 12/16`, tornei con il torneo in corso in cima e quello
+  concluso in fondo, `Postazioni` a due colonne in vetrina e in console, `Altro`
+  senza il gruppo `Operazioni`, pallino acceso sulla voce `Live` della tab bar.
+
+### Stato finale della sessione
+
+Richieste del proprietario implementate e verificate a schermo. Nessuna
+modifica al database.
+
+## 2026-09-13 - Motore tornei elastico
+
+### Lavoro svolto
+
+- Un torneo non ha piu un "formato" ma tre domande indipendenti: chi gioca
+  (singolo, coppia, squadra), come ci si affronta (eliminazione, tutti contro
+  tutti, manche, uno alla volta) e come si vince (vittoria, punti, tempo,
+  ordine di arrivo). DEC-037.
+- Una partita non ha piu due lati: `match_participants` tiene una riga per
+  posto, con punteggio, piazzamento, esito e punti assegnati. Via
+  `entry_a_id`, `entry_b_id` e `score_payload`.
+- Un solo generatore di calendario (`generate_tournament_schedule`), una sola
+  registrazione di risultato (`record_match_results`) e una sola classifica
+  (`tournament_standings`) per tutti i formati. La classifica restituisce
+  giocate, vinte, pari, perse, punti, miglior risultato, tempo totale e round
+  di eliminazione: l'ordinamento segue `standing_metric`.
+- Manche: i gruppi si formano scegliendo ogni volta chi si e incontrato di
+  meno, cosi nessuno rigioca contro lo stesso avversario finche esistono
+  combinazioni libere. In alternativa i gruppi seguono la classifica, e in quel
+  caso la manche successiva nasce quando la precedente e chiusa.
+- Squadre: `create_tournament_team`, `join_tournament_team` (per id o per
+  codice di invito), `leave_tournament_team`, piu l'endpoint service-role per
+  il completamento manuale da parte dello staff. Una squadra incompleta
+  blocca la generazione del calendario con un errore esplicito.
+- I punti di piazzamento VRSUS si assegnano dalla classifica finale, per
+  qualunque formato: `_award_knockout_placements` e stata ritirata.
+- Slug dei tornei generato dal database come `piattaforma-gioco-data`
+  (DEC-039); campo tolto dalle maschere.
+- Maschere di creazione e modifica riorganizzate nei tre blocchi, con preset,
+  frase di riepilogo e anteprima del calendario. Descrizione e regole sono
+  textarea anche nella console tornei.
+- Scheda partita nelle tre forme: duello, manche con ordine di arrivo e punti,
+  tentativo a cronometro con distacco. Classifica con colonne diverse secondo
+  il criterio del torneo.
+- App utente: iscrizione a squadre (crea, entra, codice), scheda "Squadre" con
+  il codice visibile al solo capitano.
+- Guardia degli incontri: il risultato si registra anche senza chiamata e
+  avvio (DEC-038). Le notifiche di chiamata puntano ora a `/app/tornei/<id>`,
+  non piu alla rotta ritirata `/tornei/<slug>`.
+- Difetto trovato e corretto: la policy di lettura dei check-in confrontava
+  `member.entry_id` con se stesso, quindi qualunque utente autenticato leggeva
+  i check-in altrui.
+
+### File principali modificati
+
+- `supabase/migrations/20260913100000_tournament_engine_schema.sql` (nuovo)
+- `supabase/migrations/20260913110000_tournament_engine_functions.sql` (nuovo)
+- `shared/types/tournament-view.ts`, `shared/utils/tournament-standings.ts`
+- `server/utils/tournament-detail.ts`, `server/api/admin/users/[id].get.ts`
+- `server/api/admin/tournaments/[id]/entries/[entryId]/members.post.ts` (nuovo)
+- `app/composables/useTournamentForm.ts` (nuovo), `useTournaments.ts`,
+  `useTournamentView.ts`
+- `app/components/admin/TournamentRulesFields.vue` (nuovo)
+- `app/components/tournament/MatchCard.vue` (nuovo), `Matches.vue`,
+  `Bracket.vue`, `Standings.vue`, `Summary.vue`
+- `app/pages/admin/tornei/index.vue`, `app/pages/admin/tornei/[id].vue`,
+  `app/pages/admin/eventi/[id]/tornei/nuovo.vue`
+- `app/pages/app/tornei/[id]/index.vue`, `app/pages/app/tornei/[id]/prenota.vue`
+- `supabase/seed.sql`, `supabase/dev/demo_showcase.sql`
+- `supabase/tests/tournament_engine.test.sql` (nuovo) e i test pgTAP toccati
+  dalla transizione
+
+### Difetti trovati durante la verifica e corretti
+
+- La prima versione della rotazione delle manche usava una matrice con
+  sfalsamento: con quattro gruppi ripeteva otto coppie su settantadue. La
+  scelta greedy per "chi si e incontrato meno" ne ripete zero.
+- I trigger di normalizzazione e dello slug leggono `games` e `platforms`, che
+  non hanno grant per il browser: senza `security definer` la creazione di un
+  torneo dalla console falliva con "permission denied for table platforms".
+- `position` non si puo usare come nome di colonna in un `returns table`:
+  la classifica espone `standing_position`.
+
+### Verifiche
+
+- `pnpm lint`, `prettier --check`, `pnpm typecheck` -> PASS
+- `pnpm test` -> PASS, 14 test (4 nuovi sulla classifica e sul riepilogo)
+- `pnpm db:test` -> PASS, 238 test pgTAP (26 nuovi sul motore)
+- `pnpm build` -> PASS
+- Verifica funzionale in locale: torneo a manche con sedici iscritti
+  (generazione, registrazione di un ordine di arrivo dalla console, punti e
+  classifica), scheda utente dello stesso torneo, creazione di un torneo a
+  coppie dalla maschera con preset, creazione di una squadra e codice di
+  invito nell'app.
+
+### Stato finale della sessione
+
+Motore elastico in funzione e verificato a schermo. I dati dimostrativi locali
+usano il nuovo formato a manche per Mario Kart.
+
+## 2026-09-14 - Uscita dalla console, schede prenotati/partecipanti, tessera ARCI
+
+### Lavoro svolto
+
+Tre richieste del proprietario, in una sessione sola.
+
+**Uscire dalla console.** Non esisteva nessun logout per chi amministra: il
+comando viveva solo in `/app/impostazioni` e la console non porta all'area
+personale (DEC-031). Le voci di secondo piano sono state estratte in
+`useAdminMenu`, usato sia dalla pagina `/admin/altro` sia dalla colonna di
+sinistra. Su schermo largo la voce "Altro" sparisce dalla barra e le sue voci
+si leggono in colonna, con account e comando `Esci` nel piede; su telefono la
+pagina Altro resta e guadagna la sezione Sessione (DEC-040).
+
+**Prenotati e partecipanti sono due domande diverse.** Il riepilogo evento
+aveva una sola scheda che cambiava significato con lo stato dell'evento.
+Adesso `Prenotati` c'e sempre e `Partecipanti` compare a evento in corso o
+concluso, cosi si legge insieme quanti avevano prenotato e chi e entrato
+davvero. Il riepilogo distingue una giornata conclusa (`mode: 'past'`) da una
+ancora da avviare.
+
+**Tessera ARCI.** Nuovo dominio: stato del socio sul profilo, requisito sulla
+giornata, validita derivata dalla stagione associativa invece che da un lavoro
+schedulato (DEC-041). Lo staff spunta la tessera dalla scheda utente o dal
+check-in, l'admin sposta la data di rinnovo o chiude la stagione da
+`/admin/impostazioni`. Vetrina, conferma prenotazione, biglietto, impostazioni
+utente e scheda torneo dicono quando la tessera serve.
+
+### File principali modificati
+
+- `supabase/migrations/20260914100000_arci_membership.sql` (nuovo)
+- `supabase/tests/arci_membership.test.sql` (nuovo, 20 test)
+- `app/composables/useAdminMenu.ts`, `app/composables/useArci.ts` (nuovi)
+- `app/components/ui/VrsusTabBar.vue`, `VrsusSessionCard.vue` (nuovo),
+  `VrsusArciChip.vue` (nuovo)
+- `app/layouts/admin.vue`, `app/layouts/app.vue`, `app/pages/admin/altro.vue`
+- `app/components/admin/EventOverview.vue`, `app/components/admin/EventInfoForm.vue`
+- `app/components/profile/Header.vue`, `app/components/tournament/Summary.vue`
+- `app/pages/admin/utenti/[id].vue`, `app/pages/admin/checkin.vue`,
+  `app/pages/admin/impostazioni/index.vue`
+- `app/pages/eventi/[slug].vue`, `app/components/public/EventCard.vue`
+- `app/pages/app/index.vue`, `app/pages/app/impostazioni.vue`,
+  `app/pages/app/prenota/[eventId].vue`, `app/pages/app/prenotazioni/[id].vue`,
+  `app/pages/app/tornei/[id]/prenota.vue`
+- `app/composables/useEventForm.ts`, `useTournamentView.ts`
+- `server/utils/event-overview.ts`, `server/utils/event-admin.ts`,
+  `server/utils/tournament-detail.ts`,
+  `server/api/admin/events/[id]/overview.get.ts`,
+  `server/api/admin/users/[id].get.ts`
+- `shared/types/event-overview.ts`, `profile-view.ts`, `tournament-view.ts`
+
+### Difetti trovati durante la verifica e corretti
+
+- `reset_arci_cards` usava `now()`: nella stessa transazione l'azzeramento
+  coincideva con la verifica e lasciava valide le tessere appena registrate.
+  Con `clock_timestamp()` l'azzeramento supera sempre quanto gia scritto.
+- Il messaggio vuoto della scheda Partecipanti diceva "non ha ancora passato il
+  QR code" anche su una giornata conclusa, dove non c'e nessun "ancora".
+
+### Verifiche
+
+- `pnpm lint`, `prettier --check`, `pnpm typecheck` -> PASS
+- `pnpm test` -> PASS, 14 test
+- `pnpm db:test` -> PASS, 258 test pgTAP (20 nuovi sulla tessera)
+- `pnpm build` -> PASS
+- Verifica funzionale nel browser (account super-admin, ambiente locale):
+  colonna con voci e `Esci` a 1280px, pagina Altro con Sessione a 375px,
+  schede Prenotati/Partecipanti su evento live e su evento concluso, colonna
+  ARCI e avviso sui prenotati senza tessera, registrazione e revoca della
+  tessera dalla scheda utente, sezione Tessere ARCI in impostazioni, casella
+  del wizard salvata sul database, chip e avviso in vetrina e in conferma
+  prenotazione.
+
+### Stato finale della sessione
+
+Migration applicata in locale con `supabase migration up`, tipi rigenerati.
+Resta da provare a schermo il pannello ARCI del check-in, che richiede un QR
+reale: la RPC e coperta dai test pgTAP.
+
+## 2026-09-14 - App utente: bacheca, eventi, serata e ranking come sfide
+
+### Lavoro svolto
+
+Riorganizzazione dell'area personale chiesta dal proprietario mentre provava
+l'app da cliente.
+
+**La home diventa la bacheca.** `/app` porta annunci e sondaggi, con in cima
+l'invito compatto alla prossima data pubblica: nome, giorno e ora, prezzo,
+tessera ARCI e un comando che apre la scheda dell'evento. Senza date
+programmate resta la sola bacheca. La voce Bacheca separata e sparita dalla
+barra, che adesso e Bacheca, Eventi, Ranking, Tornei, Impostazioni (DEC-042).
+
+**Eventi.** Nuovo elenco in sola lettura diviso in in corso, in programma e
+storico, e nuova scheda della giornata: informazioni, tornei, postazioni e
+prenotazione con finestra di conferma. La vecchia pagina `/app/prenota/[id]`
+e stata ritirata: si prenota dove si leggono le informazioni.
+
+**Live.** Compare come prima voce, con il pallino rosso, solo mentre una serata
+e in corso. Mostra il biglietto con il QR finche non si passa la porta; dopo il
+check-in il biglietto lascia il posto a "I tuoi tornei", con la prossima
+partita, l'avversario e quante partite mancano. Sotto, le sole schede Tornei e
+Piattaforme: di chi ha prenotato e chi e presente non si dice niente.
+
+**Ranking come entita.** Nuova tabella `game_rankings`: una sfida lunga su un
+gioco, con regolamento in chiaro, punteggio o tempo, direzione e scadenza
+facoltativa (DEC-043). I punteggi appartengono alla sfida. Le sfide si creano
+dalla pagina del gioco in console e ognuna ha la sua scheda, con classifica,
+registrazione dei record e impostazioni. In app la pagina Ranking si legge
+postazione -> gioco -> sfida -> classifica, senza "tutte" e senza "tutti", e
+parte dai Punti VRSUS.
+
+### File principali modificati
+
+- `supabase/migrations/20260914120000_game_rankings.sql` (nuovo)
+- `supabase/tests/game_rankings.test.sql` (nuovo, 13 test)
+- `supabase/dev/demo_rankings.sql` (nuovo)
+- `app/layouts/app.vue`, `app/composables/useLiveEvent.ts` (nuovo)
+- `app/pages/app/index.vue` (bacheca + invito), `app/pages/app/bacheca.vue`
+  e `app/pages/app/prenota/[eventId].vue` (ritirate)
+- `app/pages/app/eventi/index.vue`, `app/pages/app/eventi/[id].vue` (nuove)
+- `app/pages/app/live.vue` (nuova), `shared/utils/live-day.ts` (nuovo),
+  `tests/unit/live-day.test.ts` (nuovo)
+- `app/pages/app/ranking.vue`, `shared/utils/ranking.ts` (nuovo)
+- `app/components/ui/VrsusConfirmDialog.vue` (nuovo)
+- `app/pages/admin/giochi/[id]/index.vue` (sezione Ranking),
+  `app/pages/admin/giochi/[id]/rank/[rankId].vue` (nuova)
+- `server/api/admin/rankings/[id].get.ts`,
+  `server/api/admin/rankings/[id]/scores.post.ts`,
+  `server/api/admin/rankings/[id]/scores/[scoreId].delete.ts` (nuovi)
+- `server/api/admin/ranking-users.get.ts` (aperta anche allo staff)
+- `app/pages/index.vue` (la locandina porta alla scheda in area personale)
+
+### Difetti trovati durante la verifica e corretti
+
+- Nella scheda "I tuoi tornei" i nomi degli avversari di una manche da quattro
+  uscivano dal bordo su telefono: la riga adesso va a capo.
+- La registrazione di un punteggio dalla console falliva: `game_scores` non ha
+  grant per il browser (DEC-005). Spostata su endpoint service-role, che
+  rifiuta anche le sfide chiuse o scadute.
+- Due test pgTAP contavano righe di tutto il database invece che le proprie:
+  con i dati dimostrativi caricati fallivano (DEC-030).
+
+### Verifiche
+
+- `pnpm lint`, `prettier --check`, `pnpm typecheck` -> PASS
+- `pnpm test` -> PASS, 19 test (5 nuovi su "quando tocca a me")
+- `pnpm db:test` -> PASS, 271 test pgTAP (13 nuovi sulle sfide)
+- `pnpm build` -> PASS
+- Verifica funzionale nel browser con un account cliente creato per la prova:
+  bacheca con invito, elenco eventi, scheda evento, prenotazione con conferma,
+  Live con biglietto, Live dopo il check-in con "Manca una partita alla tua",
+  pagina Ranking con le tre tende, scheda sfida in console con registrazione ed
+  eliminazione di un record.
+
+### Stato finale della sessione
+
+Migration applicata in locale, tipi rigenerati, dati dimostrativi delle sfide
+caricati con `supabase/dev/demo_rankings.sql`. L'account di prova e i suoi dati
+sono stati rimossi al termine della verifica.
+

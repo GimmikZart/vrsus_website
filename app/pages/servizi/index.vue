@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'site' })
+
 const { data: services, status, error } = await usePublicServicePages()
 
 useSeoMeta({

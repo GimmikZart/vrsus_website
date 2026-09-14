@@ -9,11 +9,18 @@ import {
   type MyBooking,
 } from '~/composables/useBookings'
 
-definePageMeta({ middleware: ['auth'] })
+definePageMeta({
+  layout: 'app',
+  middleware: ['auth'],
+})
 
 const route = useRoute()
 const bookingId = String(route.params.id)
 const client = useSupabaseClient()
+// Il requisito della tessera vive sull evento, non sulla prenotazione: si
+// legge dalla view pubblica appena si sa di quale giornata si tratta.
+const arciRequired = ref(false)
+const { data: arciStatus } = await useMyArciStatus()
 const config = useRuntimeConfig()
 const booking = ref<MyBooking | null>(null)
 const qr = ref<BookingQr | null>(null)
@@ -24,7 +31,7 @@ const errorMessage = ref('')
 const cancelMessage = ref('')
 
 useSeoMeta({
-  title: 'Prenotazione â€” VRSUS',
+  title: 'Prenotazione — VRSUS',
   robots: 'noindex, nofollow',
 })
 
@@ -48,6 +55,13 @@ async function loadBooking() {
     pending.value = false
     return
   }
+
+  const { data: eventRow } = await client
+    .from('public_events')
+    .select('arci_required')
+    .eq('id', booking.value.event_id)
+    .maybeSingle()
+  arciRequired.value = Boolean(eventRow?.arci_required)
 
   if (booking.value.status === 'confirmed') {
     try {
@@ -97,9 +111,7 @@ await loadBooking()
 </script>
 
 <template>
-  <main
-    class="mx-auto min-h-[calc(100vh-9rem)] max-w-4xl px-5 py-16 sm:px-8 lg:py-24"
-  >
+  <div>
     <NuxtLink to="/app" class="text-sm text-white/55 hover:text-white">
       <UIcon name="i-lucide-arrow-left" class="mr-1 inline size-4" />
       Area personale
@@ -175,6 +187,22 @@ await loadBooking()
           </div>
 
           <div
+            v-if="arciRequired"
+            class="mt-8 rounded-2xl border p-5 text-sm leading-6"
+            :class="
+              arciStatus?.card_valid
+                ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-100'
+                : 'border-amber-400/30 bg-amber-400/10 text-amber-100'
+            "
+          >
+            {{
+              arciStatus?.card_valid
+                ? 'Per questa giornata serve la tessera ARCI: la tua risulta valida.'
+                : 'Per questa giornata serve la tessera ARCI. Se non ce l’hai puoi farla da noi all’ingresso.'
+            }}
+          </div>
+
+          <div
             v-if="booking.status === 'waitlisted'"
             class="border-brand-blue-400/25 bg-brand-blue-400/10 mt-8 rounded-2xl border p-5 text-sm leading-6 text-blue-100"
           >
@@ -218,5 +246,5 @@ await loadBooking()
         </UCard>
       </div>
     </section>
-  </main>
+  </div>
 </template>

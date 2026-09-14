@@ -43,35 +43,34 @@ select throws_ok(
 
 insert into public.tournaments (
   event_id,
-  slug,
   name,
   status,
   is_public
 )
-select id, 'state-machine-guard-tournament', 'State machine guard tournament', 'draft', false
+select id, 'State machine guard tournament', 'draft', false
 from public.events
 where slug = 'state-machine-guard-event';
 
 select throws_ok(
-  $$update public.tournaments set status = 'running' where slug = 'state-machine-guard-tournament'$$,
+  $$update public.tournaments set status = 'running' where name = 'State machine guard tournament'$$,
   'P0001',
   'INVALID_TOURNAMENT_STATUS_TRANSITION',
   'tournaments cannot skip registration states'
 );
-update public.tournaments set status = 'registration_open' where slug = 'state-machine-guard-tournament';
-update public.tournaments set status = 'registration_closed' where slug = 'state-machine-guard-tournament';
-update public.tournaments set status = 'checkin' where slug = 'state-machine-guard-tournament';
-select is((select status from public.tournaments where slug = 'state-machine-guard-tournament'), 'checkin', 'tournaments can enter check-in');
-update public.tournaments set status = 'running' where slug = 'state-machine-guard-tournament';
-select is((select status from public.tournaments where slug = 'state-machine-guard-tournament'), 'running', 'check-in tournaments can start');
+update public.tournaments set status = 'registration_open' where name = 'State machine guard tournament';
+update public.tournaments set status = 'registration_closed' where name = 'State machine guard tournament';
+update public.tournaments set status = 'checkin' where name = 'State machine guard tournament';
+select is((select status from public.tournaments where name = 'State machine guard tournament'), 'checkin', 'tournaments can enter check-in');
+update public.tournaments set status = 'running' where name = 'State machine guard tournament';
+select is((select status from public.tournaments where name = 'State machine guard tournament'), 'running', 'check-in tournaments can start');
 select throws_ok(
-  $$update public.tournaments set status = 'draft' where slug = 'state-machine-guard-tournament'$$,
+  $$update public.tournaments set status = 'draft' where name = 'State machine guard tournament'$$,
   'P0001',
   'INVALID_TOURNAMENT_STATUS_TRANSITION',
   'running tournaments cannot return to draft'
 );
-update public.tournaments set status = 'completed' where slug = 'state-machine-guard-tournament';
-select is((select status from public.tournaments where slug = 'state-machine-guard-tournament'), 'completed', 'running tournaments can complete');
+update public.tournaments set status = 'completed' where name = 'State machine guard tournament';
+select is((select status from public.tournaments where name = 'State machine guard tournament'), 'completed', 'running tournaments can complete');
 
 insert into public.matches (
   tournament_id,
@@ -81,32 +80,38 @@ insert into public.matches (
 )
 select id, 1, 1, 'pending'
 from public.tournaments
-where slug = 'state-machine-guard-tournament';
+where name = 'State machine guard tournament';
 
 select throws_ok(
-  $$update public.matches set status = 'called' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where slug = 'state-machine-guard-tournament')$$,
+  $$update public.matches set status = 'called' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where name = 'State machine guard tournament')$$,
   'P0001',
   'INVALID_MATCH_STATUS_TRANSITION',
   'pending matches cannot be called directly'
 );
-update public.matches set status = 'ready' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where slug = 'state-machine-guard-tournament');
-select is((select status from public.matches where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where slug = 'state-machine-guard-tournament')), 'ready', 'pending matches can become ready');
-select throws_ok(
-  $$update public.matches set status = 'completed' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where slug = 'state-machine-guard-tournament')$$,
-  'P0001',
-  'INVALID_MATCH_STATUS_TRANSITION',
-  'ready matches cannot skip the call and start states'
+update public.matches set status = 'ready' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where name = 'State machine guard tournament');
+select is((select status from public.matches where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where name = 'State machine guard tournament')), 'ready', 'pending matches can become ready');
+-- Il risultato si puo registrare senza passare da chiamata e avvio: con le
+-- manche da quattro quella sequenza era solo un peso (DEC-038).
+select lives_ok(
+  $$update public.matches set status = 'completed' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where name = 'State machine guard tournament')$$,
+  'ready matches can be completed without being called'
 );
-update public.matches set status = 'called' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where slug = 'state-machine-guard-tournament');
-update public.matches set status = 'running' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where slug = 'state-machine-guard-tournament');
+
+insert into public.matches (tournament_id, round_number, bracket_position, status)
+select id, 1, 2, 'ready'
+from public.tournaments
+where name = 'State machine guard tournament';
+
+update public.matches set status = 'called' where round_number = 1 and bracket_position = 2 and tournament_id = (select id from public.tournaments where name = 'State machine guard tournament');
+update public.matches set status = 'running' where round_number = 1 and bracket_position = 2 and tournament_id = (select id from public.tournaments where name = 'State machine guard tournament');
 select throws_ok(
-  $$update public.matches set status = 'pending' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where slug = 'state-machine-guard-tournament')$$,
+  $$update public.matches set status = 'pending' where round_number = 1 and bracket_position = 2 and tournament_id = (select id from public.tournaments where name = 'State machine guard tournament')$$,
   'P0001',
   'INVALID_MATCH_STATUS_TRANSITION',
   'running matches cannot return to pending'
 );
-update public.matches set status = 'completed' where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where slug = 'state-machine-guard-tournament');
-select is((select status from public.matches where round_number = 1 and bracket_position = 1 and tournament_id = (select id from public.tournaments where slug = 'state-machine-guard-tournament')), 'completed', 'running matches can complete');
+update public.matches set status = 'completed' where round_number = 1 and bracket_position = 2 and tournament_id = (select id from public.tournaments where name = 'State machine guard tournament');
+select is((select status from public.matches where round_number = 1 and bracket_position = 2 and tournament_id = (select id from public.tournaments where name = 'State machine guard tournament')), 'completed', 'running matches can complete');
 
 select * from finish();
 rollback;

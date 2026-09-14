@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'site' })
+
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const route = useRoute()
@@ -110,12 +112,22 @@ async function submit() {
         />
       </form>
 
-      <NuxtLink
-        to="/"
-        class="mt-6 inline-flex text-sm text-white/55 transition-colors hover:text-white"
+      <div
+        class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm"
       >
-        ← Torna al sito
-      </NuxtLink>
+        <NuxtLink
+          to="/"
+          class="text-white/55 transition-colors hover:text-white"
+        >
+          ← Torna al sito
+        </NuxtLink>
+        <NuxtLink
+          to="/registrati"
+          class="text-brand-red-400 hover:text-brand-red-300"
+        >
+          Non hai un account? Registrati
+        </NuxtLink>
+      </div>
     </UCard>
   </main>
 </template>

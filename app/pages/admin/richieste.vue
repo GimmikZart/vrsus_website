@@ -19,6 +19,7 @@ type ServiceInquiry = {
 }
 
 definePageMeta({
+  layout: 'admin',
   middleware: ['auth', 'role'],
   requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
 })
@@ -90,9 +91,7 @@ async function saveInquiry(inquiry: ServiceInquiry) {
 </script>
 
 <template>
-  <main
-    class="mx-auto min-h-[calc(100vh-9rem)] max-w-7xl px-5 py-16 sm:px-8 lg:py-24"
-  >
+  <div>
     <div>
       <NuxtLink to="/admin" class="text-sm text-white/45 hover:text-white">
         ← Torna alla console
@@ -224,5 +223,5 @@ async function saveInquiry(inquiry: ServiceInquiry) {
         Non ci sono ancora richieste.
       </p>
     </div>
-  </main>
+  </div>
 </template>

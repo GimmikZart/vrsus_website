@@ -75,6 +75,7 @@ const bookingStatusLabel = computed(() => {
             formatPublicEventPrice(event.price_cents, event.payment_required)
           }}</span>
           <span v-if="bookingStatusLabel">{{ bookingStatusLabel }}</span>
+          <UiVrsusArciChip :required="event.arci_required" size="sm" />
         </div>
       </div>
       <UButton

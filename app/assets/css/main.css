@@ -30,7 +30,40 @@
   --color-brand-blue-950: #172554;
 }
 
+/*
+  Token di Nuxt UI riportati sulla palette VRSUS. La libreria li legge dalla
+  classe `dark` su <html> (impostata da colorMode in nuxt.config): senza questo
+  blocco i componenti userebbero il grigio neutro predefinito, che accanto alle
+  superfici dell'app sembra di un'altra applicazione.
+*/
+html.dark {
+  /*
+    Il rosso del marchio anche sui componenti: in scuro Nuxt UI userebbe la
+    tinta 400, che sul nero diventa rosa. Il testo sopra torna bianco.
+    `--ui-radius` non si tocca: da quella variabile dipende tutta la scala
+    `rounded-*` di Tailwind, non solo i componenti della libreria.
+  */
+  --ui-primary: var(--color-brand-red-500);
+  --ui-secondary: var(--color-brand-blue-500);
+  --ui-text-inverted: #fff;
+  --ui-bg: #0e1017;
+  --ui-bg-muted: #101219;
+  --ui-bg-elevated: #171a24;
+  --ui-bg-accented: #1f2331;
+  --ui-border: rgb(255 255 255 / 10%);
+  --ui-border-muted: rgb(255 255 255 / 8%);
+  --ui-border-accented: rgb(255 255 255 / 16%);
+  --ui-text-dimmed: rgb(255 255 255 / 35%);
+  --ui-text-muted: rgb(255 255 255 / 55%);
+  --ui-text-toned: rgb(255 255 255 / 70%);
+  --ui-text: rgb(255 255 255 / 88%);
+  --ui-text-highlighted: #fff;
+}
+
 :root {
+  /* La tendina nativa delle select segue color-scheme, non i colori CSS. */
+  color-scheme: dark;
+
   --color-bg: #08090d;
   --color-surface-1: #101219;
   --color-surface-2: #171a24;
@@ -68,13 +101,43 @@ body {
   outline-offset: 3px;
 }
 
+/*
+  Select native: la freccia predefinita e il fondo di sistema stonano con il
+  resto. Qui prendono la stessa forma dei campi Nuxt UI, freccia inclusa.
+*/
 .vrsus-select {
-  min-height: 2.25rem;
+  appearance: none;
+  min-height: 2.5rem;
+  width: 100%;
   border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 0.5rem;
-  background: rgb(255 255 255 / 6%);
-  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background-color: rgb(255 255 255 / 4%);
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='rgba(255,255,255,0.45)' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding: 0.5rem 2.25rem 0.5rem 0.875rem;
   color: var(--color-text);
+  font-size: 0.875rem;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.vrsus-select:hover:not(:disabled) {
+  border-color: rgb(255 255 255 / 20%);
+  background-color: rgb(255 255 255 / 6%);
+}
+
+.vrsus-select:focus-visible {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(239 51 64 / 25%);
+}
+
+.vrsus-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .vrsus-select option {
@@ -105,4 +168,102 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/*
+  La tab bar inferiore deve rispettare la safe area del dispositivo: in
+  modalita PWA standalone su iOS la home indicator coprirebbe altrimenti le
+  icone. Il contenuto scrollabile riserva a sua volta lo spazio della barra.
+*/
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.app-scroll-area {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/*
+  Barra di schede agganciata in alto. Su mobile deve fermarsi sotto l'header
+  della shell, che e alto 3.5rem piu la safe area; da lg l'header sparisce e la
+  barra puo salire fino al bordo. I margini negativi la fanno arrivare da un
+  lato all'altro del contenitore, che ha il padding della shell.
+*/
+.sticky-tabs {
+  position: sticky;
+  z-index: 20;
+  top: calc(3.5rem + env(safe-area-inset-top, 0px));
+  margin-inline: -1rem;
+  padding: 0.5rem 1rem;
+  background: rgb(8 9 13 / 92%);
+  backdrop-filter: blur(12px);
+}
+
+@media (min-width: 1024px) {
+  .sticky-tabs {
+    top: 0;
+    margin-inline: -2rem;
+    padding: 0.75rem 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-scroll-area {
+    padding-bottom: 3rem;
+  }
+}
+
+/*
+  Pallino dello stato live: lampeggia e si porta dietro un alone che si allarga.
+  Lo usano l'intestazione della dashboard, la scheda dell'evento e la tab bar
+  della console, per questo la dimensione arriva da una variabile.
+  Sotto prefers-reduced-motion il blocco generale piu in alto ferma
+  l'animazione: il pallino resta comunque visibile e rosso.
+*/
+@keyframes vrsus-live-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes vrsus-live-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  70%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.vrsus-live-dot {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--vrsus-live-dot-size, 0.5rem);
+  height: var(--vrsus-live-dot-size, 0.5rem);
+  border-radius: 9999px;
+  background: var(--color-brand-red-500);
+  animation: vrsus-live-blink 1.4s ease-in-out infinite;
+}
+
+.vrsus-live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: vrsus-live-ring 1.8s ease-out infinite;
 }

@@ -742,3 +742,683 @@ nel browser.
 ### Commenti utente
 
 <!-- Inserire qui eventuali osservazioni -->
+
+## Dominio evento admin dietro endpoint service-role
+
+Verifica che le console del dominio evento funzionino dopo il passaggio agli
+endpoint `/api/admin/events` (DEC-018) e che l'autorizzazione resti chiusa.
+
+### Prerequisiti
+
+- stack locale avviato e fixture applicate (`pnpm db:start`, `pnpm db:reset`);
+- un account con ruolo `super_admin` o `admin`;
+- un secondo account con il solo ruolo `user`;
+- creazione degli account descritta in `guideline_implementations.md`.
+
+### Procedura
+
+- [ ] 1. Da admin aprire `/admin/eventi`: la lista deve mostrare gli eventi
+      senza il messaggio "Impossibile caricare gli eventi".
+- [ ] 2. Creare un evento con titolo, inizio e fine; deve comparire in lista.
+- [ ] 3. Riaprirlo con "Modifica", cambiare la capienza e salvare; il valore
+      deve persistere dopo un ricaricamento della pagina.
+- [ ] 4. Salvare un secondo evento riusando lo slug del primo: deve comparire
+      "Esiste gia un evento con questo slug".
+- [ ] 5. Impostare una fine precedente all'inizio: il salvataggio deve essere
+      rifiutato con un messaggio di errore, non con una pagina bianca.
+- [ ] 6. Usare "Duplica", salvare e verificare che la copia nasca in `draft`,
+      non pubblica e con la configurazione copiata.
+- [ ] 7. Aprire "Catalogo evento" (`/admin/eventi/[id]`): postazioni e attivita
+      gia configurate devono risultare selezionate.
+- [ ] 8. Nella matrice "Associa attivita e postazioni" le combinazioni gia
+      salvate devono risultare spuntate. Cambiarne una, salvare, ricaricare:
+      la modifica deve persistere.
+- [ ] 9. Deselezionare una postazione e salvare: le sue associazioni devono
+      sparire insieme alla postazione.
+- [ ] 10. Da un torneo in `/admin/tornei/[id]` verificare che il selettore
+      postazioni elenchi le postazioni attive dell'evento.
+- [ ] 11. Fare logout, accedere con l'account `user` e aprire `/admin/eventi`:
+      si deve essere rimandati fuori dalla console.
+- [ ] 12. Sempre come `user`, con gli strumenti sviluppatore, chiamare
+      `fetch('/api/admin/events')`: deve rispondere `403`.
+- [ ] 13. Da browser anonimo chiamare lo stesso endpoint: deve rispondere
+      `401`.
+
+### Risultato atteso
+
+Le console del dominio evento funzionano senza errori di permesso, la
+configurazione di un evento si salva in una sola operazione e resta coerente
+dopo il ricaricamento, e gli endpoint restano chiusi ad anonimi e utenti senza
+ruolo admin. La capienza non deve mai comparire nelle route pubbliche se la
+visibilita e `hidden`.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## V2 — Vetrina, registrazione e app utente
+
+Copre la riorganizzazione descritta in `docs/technical/VRSUS_APP_SPEC_V2.md`.
+
+### Prerequisiti
+
+- stack locale avviato e fixture applicate (`pnpm db:start`, `pnpm db:reset`);
+- account DEV creati secondo la procedura di
+  `guideline_implementations.md`, incluso un account con data di nascita che
+  lo renda minorenne.
+
+### Vetrina
+
+- [ ] 1. Aprire `/` da telefono (o finestra a 375 px): la locandina del
+      prossimo evento deve stare in cima, con data, luogo e costo.
+- [ ] 2. L'hamburger in alto a destra apre le quattro voci piu "Accedi" e
+      "Registrati". Da `lg` in su le voci sono in orizzontale e l'hamburger
+      sparisce.
+- [ ] 3. `/postazioni` mostra le card delle postazioni pubbliche. La
+      postazione interna non deve comparire.
+- [ ] 4. Aprire una postazione: si vedono i giochi associati.
+- [ ] 5. `/chi-siamo` e `/servizi` rendono il contenuto senza errori.
+
+### Registrazione
+
+- [ ] 6. In `/registrati` inserire una data di nascita da maggiorenne: la
+      sezione del consenso non deve comparire.
+- [ ] 7. Cambiare la data in una da minorenne: la sezione compare senza
+      ricaricare la pagina e senza perdere i dati gia inseriti.
+- [ ] 8. Provare un nickname gia esistente: deve essere segnalato prima
+      dell'invio.
+- [ ] 9. Completare la registrazione di un minorenne con il consenso.
+
+### App utente
+
+- [ ] 10. La tab bar in basso ha cinque icone e non e coperta dalla home
+      indicator del telefono.
+- [ ] 11. Dashboard: la card mostra le informazioni dell'evento e l'invito a
+      prenotarsi.
+- [ ] 12. Prenotare: si passa da una pagina di conferma, poi la card diventa
+      il biglietto con il QR.
+- [ ] 13. Ranking: i selettori postazione e gioco filtrano; senza gioco si
+      vedono i punti, con un gioco il record.
+- [ ] 14. Tornei: i prossimi hanno il bordo acceso, quelli a cui si e iscritti
+      il bordo verde, i passati nessun bordo. Ogni bordo ha anche l'etichetta
+      testuale.
+- [ ] 15. Iscriversi a un torneo passando dalla pagina di conferma.
+- [ ] 16. Bacheca: votare un sondaggio e verificare le percentuali; inviare un
+      messaggio dal pulsante "Scrivici".
+- [ ] 17. Impostazioni: cambiare nickname e fare logout.
+
+### Consenso genitoriale
+
+- [ ] 18. Con l'account minorenne senza consenso, provare a prenotare: deve
+      comparire la spiegazione e il rimando alle impostazioni.
+- [ ] 19. Registrare il consenso dalle impostazioni e riprovare: la
+      prenotazione deve andare a buon fine.
+
+### Console admin
+
+- [ ] 20. `/admin` mostra utenti registrati, tornei attivi, prossimo evento con
+      confermati/attesa/check-in e andamento partecipanti.
+- [ ] 21. `/admin/piattaforme`: creare una postazione, marcarla interna e
+      verificare che sparisca da `/postazioni`.
+- [ ] 22. `/admin/giochi`: creare un gioco e verificare la label della
+      postazione in alto a destra sulla card.
+- [ ] 23. `/admin/eventi`: creare un evento indicando il tipo, poi configurare
+      postazioni e giochi da "Catalogo evento".
+- [ ] 24. `/admin/tornei`: creare un torneo indipendente da un evento e uno
+      dentro un evento, con schema di punteggio.
+- [ ] 25. `/admin/bacheca`: pubblicare un annuncio e un sondaggio, verificarli
+      nell'app utente.
+
+### Risultato atteso
+
+La vetrina non mostra mai postazioni o giochi interni; la capienza resta
+privata; il QR appare solo dopo la conferma; un minorenne senza consenso non
+riesce a prenotare nemmeno chiamando direttamente l'API; i contenuti creati in
+console compaiono in vetrina e nell'app.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## Console dinamica, scheda utente e scheda torneo
+
+Copre la revisione della console descritta in DEC-031 e DEC-032.
+
+### Prerequisiti
+
+- stack locale avviato e fixture applicate (`pnpm db:start`, `pnpm db:reset`);
+- account DEV ricreati, incluso un utente non admin con prenotazione
+  confermata sull'evento demo;
+- un evento in stato `scheduled` con almeno un torneo collegato.
+
+### Shell della console
+
+- [ ] 1. Entrare in `/admin` da telefono: nell'intestazione deve esserci solo
+      "Console". Il collegamento "Area personale" non deve piu esistere.
+
+### Dashboard con evento programmato
+
+- [ ] 2. `/admin` mostra in alto il prossimo evento con giorno e orario,
+      prezzo della giornata, numero di postazioni e prenotati sulla capienza.
+- [ ] 3. Scheda "Prenotati": il totale in cima corrisponde al numero di righe.
+      Su desktop e una tabella con nome, cognome, eta, tornei e "prima volta";
+      sotto i 1024 px diventa una lista di card con le stesse informazioni.
+- [ ] 4. Il segno di spunta "prima volta" compare solo per chi non ha
+      prenotazioni su eventi precedenti. Verificarlo prenotando lo stesso
+      utente su un evento gia passato: il segno deve sparire.
+- [ ] 5. La colonna "Tornei" elenca i tornei dell'evento a cui la persona e
+      iscritta, separati da `|`.
+- [ ] 6. Scheda "Tornei": piattaforma, gioco, orario, stato e iscritti.
+- [ ] 7. Toccare una riga di un prenotato apre la sua scheda utente.
+
+### Start evento
+
+- [ ] 8. Premere "Start evento": deve chiedere conferma prima di procedere.
+- [ ] 9. Confermare: l'evento passa in modalita live e il messaggio indica
+      quanti iscritti sono stati avvisati.
+- [ ] 10. Con l'account utente iscritto, aprire `/app/notifiche`: deve esserci
+      l'avviso di inizio evento.
+
+### Dashboard con evento in corso
+
+- [ ] 11. L'intestazione diventa rossa con l'etichetta "Live" e mostra i
+      presenti, non i prenotati.
+- [ ] 12. Scheda "Partecipanti": vuota finche nessuno ha passato il QR code.
+      Fare un check-in da `/admin/checkin` e verificare che la persona compaia.
+- [ ] 13. Scheda "Tornei": conto alla rovescia prima dell'orario di inizio,
+      "Inizia a breve" nell'ultima mezz'ora, cronometro quando il torneo e in
+      corso, e i conteggi di iscritti, presenti e partite giocate.
+
+### Scheda utente
+
+- [ ] 14. Aprire `/admin/utenti/[id]`: in alto iniziali, nickname, nome
+      completo, eta, recapiti, ruoli e i quattro numeri (eventi, presenze,
+      tornei, punti).
+- [ ] 15. Se l'utente e minorenne compare l'etichetta del consenso, verde con
+      consenso registrato e ambra senza.
+- [ ] 16. Scheda "Eventi": prima i futuri con il bordo acceso, poi i passati.
+- [ ] 17. Scheda "Tornei": ogni iscrizione mostra il piazzamento quando esiste,
+      con la corona ai primi tre.
+- [ ] 18. Scheda "Ranking": i filtri piattaforma e gioco riducono l'elenco; il
+      filtro gioco si azzera cambiando piattaforma.
+
+### Scheda torneo in console
+
+- [ ] 19. Aprire un torneo da `/admin/tornei`: intestazione con stato,
+      piattaforma, gioco, tipo, data, iscritti e partite giocate.
+- [ ] 20. "Iscrivi un utente": il selettore non deve proporre chi e gia
+      iscritto. Iscrivere qualcuno e verificarlo in classifica.
+- [ ] 21. Rimuovere un iscritto non ancora sorteggiato: sparisce. Rimuovere un
+      iscritto gia presente in un incontro: resta come ritirato.
+- [ ] 22. Portare il torneo da bozza a iscrizioni aperte, chiuse, check-in.
+      Fare il check-in degli iscritti dalla classifica.
+- [ ] 23. "Avvia torneo": genera il tabellone (eliminazione diretta) o il
+      calendario (girone) e porta il torneo in corso.
+- [ ] 24. Scheda "Partite": con l'eliminazione diretta il tabellone e a
+      colonne, con i collegamenti che uniscono le coppie al round successivo.
+      Su schermo stretto scorre in orizzontale da solo, senza muovere la
+      pagina.
+- [ ] 25. Toccare un incontro: assegnare la postazione, chiamare i giocatori,
+      avviare il match, inserire i punteggi e il vincitore, salvare. Il
+      pulsante di salvataggio resta disabilitato finche il match non e
+      avviato.
+- [ ] 26. A incontro concluso resta disponibile solo la correzione del
+      punteggio.
+- [ ] 27. Alla fine del torneo l'intestazione mostra il vincitore con la corona
+      e la classifica assegna oro, argento e bronzo ai primi tre.
+- [ ] 28. "Modifica" apre il modulo con i dati del torneo e li salva.
+      "Elimina" chiede conferma prima di cancellare.
+
+### Scheda torneo lato utente
+
+- [ ] 29. Con un account utente aprire lo stesso torneo da `/app/tornei`: la
+      pagina ha la stessa struttura ma mostra i soli nickname, senza nome,
+      cognome, eta e senza comandi.
+- [ ] 30. Se il torneo non ha ancora risultati, la classifica dichiara di
+      seguire l'ordine di iscrizione e nessuna corona viene mostrata.
+
+### Risultato atteso
+
+La console apre sempre sull'evento che conta; i dati anagrafici compaiono solo
+in console; l'app utente vede la stessa struttura senza dati personali e senza
+comandi; il tabellone e leggibile su telefono; nessuna azione riservata e
+raggiungibile senza il ruolo giusto.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## Wizard evento e revisione della dashboard
+
+Copre le modifiche descritte in DEC-033 e DEC-034.
+
+### Prerequisiti
+
+- stack locale avviato e fixture applicate (`pnpm db:start`, `pnpm db:reset`);
+- account admin o super_admin;
+- almeno una postazione con qualche gioco a catalogo.
+
+### Dashboard
+
+- [ ] 1. In fondo a `/admin` non ci sono card di riepilogo su utenti, richieste
+      o feedback.
+- [ ] 2. Scorrendo la pagina la barra delle schede resta agganciata sotto
+      l'intestazione e permette di cambiare vista senza risalire.
+- [ ] 3. Scheda "Piattaforme": una card per ogni postazione dell'evento, con i
+      giochi resi disponibili elencati dentro la card.
+- [ ] 4. Scheda "Tornei": ogni card mostra l'orario di inizio. Il conto alla
+      rovescia compare solo nell'ultima ora prima dell'inizio; a torneo
+      avviato compare il cronometro.
+- [ ] 5. I tornei elencati sono solo quelli dell'evento mostrato.
+
+### Elenco eventi
+
+- [ ] 6. La pagina contiene solo l'elenco: nessun form di creazione.
+- [ ] 7. "Nuovo evento" apre `/admin/eventi/nuovo`.
+- [ ] 8. "Duplica" crea con un clic una copia in bozza non pubblicata e apre il
+      wizard sulla copia. Verificare nella scheda Piattaforme che postazioni e
+      giochi siano stati copiati.
+- [ ] 9. "Elimina" chiede conferma e poi rimuove l'evento. Provarlo su un
+      evento che ha almeno un torneo e una prenotazione: deve sparire tutto,
+      senza errori.
+
+### Wizard di creazione
+
+- [ ] 10. La scheda Info contiene solo: titolo, slug, tipo evento, inizio,
+      fine, apertura e chiusura prenotazioni, prezzo sul posto, capienza
+      massima, luogo, indirizzo, cover locandina e le quattro caselle.
+- [ ] 11. "Avanti" salva l'evento come bozza e porta alla scheda Piattaforme
+      dell'evento appena creato.
+- [ ] 12. Selezionando una postazione la card si apre da sola sull'elenco dei
+      giochi. Le caselle dei giochi restano disattivate finche la postazione
+      non e selezionata.
+- [ ] 13. "Avanti" salva la configurazione e porta alla scheda Tornei.
+- [ ] 14. "Crea torneo": la select delle postazioni mostra solo quelle scelte
+      per l'evento e quella dei giochi solo i giochi resi disponibili su quella
+      postazione.
+- [ ] 15. Alla creazione si torna al wizard e il torneo compare come card con
+      piattaforma, gioco, orario, tipo e massimo di partecipanti.
+- [ ] 16. "Salva evento" riporta all'elenco. Con "Pubblica sul sito" spuntata
+      l'evento risulta pubblico e programmato; senza, resta bozza e privato.
+- [ ] 17. Riaprendo l'evento con "Modifica" i tre passi mostrano i dati
+      salvati.
+
+### Spaziature e sticky
+
+- [ ] 18. A 375 px le pagine della console usano tutta la larghezza utile: il
+      contenuto non e stretto fra due margini larghi.
+- [ ] 19. Scorrendo una pagina lunga l'intestazione della console resta in
+      alto.
+- [ ] 20. Nessuna pagina scorre in orizzontale. Tabelle e tabelloni scorrono
+      dentro il proprio riquadro.
+
+### Risultato atteso
+
+La console apre sull'evento che conta; creare un evento e un percorso a tre
+passi salvabile in bozza; duplicazione ed eliminazione fanno quello che
+promettono; su telefono il contenuto respira senza sprecare spazio.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## Tema scuro, scheda evento e liste tornei
+
+### Prerequisiti
+
+- stack locale avviato, account admin, e possibilmente i dati dimostrativi
+  descritti in `guideline_implementations.md`.
+
+### Componenti e leggibilita
+
+- [ ] 1. Aprire una maschera con molti campi (`/admin/eventi/nuovo`): i campi
+      sono scuri, il testo si legge, nessuna casella bianca.
+- [ ] 2. Aprire una select e scorrere le voci: la tendina e scura e le voci si
+      leggono.
+- [ ] 3. I pulsanti pieni sono nel rosso del marchio, non rosa.
+- [ ] 4. Gli angoli delle card sono quelli di sempre, non esagerati.
+
+### Dashboard
+
+- [ ] 5. Non c'e piu il pulsante "Aggiorna".
+- [ ] 6. Con evento programmato si vedono solo "Modifica" e "Start evento".
+- [ ] 7. Dopo l'avvio restano "Modifica" e "Check-in".
+
+### Scheda evento
+
+- [ ] 8. In `/admin/eventi` toccare il titolo di un evento apre la sua scheda.
+- [ ] 9. La scheda mostra informazioni e le tre schede, senza comandi.
+
+### Tornei
+
+- [ ] 10. `/admin/tornei` ha le schede In corso, In programma e Storico. La
+      prima compare solo se un torneo e in corso.
+- [ ] 11. Nella scheda di un torneo la testata mostra stato, piattaforma, nome
+      e vincitore; "Mostra dettagli" apre il resto.
+- [ ] 12. Torneo a eliminazione diretta con sedici iscritti: il tabellone ha
+      quattro colonne e i collegamenti uniscono le coppie.
+- [ ] 13. Torneo a girone con sedici iscritti: la classifica e ordinata per
+      vittorie e l'elenco incontri riporta i punteggi.
+
+### Giochi
+
+- [ ] 14. Su telefono la griglia dei giochi e a due colonne.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## Plancia Live, scheda della giornata e postazioni su telefono
+
+### Prerequisiti
+
+- stack locale avviato e dati dimostrativi caricati
+  (`supabase/dev/demo_showcase.sql`);
+- account con ruolo `admin` o `super_admin`;
+- almeno un evento in stato `running` per le prove sul pallino, piu un evento
+  `scheduled` per il confronto.
+
+### Intestazione e pallino
+
+- [ ] 1. Aprire `/admin` con un evento in corso: in alto c'e la scritta `Live`
+      con un pallino rosso che lampeggia, non "Evento in corso".
+- [ ] 2. Nella tab bar (in basso su telefono, a sinistra su desktop) la prima
+      voce si chiama `Live` e la sua icona e lo stesso pallino lampeggiante.
+- [ ] 3. Chiudere l'evento oppure aprire la console senza eventi in corso: la
+      voce `Live` torna a mostrare l'icona normale e l'intestazione dice
+      "Prossimo evento".
+
+### Scheda della giornata
+
+- [ ] 4. La scheda in alto mostra, in quest'ordine: pastiglia di stato con
+      pallino, sede, comando `Dettagli`, giorno e fascia oraria in grande, e a
+      destra il numero dei presenti sul totale dei prenotati.
+- [ ] 5. Toccare `Dettagli`: la griglia con prezzo, postazioni, tornei e
+      capienza si chiude e la scheda si accorcia; toccandolo di nuovo torna
+      aperta.
+- [ ] 6. Le azioni (`Modifica`, `Check-in` o `Start evento`) restano sempre
+      visibili nel piede della scheda, anche a dettagli chiusi.
+- [ ] 7. Ripetere le prove 4-6 su telefono a 375 px: nessun testo tagliato,
+      nessuno scorrimento orizzontale.
+
+### Schede
+
+- [ ] 8. A evento avviato l'etichetta della prima scheda e `Partecipanti` con
+      il numero nella forma `12/36`: a sinistra chi ha fatto il check-in, a
+      destra chi ha prenotato.
+- [ ] 9. Sotto le schede non compare piu la riga che ripete il numero dei
+      partecipanti: l'elenco comincia subito.
+- [ ] 10. Nella scheda `Tornei` i tornei in corso stanno in cima, poi quelli da
+      giocare, in fondo i conclusi, piu attenuati.
+
+### Postazioni e menu Altro
+
+- [ ] 11. Su telefono `/postazioni` (vetrina) e `/admin/piattaforme` (console)
+      mostrano due card per riga. Su desktop restano tre.
+- [ ] 12. In `/admin/altro` non ci sono piu `Live evento` e `Check-in`: il
+      check-in si apre dal pulsante sulla plancia Live.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## Tornei elastici: manche, tempi e squadre
+
+### Prerequisiti
+
+- stack locale avviato, account admin e almeno sedici utenti demo
+  (`supabase/dev/demo_showcase.sql`);
+- per le prove sulle squadre servono due account utente diversi, anche su due
+  browser o in finestra anonima.
+
+### Creazione
+
+- [ ] 1. Aprire `/admin/tornei` e premere "Nuovo torneo". In alto c'e "Tipo di
+      torneo" con i preset; sotto i tre blocchi "Chi gioca", "Come ci si
+      affronta", "Come si vince".
+- [ ] 2. Scegliere il preset "Manche a punti": il modulo si adatta da solo
+      (gruppi da quattro, tre manche, ordine di arrivo, punti 10/8/6/4).
+- [ ] 3. Il riquadro azzurro in fondo mostra la frase "Come si giochera" e,
+      se ci sono iscritti, quante partite verranno create.
+- [ ] 4. Non esiste piu il campo Slug. Descrizione e regole sono aree di testo
+      alte piu righe.
+- [ ] 5. Creare il torneo e riaprirlo: lo slug e
+      `piattaforma-gioco-data`, visibile in "Mostra dettagli".
+
+### Manche
+
+- [ ] 6. Iscrivere sedici utenti e avviare il torneo: si creano tre manche da
+      quattro gruppi.
+- [ ] 7. Aprire una partita: c'e una riga per concorrente con la casella della
+      posizione di arrivo. Il pulsante resta bloccato finche le posizioni non
+      sono tutte diverse, e il motivo e scritto sotto.
+- [ ] 8. Salvare: la card mostra l'ordine di arrivo con i punti (+10, +8, +6,
+      +4) e la classifica somma i punti, non le vittorie.
+- [ ] 9. Controllare che nelle tre manche nessuno incontri due volte lo stesso
+      avversario.
+- [ ] 10. A manche finite il torneo si chiude da solo e il primo in classifica
+      risulta vincitore.
+
+### Tempi
+
+- [ ] 11. Creare un torneo con preset "Time attack" su Gran Turismo e due
+      tentativi. Le partite hanno un solo concorrente.
+- [ ] 12. Registrare i tempi in secondi: la classifica ordina dal tempo piu
+      basso e mostra il distacco dal migliore.
+
+### Squadre
+
+- [ ] 13. Creare un torneo "Coppie a eliminazione" con squadre a invito e
+      iscrizioni aperte.
+- [ ] 14. Dal primo account aprire il torneo nell'app, creare una squadra: la
+      scheda "Squadre" mostra il codice di sei caratteri, visibile solo al
+      capitano.
+- [ ] 15. Dal secondo account provare a entrare senza codice: deve essere
+      rifiutato. Con il codice deve entrare, e la squadra passa a completa.
+- [ ] 16. In console, con una squadra incompleta, provare ad avviare il torneo:
+      deve rifiutare e indicare le squadre spaiate. Completarla con "Aggiungi"
+      oppure eliminarla, poi avviare.
+- [ ] 17. La classifica mostra il nome della squadra con sotto i nickname dei
+      componenti.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## Uscita dalla console, schede prenotati/partecipanti e tessera ARCI
+
+**Prerequisiti.** Ambiente locale avviato, account `super_admin` (o `admin`) e
+un account utente normale. Utile la giornata dimostrativa
+(`supabase/dev/demo_showcase.sql`) e almeno un evento gia concluso.
+
+### Uscita e navigazione della console
+
+- [ ] 1. Aprire `/admin` su schermo largo (>= 1280 px). La colonna di sinistra
+      mostra Live, Eventi, Tornei, Postazioni, Giochi e poi i gruppi
+      "Contenuti" e "Amministrazione". La voce "Altro" non c'e.
+- [ ] 2. In fondo alla colonna compaiono l'indirizzo dell'account e il comando
+      `Esci`. Premendolo si torna alla home pubblica da disconnessi; rientrando
+      in `/admin` si viene mandati al login.
+- [ ] 3. Ridurre la finestra a 375 px (o aprire da telefono): la barra in basso
+      torna a sei voci con "Altro", e la pagina Altro chiude con la sezione
+      "Sessione" e lo stesso comando `Esci`.
+- [ ] 4. Con un account `staff` verificare che la colonna mostri solo le voci
+      permesse e comunque il comando di uscita.
+- [ ] 5. Nell'area utente (`/app`) la colonna di sinistra mostra lo stesso
+      piede con `Esci`.
+
+### Prenotati e partecipanti
+
+- [ ] 6. Aprire un evento **non ancora avviato** (`/admin/eventi/<id>`): esiste
+      la scheda `Prenotati`, non esiste `Partecipanti`.
+- [ ] 7. Aprire la plancia con un evento **in corso**: ci sono entrambe, si
+      apre su `Partecipanti`, e i due numeri si leggono insieme
+      (per esempio `Prenotati 16` e `Partecipanti 12`).
+- [ ] 8. Fare il check-in di una persona e ricaricare: il numero dei
+      partecipanti sale, quello dei prenotati resta.
+- [ ] 9. Aprire un evento **concluso**: lo stato dice "Conclusa", entrambe le
+      schede ci sono, e `Partecipanti` elenca chi era effettivamente entrato.
+
+### Tessera ARCI
+
+- [ ] 10. Console -> `Impostazioni sito`, riquadro "Tessere ARCI": leggere il
+      conteggio dei tesserati e la data di inizio della stagione corrente.
+- [ ] 11. Aprire la scheda di un utente senza tessera: badge "Senza tessera" e
+      comando `Registra tessera ARCI`. Premerlo: il badge diventa "Tessera
+      ARCI" con la data, il comando diventa `Revoca tessera`.
+- [ ] 12. Dall'account di quell'utente aprire `/app/impostazioni`: il riquadro
+      "Tessera ARCI" dice che risulta valida.
+- [ ] 13. Dallo stesso account provare a modificare il proprio profilo: non
+      esiste nessun comando per spuntarsi la tessera (la scrittura diretta e
+      rifiutata dal database).
+- [ ] 14. Wizard evento, primo passo: togliere "Tessera ARCI obbligatoria" e
+      salvare. In vetrina l'evento non mostra piu il chip "Tessera ARCI
+      richiesta"; rimettendola il chip torna, insieme all'avviso sopra il
+      comando di prenotazione.
+- [ ] 15. Aprire la conferma di prenotazione (`/app/prenota/<id>`) con un
+      account senza tessera: riga "Tessera ARCI — Obbligatoria" e avviso
+      giallo. Con un account tesserato l'avviso diventa la riga verde.
+- [ ] 16. Biglietto (`/app/prenotazioni/<id>`) e scheda del torneo ospitato
+      dalla giornata: dicono anche loro che la tessera serve.
+- [ ] 17. Check-in: scansionare il QR di un prenotato senza tessera su una
+      giornata che la richiede. Dopo il check-in compare il riquadro giallo
+      "Tessera ARCI mancante" con il comando `Tessera vista`; premendolo il
+      riquadro diventa verde. Su una giornata senza obbligo compare la riga
+      "Questa giornata non richiede la tessera ARCI".
+- [ ] 18. Nella lista `Prenotati` della plancia, chi non ha la tessera e
+      marcato "mancante" e in cima compare l'avviso con il conteggio.
+- [ ] 19. `Impostazioni sito` -> `Azzera tessere adesso` -> conferma: il
+      conteggio dei tesserati va a zero e le schede utente tornano "Senza
+      tessera". Rileggere la data di inizio stagione: e adesso.
+- [ ] 20. Cambiare la data di rinnovo (giorno e mese) e salvare: il testo della
+      stagione corrente si aggiorna di conseguenza.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## App del cliente: bacheca, eventi, serata e sfide
+
+**Prerequisiti.** Un account cliente senza ruoli, un account admin, una serata
+in corso e una data programmata. In locale aiutano
+`supabase/dev/demo_showcase.sql` e `supabase/dev/demo_rankings.sql`.
+
+### Bacheca e invito
+
+- [ ] 1. Da cliente aprire `/app`: la prima voce della barra e "Bacheca" con
+      l'icona del giornale, e la pagina mostra annunci e sondaggi.
+- [ ] 2. Con una data pubblica programmata, sopra la bacheca compare l'invito
+      con nome, giorno e ora, prezzo e tessera ARCI. Il comando porta alla
+      scheda dell'evento, non prenota da solo.
+- [ ] 3. Mettere in bozza (o concludere) tutte le date programmate: l'invito
+      sparisce e resta la sola bacheca.
+- [ ] 4. Dopo aver prenotato, l'invito mostra "Sei prenotato" e il comando
+      diventa "Apri l'evento".
+
+### Eventi
+
+- [ ] 5. `/app/eventi`: le giornate sono divise in "In corso", "In programma" e
+      "Storico". Nessun comando di modifica.
+- [ ] 6. Aprire una data programmata: informazioni, tornei della giornata,
+      postazioni con i giochi.
+- [ ] 7. Premere "Prenota il tuo posto": si apre una finestra con evento,
+      orario, costo e tessera. "Annulla" non prenota; "Prenota" si.
+- [ ] 8. Dopo la conferma la scheda dice "Sei prenotato" e offre il biglietto.
+- [ ] 9. Con un account minorenne senza consenso, al posto del comando compare
+      l'invito ad aggiungere il consenso dalle impostazioni.
+
+### Serata (Live)
+
+- [ ] 10. Con nessun evento in corso la voce "Live" non c'e. Avviare l'evento
+      dalla console: ricaricando l'app la voce compare per prima, con il
+      pallino rosso.
+- [ ] 11. Da cliente prenotato e non ancora entrato: la pagina Live mostra il
+      biglietto con il QR.
+- [ ] 12. Da cliente senza prenotazione: al posto del biglietto c'e la riga che
+      dice di chiedere al personale.
+- [ ] 13. Fare il check-in di quel cliente dalla console e ricaricare: il
+      biglietto sparisce e compare "I tuoi tornei" con la prossima partita,
+      l'avversario e quante partite mancano.
+- [ ] 14. Le schede in fondo sono due, "Tornei" e "Piattaforme": nessuna lista
+      di prenotati o presenti.
+- [ ] 15. Chiudere la partita che precede la sua dalla console e premere
+      "Aggiorna": il conteggio scende ("Sei il prossimo").
+
+### Ranking
+
+- [ ] 16. Console, pagina di un gioco: sezione "Ranking" -> "Nuovo ranking".
+      Creare una sfida con nome, regolamento, tempo o punteggio e scadenza.
+- [ ] 17. Nella scheda della sfida registrare un punteggio per un cliente: la
+      classifica si aggiorna e il tentativo compare nell'elenco.
+- [ ] 18. Registrare un secondo tentativo peggiore dello stesso cliente: la
+      classifica tiene il migliore e segna due tentativi.
+- [ ] 19. Eliminare un tentativo dall'elenco: sparisce dalla classifica.
+- [ ] 20. Chiudere la sfida dalle impostazioni: il comando "Registra" si
+      disattiva.
+- [ ] 21. App, `/app/ranking`: la prima tenda parte da "Punti VRSUS" e le altre
+      voci sono solo le postazioni che hanno una sfida.
+- [ ] 22. Scegliere una postazione: compare la tenda dei giochi (solo quelli
+      con sfide) e sotto la tenda delle sfide, aperta sull'ultima creata.
+- [ ] 23. La scheda sopra la classifica mostra stato, scadenza e regolamento
+      della sfida.
+- [ ] 24. Su una sfida a tempo la classifica ordina dal tempo piu basso e lo
+      scrive come `6:36.402`; su una a punteggio dal piu alto.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+

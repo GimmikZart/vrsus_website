@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'site' })
+
 const { data: events, status, error } = await usePublicEvents()
 
 useSeoMeta({

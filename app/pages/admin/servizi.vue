@@ -17,6 +17,7 @@ type ServiceForm = {
 }
 
 definePageMeta({
+  layout: 'admin',
   middleware: ['auth', 'role'],
   requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
 })
@@ -150,9 +151,7 @@ async function saveService() {
 </script>
 
 <template>
-  <main
-    class="mx-auto min-h-[calc(100vh-9rem)] max-w-7xl px-5 py-16 sm:px-8 lg:py-24"
-  >
+  <div>
     <div
       class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between"
     >
@@ -299,5 +298,5 @@ async function saveService() {
         </form>
       </UCard>
     </div>
-  </main>
+  </div>
 </template>

@@ -19,6 +19,17 @@ export default defineNuxtConfig({
     },
   },
   css: ['~/assets/css/main.css'],
+  // VRSUS esiste solo in versione scura. Senza questa preferenza la classe
+  // `dark` non finisce su <html> e i componenti Nuxt UI ripiegano sul tema
+  // chiaro: campi bianchi su pagina nera e tendine illeggibili.
+  colorMode: {
+    preference: 'dark',
+    fallback: 'dark',
+    classSuffix: '',
+    // Su cookie invece che su localStorage: la classe arriva gia corretta
+    // dal server e non c'e il lampo chiaro al primo render.
+    storage: 'cookie',
+  },
   typescript: {
     strict: true,
     // The dedicated `pnpm typecheck` gate runs vue-tsc without the Vite watcher.
@@ -39,6 +50,20 @@ export default defineNuxtConfig({
         key: process.env.NUXT_PUBLIC_SUPABASE_KEY || '',
       },
     },
+  },
+  // Le rotte pubbliche ritirate dalla V2 non spariscono: reindirizzano, cosi i
+  // link gia condivisi e gli eventuali risultati di ricerca continuano a
+  // funzionare. Tornei, ranking e news ora vivono dietro autenticazione, quindi
+  // il redirect e temporaneo (302) e passa dal middleware di login.
+  routeRules: {
+    '/esperienze': { redirect: { to: '/postazioni', statusCode: 301 } },
+    '/esperienze/**': { redirect: { to: '/postazioni', statusCode: 301 } },
+    '/evento': { redirect: { to: '/', statusCode: 301 } },
+    '/news': { redirect: { to: '/app/bacheca', statusCode: 302 } },
+    '/news/**': { redirect: { to: '/app/bacheca', statusCode: 302 } },
+    '/tornei': { redirect: { to: '/app/tornei', statusCode: 302 } },
+    '/tornei/**': { redirect: { to: '/app/tornei', statusCode: 302 } },
+    '/ranking': { redirect: { to: '/app/ranking', statusCode: 302 } },
   },
   nitro: {
     prerender: {
@@ -97,6 +122,10 @@ export default defineNuxtConfig({
       ],
       link: [{ rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' }],
     },
-    pageTransition: { name: 'page', mode: 'out-in' },
+    // La transizione di pagina resta disattivata: con Nuxt 4.5 e Vue 3.5 il
+    // <Transition> attorno a <NuxtPage> non scambia il componente quando la
+    // pagina di destinazione usa `await` di primo livello in `<script setup>`
+    // (Suspense). La rotta e il titolo cambiavano, il contenuto no. Vedi
+    // DEC-029; le transizioni interne alle pagine continuano a funzionare.
   },
 })

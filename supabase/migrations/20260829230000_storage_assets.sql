@@ -36,5 +36,15 @@ create policy admin_assets_delete on storage.objects
     and public.has_any_role(array['admin', 'super_admin'])
   );
 
-comment on table storage.buckets is
-  'VRSUS CMS assets use the public vrsus-assets bucket; object mutations require an admin role.';
+-- storage.buckets is owned by supabase_storage_admin in current Supabase
+-- images, so the migration role cannot always comment on it. The
+-- documentation is applied only when ownership allows it.
+do $$
+begin
+  comment on table storage.buckets is
+    'VRSUS CMS assets use the public vrsus-assets bucket; object mutations require an admin role.';
+exception
+  when insufficient_privilege then
+    null;
+end;
+$$;

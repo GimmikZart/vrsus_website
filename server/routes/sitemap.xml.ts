@@ -13,11 +13,13 @@ function escapeXml(value: string) {
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const baseUrl = config.public.appBaseUrl.replace(/\/$/, '')
+  // La superficie indicizzabile della V2 e la vetrina: tornei, ranking e
+  // bacheca vivono dietro autenticazione e non entrano in sitemap.
   const urls = [
     '/',
     '/eventi',
-    '/esperienze',
-    '/news',
+    '/postazioni',
+    '/chi-siamo',
     '/servizi',
     '/regolamento',
   ]
@@ -32,13 +34,13 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    const [{ data: posts }, { data: services }] = await Promise.all([
-      supabase.from('public_news_posts').select('slug'),
+    const [{ data: platforms }, { data: services }] = await Promise.all([
+      supabase.from('public_platforms').select('slug'),
       supabase.from('public_service_pages').select('slug'),
     ])
 
-    for (const item of posts ?? []) {
-      if (item.slug) urls.push(`/news/${item.slug}`)
+    for (const item of platforms ?? []) {
+      if (item.slug) urls.push(`/postazioni/${item.slug}`)
     }
     for (const item of services ?? []) {
       if (item.slug) urls.push(`/servizi/${item.slug}`)
