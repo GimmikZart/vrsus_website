@@ -13,6 +13,15 @@ implementative bloccanti.
 
 ## USER ACTION REQUIRED
 
+- **Deploy beta su Cloudflare Pages.** E il passo che sblocca tutto il
+  resto delle prove: senza un URL HTTPS pubblico non si installano PWA,
+  non si apre la fotocamera per il QR e non si prova in due o piu
+  persone. Il repository e gia pronto (`pnpm build:cloudflare`, un solo
+  lockfile pnpm, DEC-044); restano da fare la creazione del progetto
+  Cloudflare collegato a GitHub, le variabili d'ambiente, il flag
+  `nodejs_compat` e gli URL di redirect in Supabase Auth. Procedura passo
+  passo in `docs/dev/guideline_implementations.md`, sezione
+  "BETA — deploy su Cloudflare Pages".
 - **Contenuti reali.** Home, chi siamo e servizi usano testi segnaposto,
   raccolti in `shared/constants/site-content.ts` e nelle fixture di
   `supabase/seed.sql`. Sostituirli e una singola operazione.
@@ -61,8 +70,9 @@ implementative bloccanti.
 3. Prove manuali multiutente secondo `docs/dev/guideline_test_features.md`,
    in particolare le sezioni sulla console dinamica, le schede condivise e il
    wizard evento.
-4. Configurazione OneSignal e deploy QUALITY, secondo
-   `docs/dev/guideline_implementations.md`.
+4. Deploy beta su Cloudflare Pages secondo
+   `docs/dev/guideline_implementations.md`, poi configurazione OneSignal e
+   separazione QUALITY/PRODUCTION.
 
 ## Progettazione aperta
 

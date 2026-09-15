@@ -186,6 +186,139 @@ La configurazione è completa solo quando i checklist di deploy e test QUALITY
 sono compilati dal responsabile dell’ambiente. Nessun valore reale va inserito
 qui o committato nel repository.
 
+## BETA — deploy su Cloudflare Pages
+
+**Stato:** USER ACTION REQUIRED.
+
+**Serve per:** avere l'app su un URL HTTPS pubblico (`*.pages.dev`) che si
+ridistribuisce da solo a ogni push su `main`, cosi da provarla con altre
+persone, su telefono, con PWA e fotocamera funzionanti. HTTPS non e un
+dettaglio: senza, il browser non installa la PWA e non apre la fotocamera per
+lo scanner QR, quindi la prova in rete locale non copre quelle due funzioni.
+
+L'hosting e Cloudflare Pages per decisione della specifica tecnica (sezione
+Hosting) e la build con quel preset e gia verificata (`docs/ai/TEST_REPORT.md`).
+Il piano free di Cloudflare consente l'uso commerciale; il piano Hobby di
+Vercel no, ed e la ragione per cui non e un'alternativa per questo progetto.
+
+### Prerequisiti
+
+- Repository GitHub raggiungibile (`GimmikZart/vrsus_website`).
+- Un account Cloudflare (basta email e password, nessuna carta).
+- Progetto Supabase remoto gia creato, con le migration applicate.
+
+In beta il progetto Supabase remoto e uno solo. La separazione QUALITY /
+PRODUCTION prevista dalla specifica resta da fare prima dell'apertura al
+pubblico: fino ad allora il deploy Cloudflare punta a quell'unico progetto.
+
+### Procedura
+
+- [ ] 1. Accedere a `dash.cloudflare.com`, sezione **Workers & Pages**, e
+      creare un'applicazione di tipo **Pages** collegata a GitHub. Autorizzare
+      Cloudflare sul repository `vrsus_website` e scegliere `main` come
+      **Production branch**.
+- [ ] 2. Impostare i **Build settings**:
+      - Framework preset: `Nuxt.js` oppure `None` (le voci sotto valgono in
+        entrambi i casi e vanno verificate una per una);
+      - Build command: `pnpm run build:cloudflare`;
+      - Build output directory: `dist`;
+      - Root directory: vuota.
+- [ ] 3. Aggiungere fra le variabili di build `NODE_VERSION` = `22.21.1`
+      (stesso valore di `.nvmrc`). Senza, l'immagine di build usa una versione
+      diversa da quella provata in locale.
+- [ ] 4. Inserire le variabili d'ambiente dell'ambiente **Production** secondo
+      la tabella sotto. Marcare come **Secret** (valore cifrato, non piu
+      visibile) `SUPABASE_SERVICE_ROLE_KEY` e `ONESIGNAL_REST_API_KEY`.
+- [ ] 5. Avviare il primo deploy e annotare l'URL assegnato, nella forma
+      `https://<nome-progetto>.pages.dev`.
+- [ ] 6. Tornare nelle variabili e correggere `APP_BASE_URL` con l'URL reale
+      appena ottenuto, poi rilanciare il deploy (**Retry deployment**): il
+      valore serve a costruire i link assoluti e non e noto prima del passo 5.
+- [ ] 7. In **Settings** -> **Functions** (o **Runtime**) aggiungere il
+      compatibility flag `nodejs_compat` sia per Production sia per Preview, e
+      una compatibility date pari o successiva a `2024-09-23`. E il flag che
+      risolve il warning "Node compatibility" visto nei build report.
+- [ ] 8. Nel dashboard Supabase, **Authentication** -> **URL Configuration**:
+      impostare `Site URL` sull'URL `*.pages.dev` e aggiungere ai
+      **Redirect URLs** `https://<nome-progetto>.pages.dev/**`. Senza questo,
+      login e conferma email rimandano a `127.0.0.1` e non funzionano per
+      nessuno.
+- [ ] 9. Quando OneSignal verra configurato, impostare come origin del sito lo
+      stesso URL `*.pages.dev` e valorizzare le due variabili push.
+- [ ] 10. Facoltativo: collegare anche il branch `quality` come preview. Le
+      preview hanno un alias stabile `https://quality.<nome-progetto>.pages.dev`
+      e variabili proprie, quindi possono puntare a un secondo progetto
+      Supabase quando esistera.
+
+### Variabili / valori richiesti
+
+| Variabile | Tipo | Valore |
+| --- | --- | --- |
+| `APP_ENV` | PUBLIC | `quality` in beta, `production` all'apertura |
+| `APP_BASE_URL` | PUBLIC | `https://<nome-progetto>.pages.dev` |
+| `NUXT_PUBLIC_SUPABASE_URL` | PUBLIC | URL del progetto Supabase remoto |
+| `NUXT_PUBLIC_SUPABASE_KEY` | PUBLIC | anon key del progetto remoto |
+| `SUPABASE_SERVICE_ROLE_KEY` | SECRET | service role key del progetto remoto |
+| `NUXT_PUBLIC_ONESIGNAL_APP_ID` | PUBLIC | App ID OneSignal, vuoto finche non c'e |
+| `ONESIGNAL_REST_API_KEY` | SECRET | REST API key OneSignal, vuota finche non c'e |
+| `NODE_VERSION` | build | `22.21.1` |
+
+Sono gli stessi nomi di `.env.example`: `nuxt.config.ts` li legge da
+`process.env` durante la build, e Cloudflare espone le variabili al processo di
+build, quindi finiscono nel `runtimeConfig` del worker generato. La service
+role key resta dentro `_worker.js`, che non e codice pubblico, ma cambiarla
+richiede un nuovo deploy.
+
+Per sostituire un valore **senza ricompilare** servono invece i nomi che Nitro
+cerca a runtime, derivati dalle chiavi di `runtimeConfig`. Attenzione alla
+conversione, che spezza `oneSignal` in due parole:
+
+```text
+NUXT_PUBLIC_APP_ENV
+NUXT_PUBLIC_APP_BASE_URL
+NUXT_PUBLIC_SUPABASE_URL
+NUXT_PUBLIC_SUPABASE_KEY
+NUXT_SUPABASE_SERVICE_ROLE_KEY
+NUXT_PUBLIC_ONE_SIGNAL_APP_ID
+NUXT_ONE_SIGNAL_REST_API_KEY
+```
+
+`NUXT_PUBLIC_ONESIGNAL_APP_ID` (senza lo stacco) funziona solo perche
+`nuxt.config.ts` lo legge esplicitamente a build time: come override a runtime
+non verrebbe visto.
+
+### Verifica
+
+1. La build su Cloudflare termina senza errori e pubblica un URL `*.pages.dev`.
+2. La home carica in HTTPS e mostra i contenuti del Supabase remoto, non i
+   segnaposto vuoti: se le card sono vuote, le variabili Supabase non sono
+   arrivate alla build.
+3. Registrazione e login funzionano da un dispositivo diverso dalla
+   workstation, e la mail di conferma rimanda al dominio `*.pages.dev`.
+4. Una pagina della console (`/admin`) risponde: e la prova che gli endpoint
+   `server/api/**` girano davvero e che la service role key e configurata.
+5. Da telefono: il browser propone l'installazione della PWA e lo scanner QR
+   del check-in apre la fotocamera.
+6. Un push su `main` produce un nuovo deploy automatico.
+
+### Limiti noti del piano free
+
+Il piano free di Cloudflare Workers concede **10 ms di CPU per richiesta**.
+L'attesa su Supabase non conta (e I/O), ma il render SSR di una pagina pesante
+puo superarli e restituire errore 1102 / "Exceeded CPU limit". Se succede in
+modo sistematico le strade sono due: alleggerire il render lato server, oppure
+passare a Workers Paid (5 $/mese).
+
+Il progetto non e legato a Cloudflare: Nitro genera l'output dal preset, quindi
+un eventuale spostamento su Netlify (free, uso commerciale consentito, runtime
+Node senza quel limite di CPU) richiede di cambiare preset di build e
+ricollegare il repository, non di toccare il codice applicativo.
+
+### Note utente
+
+Le credenziali vivono solo nel dashboard del provider. Non vanno inserite in
+questo documento, nei file `.env` committati o nei messaggi di commit.
+
 ## Dati dimostrativi locali (facoltativi)
 
 Servono solo in DEV, per guardare tabellone e gironi con numeri realistici.

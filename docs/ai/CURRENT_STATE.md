@@ -12,8 +12,11 @@ sono arrivate l'uscita dalla console con le voci di secondo piano in colonna
 (DEC-040) e il dominio della tessera ARCI (DEC-041).
 
 Restano da fare i contenuti reali al posto dei segnaposto, la validazione dei
-testi legali, le prove su dispositivo fisico (PWA e fotocamera) e il deploy
-QUALITY/PRODUCTION.
+testi legali, le prove su dispositivo fisico (PWA e fotocamera) e il deploy.
+Il repository e pronto per il deploy su Cloudflare Pages (script
+`pnpm build:cloudflare`, lockfile pnpm unico, procedura completa in
+`docs/dev/guideline_implementations.md`): manca la configurazione manuale
+del progetto Cloudflare, che non puo essere svolta dall'agente.
 
 ## Cosa e stato costruito
 
@@ -151,7 +154,12 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
   in `shared/constants/site-content.ts`.
 - Testi legali del consenso e informativa privacy da validare (DEC-026).
 - Verifica su dispositivo fisico di installazione PWA, fotocamera e scanner QR.
-- Configurazione OneSignal e deploy QUALITY/PRODUCTION.
+- Deploy beta su Cloudflare Pages: procedura, variabili e verifiche sono
+  pronte in `docs/dev/guideline_implementations.md` (sezione BETA), ma la
+  creazione del progetto Cloudflare e l'inserimento delle credenziali sono
+  USER ACTION REQUIRED. Finche non e fatto, l'app esiste solo in locale e
+  PWA, fotocamera e prove multiutente vere restano impossibili (DEC-044).
+- Configurazione OneSignal e separazione QUALITY/PRODUCTION.
 - Il pannello ARCI del check-in non e stato provato a schermo: serve un QR
   reale. La RPC `check_in_booking` che lo alimenta e coperta dai test pgTAP.
 - Non esiste ancora una registrazione sul posto per chi arriva senza
@@ -179,4 +187,4 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
 
 ## Ultimo aggiornamento
 
-2026-09-14
+2026-09-15

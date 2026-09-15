@@ -701,3 +701,20 @@ corso, sfide dimostrative caricate.
 - E2E Chromium non rieseguiti: le rotte pubbliche toccate sono solo il link
   della locandina.
 
+
+## Sessione 2026-09-15 — Preparazione deploy Cloudflare Pages
+
+### Suite
+
+| Verifica | Comando | Esito |
+| --- | --- | --- |
+| Build Cloudflare via script | `corepack pnpm run build:cloudflare` | PASS — `dist/_worker.js`, `_routes.json`, `_headers`, `_redirects` generati; 3.45 MB (1.06 MB gzip) |
+| Format check | `corepack pnpm run format:check` | PASS |
+
+### Non verificato
+
+- Il deploy vero su Cloudflare non e stato eseguito: richiede account e
+  credenziali dell'utente (USER ACTION REQUIRED, vedere
+  `docs/dev/guideline_implementations.md`).
+- Di conseguenza restano non provati l'URL pubblico, il login con Supabase
+  remoto, l'installazione PWA e lo scanner QR su dispositivo fisico.

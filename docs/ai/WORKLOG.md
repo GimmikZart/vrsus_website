@@ -1186,3 +1186,39 @@ Migration applicata in locale, tipi rigenerati, dati dimostrativi delle sfide
 caricati con `supabase/dev/demo_rankings.sql`. L'account di prova e i suoi dati
 sono stati rimossi al termine della verifica.
 
+
+## 2026-09-15 — Preparazione del deploy beta
+
+### Lavoro svolto
+
+- Aggiunto lo script `build:cloudflare` (`nuxt build --preset=cloudflare_pages`)
+  per non far ridigitare il preset nel dashboard del provider.
+- Rimosso `package-lock.json` dal versionamento e aggiunto a `.gitignore`
+  insieme a `yarn.lock`: con due lockfile i provider di deploy potevano
+  installare con npm invece che con pnpm.
+- Scritta la procedura completa di deploy su Cloudflare Pages in
+  `docs/dev/guideline_implementations.md`, con variabili, flag `nodejs_compat`,
+  URL di redirect Supabase, verifiche e limiti del piano free.
+- Registrata DEC-044: la configurazione di deploy vive nel dashboard del
+  provider, il repository non contiene `wrangler.toml`.
+- Allineati `CURRENT_STATE.md` e `NEXT_STEPS.md`.
+
+### File principali modificati
+
+- `package.json`
+- `.gitignore`
+- `docs/dev/guideline_implementations.md`
+- `docs/ai/DECISIONS.md`
+- `docs/ai/CURRENT_STATE.md`
+- `docs/ai/NEXT_STEPS.md`
+- `docs/ai/TEST_REPORT.md`
+
+### Verifiche
+
+- `corepack pnpm run build:cloudflare` → PASS
+- `corepack pnpm run format:check` → PASS
+
+### Problemi emersi
+
+- Il deploy effettivo e USER ACTION REQUIRED: servono account Cloudflare e
+  credenziali del progetto Supabase remoto, che l'agente non deve usare.

@@ -1,5 +1,9 @@
 # Dependencies and generated Nuxt output
 node_modules/
+# Il progetto usa pnpm: un lockfile npm farebbe scegliere npm ai
+# provider di deploy, che rilevano il package manager dal lockfile.
+package-lock.json
+yarn.lock
 .nuxt/
 .output/
 dist/

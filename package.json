@@ -6,6 +6,7 @@
   "packageManager": "pnpm@10.15.1",
   "scripts": {
     "build": "nuxt build",
+    "build:cloudflare": "nuxt build --preset=cloudflare_pages",
     "dev": "nuxt dev",
     "dev:prepare": "nuxt prepare",
     "db:start": "supabase start",

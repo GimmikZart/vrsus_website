@@ -1262,3 +1262,45 @@ la configurazione si fa dalla pagina del gioco. I punteggi seguono la strada di
 `public_game_leaderboards` resta in database per lo storico dei punteggi senza
 sfida, ma l'app non la usa piu.
 
+
+## DEC-044 - Il deploy si configura nel provider, non nel repository
+
+**Status:** Accepted
+
+### Decisione
+
+Cloudflare Pages resta l'hosting previsto dalla specifica, collegato al
+repository GitHub con deploy automatico da `main`. La sua configurazione
+(build command, output, variabili, compatibility flag `nodejs_compat`) vive nel
+dashboard del provider: il repository non contiene un `wrangler.toml`.
+
+Il repository espone soltanto lo script `pnpm build:cloudflare`
+(`nuxt build --preset=cloudflare_pages`), e da oggi un solo lockfile,
+`pnpm-lock.yaml`: `package-lock.json` e stato rimosso e aggiunto a
+`.gitignore` insieme a `yarn.lock`.
+
+### Motivazione
+
+Un `wrangler.toml` in un progetto Pages diventa la fonte di verita per
+binding, variabili e compatibility flag, e ignora in silenzio quello che e
+stato impostato dal dashboard. Con la configurazione in un posto solo, un
+valore sbagliato si vede dove lo si e scritto.
+
+Il lockfile doppio e un problema concreto e non teorico: tutti i provider di
+deploy scelgono il package manager dal lockfile presente, quindi con entrambi
+in repository la build remota poteva installare con npm un albero diverso da
+quello provato in locale con pnpm, che la specifica indica come package
+manager del progetto.
+
+Lo script dedicato evita che la stringa del preset venga ridigitata a mano nel
+dashboard: se il preset cambiera, cambia in un punto solo, versionato.
+
+### Conseguenze
+
+Le credenziali degli ambienti remoti non entrano mai nel repository: stanno
+nelle variabili del provider, e la procedura con i nomi esatti e in
+`docs/dev/guideline_implementations.md`. Un ambiente nuovo si crea ripetendo
+quella procedura, non copiando un file di configurazione.
+
+Chi lavora al progetto usa `pnpm`. Un `npm install` rigenererebbe il lockfile
+rimosso, che ora resta comunque fuori dal versionamento.
