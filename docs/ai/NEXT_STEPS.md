@@ -13,6 +13,12 @@ implementative bloccanti.
 
 ## USER ACTION REQUIRED
 
+- **Sistemare gli indirizzi di Auth sul progetto Supabase remoto.** E cio che
+  serve perche la registrazione via email funzioni: `Site URL` su
+  `https://vrsus-website.pages.dev` e `Redirect URLs` con
+  `https://vrsus-website.pages.dev/**`. Senza, l'indirizzo di ritorno chiesto
+  dall'app viene scartato e le mail continuano a puntare a `localhost:3000`
+  (DEC-048). Procedura in `docs/dev/guideline_implementations.md`.
 - **Rigenerare la secret key Supabase di produzione.** La chiave attuale e
   transitata in chiaro in una conversazione: va creata una nuova secret key dal
   dashboard Supabase, aggiornata la variabile `SUPABASE_SERVICE_ROLE_KEY` su
@@ -47,10 +53,11 @@ implementative bloccanti.
   girone (15 per vittoria, 5 per pareggio, 40/25 ai primi due, 10 di
   partecipazione). Sono i punti della classifica generale, non quelli del
   torneo: vanno confermati o corretti da `/admin/altro`.
-- **`pnpm db:reset` da rifare.** Le migration del motore tornei sono state
-  applicate in sequenza senza reset, per non cancellare gli account DEV. Al
-  primo momento comodo conviene fare un reset completo e ricreare gli account
-  con la procedura in `guideline_implementations.md`.
+- **Dati dimostrativi locali da ricreare.** Il reset completo e stato fatto il
+  2026-09-15 (il volume era su PostgreSQL 15 e la CLI ora impone la 17). Gli
+  account di servizio sono stati ricreati; restano da rifare, se servono, i
+  sedici utenti dimostrativi e i dati di torneo creati a mano, con gli script
+  in `supabase/dev/` e la procedura in `guideline_implementations.md`.
 - **Data di rinnovo ARCI.** Il sistema parte dal 1 ottobre, che e l'inizio
   dell'anno associativo piu comune. Va confermata la data effettiva del
   circolo da `/admin/impostazioni` -> Tessere ARCI: da li si sposta il rinnovo

@@ -769,3 +769,43 @@ corso, sfide dimostrative caricate.
   probabile e stata rimossa: l'`await loadRoles()` nel layout dell'app metteva
   l'intera shell dietro a Suspense. Da riverificare online.
 - Prove su dispositivo fisico: installazione, fotocamera, scanner QR.
+
+## Sessione 2026-09-15 (terza) — Registrazione con conferma via email
+
+### Suite
+
+| Verifica | Comando | Esito |
+| --- | --- | --- |
+| Unit | `corepack pnpm test` | PASS — 23 test |
+| Lint / Format / Typecheck | `lint`, `format:check`, `typecheck` | PASS |
+| Build Cloudflare | `corepack pnpm run build:cloudflare` | PASS |
+
+### Flusso di registrazione, provato per intero in locale
+
+Ambiente locale allineato al remoto (`enable_confirmations = true`), mail
+lette da Mailpit.
+
+| Passo | Esito |
+| --- | --- |
+| Registrazione di un account nuovo da `/registrati` | PASS |
+| Compare "Controlla la posta" invece del rimbalzo silenzioso su `/login` | PASS |
+| La mail arriva nella casella locale | PASS |
+| Il link contiene `redirect_to=http://127.0.0.1:3000/confirm` e non la radice | PASS |
+| Aprendo il link si passa da `/confirm` e si arriva in bacheca autenticati | PASS |
+| L'account risulta confermato e la sessione e attiva | PASS |
+
+### Ambiente locale ricostruito
+
+Il volume del database locale era su PostgreSQL 15, incompatibile con l'immagine
+PostgreSQL 17 imposta dalla CLI 2.117 (`major_version` in `config.toml` viene
+ignorato). Backup completo in `supabase/.temp/` prima di ricreare lo stack,
+poi migration, seed e ricreazione degli account DEV.
+
+### Non verificato
+
+- Il flusso sul progetto remoto: dipende da `Site URL` e `Redirect URLs` nel
+  dashboard Supabase, che sono USER ACTION REQUIRED. Finche non sono corretti,
+  `emailRedirectTo` viene scartato e il link continua a puntare all'indirizzo
+  vecchio.
+- I sedici utenti dimostrativi e i dati di prova creati a mano non sono stati
+  ricreati dopo il reset.

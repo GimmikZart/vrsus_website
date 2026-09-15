@@ -29,7 +29,20 @@ enabled = true
 [auth]
 enabled = true
 site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = ["http://127.0.0.1:3000"]
+# Il carattere jolly serve perche il link della mail torna su `/confirm`: un
+# indirizzo di ritorno non in elenco viene scartato e sostituito con `site_url`.
+additional_redirect_urls = [
+  "http://127.0.0.1:3000/**",
+  "http://localhost:3000/**",
+]
+
+# La conferma via email e attiva come sul progetto remoto. Tenerla spenta in
+# locale ha nascosto a lungo che il percorso di conferma non funzionava: senza
+# sessione dopo `signUp` l'app rimbalzava su `/login` senza spiegazioni, e la
+# pagina di atterraggio del link non esisteva proprio.
+# In locale le mail non escono: si leggono su http://127.0.0.1:54334
+[auth.email]
+enable_confirmations = true
 
 [realtime]
 enabled = true

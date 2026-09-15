@@ -61,6 +61,35 @@ porta con altri stack Supabase presenti nella workstation.
 passare; `pnpm dev` deve caricare la landing senza warning di URL/key mancanti.
 Studio è disponibile su `http://127.0.0.1:54333`.
 
+### Conferma email in locale
+
+Dal 2026-09-15 `supabase/config.toml` ha `enable_confirmations = true`, come il
+progetto remoto. Un account appena registrato **non** e utilizzabile finche non
+si apre il link di conferma.
+
+In locale le mail non escono davvero: si leggono da
+`http://127.0.0.1:54334`. Il link porta a `/confirm`, che apre la sessione e
+manda in bacheca.
+
+Per creare un account gia confermato senza passare dalla mail, usare
+l'endpoint admin con `"email_confirm": true`, come nella procedura degli
+account di prova.
+
+### Versione di PostgreSQL
+
+La CLI Supabase dalla 2.117 avvia soltanto PostgreSQL 17 e **ignora**
+`major_version` in `config.toml`. Un volume creato con PostgreSQL 15 non
+riparte piu: il container resta `unhealthy` con
+`database files are incompatible with server`.
+
+Se dovesse ricapitare su un'altra workstation, i dati non sono persi: il volume
+si rimonta con l'immagine vecchia e si salva prima di ricreare lo stack.
+
+```bash
+docker run -d --name pg15_rescue -e POSTGRES_PASSWORD=postgres   -v supabase_db_<progetto>:/var/lib/postgresql/data   public.ecr.aws/supabase/postgres:15.8.1.085
+docker exec pg15_rescue pg_dumpall -U postgres > supabase/.temp/backup.sql
+```
+
 ### Note utente
 
 Per QUALITY e PROD usare i progetti remoti separati definiti nella specifica;
@@ -239,10 +268,15 @@ pubblico: fino ad allora il deploy Cloudflare punta a quell'unico progetto.
       una compatibility date pari o successiva a `2024-09-23`. E il flag che
       risolve il warning "Node compatibility" visto nei build report.
 - [ ] 8. Nel dashboard Supabase, **Authentication** -> **URL Configuration**:
-      impostare `Site URL` sull'URL `*.pages.dev` e aggiungere ai
-      **Redirect URLs** `https://<nome-progetto>.pages.dev/**`. Senza questo,
-      login e conferma email rimandano a `127.0.0.1` e non funzionano per
-      nessuno.
+      impostare `Site URL` su `https://<nome-progetto>.pages.dev` e aggiungere
+      ai **Redirect URLs** `https://<nome-progetto>.pages.dev/**`.
+
+      Servono **entrambi** e non e un dettaglio: e il motivo per cui le mail di
+      conferma puntavano a `localhost:3000`. L'applicazione chiede il ritorno
+      su `/confirm` (`emailRedirectTo`), ma Supabase accetta un indirizzo di
+      ritorno solo se compare fra i Redirect URLs; se non c'e, lo scarta e usa
+      `Site URL`, che di suo resta quello di sviluppo. Il carattere jolly
+      finale serve perche l'indirizzo di ritorno ha un percorso.
 - [ ] 9. Quando OneSignal verra configurato, impostare come origin del sito lo
       stesso URL `*.pages.dev` e valorizzare le due variabili push.
 - [ ] 10. Facoltativo: collegare anche il branch `quality` come preview. Le

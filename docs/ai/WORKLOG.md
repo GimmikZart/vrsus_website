@@ -1278,3 +1278,48 @@ sono stati rimossi al termine della verifica.
   reale.
 - Il blocco dopo il login non e riproducibile in locale; la causa probabile e
   stata rimossa ma va confermata sul sito pubblicato.
+
+## 2026-09-15 (terza) — Registrazione via email
+
+### Lavoro svolto
+
+- Diagnosi: il progetto remoto ha `mailer_autoconfirm: false`, quello locale lo
+  aveva a `true`. Il percorso della conferma non era mai stato eseguito e aveva
+  tre difetti insieme: nessun `emailRedirectTo` nella chiamata `signUp` (quindi
+  Supabase usava il `Site URL` del progetto, rimasto all'ambiente di sviluppo),
+  nessuna pagina `/confirm` benche fosse dichiarata come `callback` in
+  `nuxt.config.ts`, e una navigazione verso `/app` subito dopo la
+  registrazione, che senza sessione faceva rimbalzare su `/login` in silenzio.
+- `signUp` ora chiede il ritorno su `${APP_BASE_URL}/confirm`.
+- Nuova pagina `/confirm`: aspetta lo scambio del codice, entra in bacheca, e
+  distingue il link scaduto da quello gia usato.
+- La pagina di registrazione mostra "Controlla la posta" quando la sessione non
+  arriva, e avvisa il minorenne che il consenso si completa dopo il primo
+  accesso (DEC-048).
+- `supabase/config.toml`: `enable_confirmations = true` e Redirect URLs con il
+  carattere jolly, per esercitare il percorso anche in locale.
+
+### Ambiente locale
+
+Il riavvio dello stack ha fatto emergere che il volume del database era su
+PostgreSQL 15 mentre la CLI 2.117 avvia solo la 17 e ignora `major_version`.
+Backup completo del vecchio database in `supabase/.temp/` (rimontando il volume
+con l'immagine 15.8), poi stack ricreato, migration, seed e ricreazione degli
+account di servizio con ruoli.
+
+### File principali modificati
+
+- `app/pages/registrati.vue`, `app/pages/confirm.vue`
+- `supabase/config.toml`
+- `docs/dev/guideline_implementations.md`
+
+### Verifiche
+
+- Flusso completo provato in locale con la casella Mailpit: registrazione,
+  mail, link verso `/confirm`, sessione attiva in bacheca.
+- Lint, format, typecheck, unit 23/23, build Cloudflare → PASS.
+
+### Problemi emersi
+
+- Il flusso remoto resta bloccato finche `Site URL` e `Redirect URLs` del
+  progetto Supabase non vengono corretti: e USER ACTION REQUIRED.

@@ -162,6 +162,13 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
   in produzione si bloccava (DEC-044, DEC-046).
 - La secret key Supabase usata in produzione va rigenerata: e transitata in
   chiaro in una conversazione. USER ACTION REQUIRED.
+- Registrazione via email: il codice e a posto e provato in locale per intero
+  (DEC-048), ma sul progetto remoto `Site URL` e `Redirect URLs` puntano ancora
+  all'ambiente di sviluppo, quindi le mail rimandano a `localhost:3000`.
+  USER ACTION REQUIRED.
+- L'ambiente locale e stato ricostruito su PostgreSQL 17: i sedici utenti
+  dimostrativi e i dati creati a mano non ci sono piu. Backup del vecchio
+  database in `supabase/.temp/`.
 - Configurazione OneSignal e separazione QUALITY/PRODUCTION.
 - Il pannello ARCI del check-in non e stato provato a schermo: serve un QR
   reale. La RPC `check_in_booking` che lo alimenta e coperta dai test pgTAP.

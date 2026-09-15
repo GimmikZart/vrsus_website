@@ -1430,3 +1430,49 @@ l'operatore possa sbagliare.
 `slugify` resta duplicato in tre punti (`app/utils`, `server/utils`, la copia
 locale in `servizi.vue`). L'unificazione non e stata fatta in questa sessione
 per non allargare il perimetro; `uniqueSlug` invece nasce gia condiviso.
+
+## DEC-048 - La conferma via email ha una rotta sua, e l'ambiente locale la esercita
+
+**Status:** Accepted
+
+### Decisione
+
+`signUp` passa sempre `emailRedirectTo` costruito su `APP_BASE_URL`
+(`${appBaseUrl}/confirm`), e `/confirm` esiste come pagina: aspetta che il
+client scambi il codice, entra in bacheca, e se il link e scaduto o gia usato
+lo dice in chiaro.
+
+Quando `signUp` non restituisce una sessione, cioe quando il progetto chiede la
+conferma, la pagina di registrazione mostra "Controlla la posta" invece di
+navigare verso l'area riservata. Per un minorenne il consenso del genitore si
+sposta dopo il primo accesso, perche registrarlo richiede una sessione.
+
+`supabase/config.toml` attiva `enable_confirmations` anche in locale.
+
+### Motivazione
+
+Il percorso era rotto in tre punti diversi e nessuno se ne era accorto, perche
+in locale `mailer_autoconfirm` era acceso: `signUp` restituiva subito una
+sessione e la conferma non veniva mai esercitata. Sul progetto remoto, dove la
+conferma e obbligatoria, tutti e tre i punti si vedevano insieme.
+
+Il link puntava all'ambiente di sviluppo perche l'indirizzo di ritorno non
+veniva chiesto: Supabase ripiegava sul `Site URL` del progetto. La pagina di
+atterraggio dichiarata in `nuxt.config.ts` come `callback` non esisteva. E dopo
+la registrazione l'app navigava comunque verso `/app`, dove la guardia
+rimbalzava su `/login` senza dire niente: dal di fuori sembrava che la
+registrazione non funzionasse.
+
+Allineare l'ambiente locale e la parte piu importante della decisione: una
+differenza di configurazione fra sviluppo e produzione aveva reso invisibile un
+percorso intero.
+
+### Conseguenze
+
+Chi sviluppa in locale legge le mail su `http://127.0.0.1:54334` e apre il link
+come farebbe un cliente. Per gli account di servizio resta la creazione con
+`"email_confirm": true`, che salta la mail.
+
+`emailRedirectTo` non basta da solo: l'indirizzo deve comparire nei Redirect
+URLs del progetto Supabase, altrimenti viene scartato in silenzio a favore del
+`Site URL`. La procedura e in `docs/dev/guideline_implementations.md`.
