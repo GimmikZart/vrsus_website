@@ -752,7 +752,8 @@ privacy, non il numero totale di righe.
 
 ## DEC-031 - La console ruota attorno all'evento corrente e non ha area personale
 
-**Status:** Accepted
+**Status:** Accepted (la rimozione del passaggio all'area personale e superata
+da DEC-045)
 
 ### Decisione
 
@@ -1304,3 +1305,128 @@ quella procedura, non copiando un file di configurazione.
 
 Chi lavora al progetto usa `pnpm`. Un `npm install` rigenererebbe il lockfile
 rimosso, che ora resta comunque fuori dal versionamento.
+
+## DEC-045 - Un ruolo speciale non toglie l'area cliente
+
+**Status:** Accepted
+
+### Decisione
+
+Chi ha un ruolo `staff`, `admin` o `super_admin` resta un cliente del circolo a
+tutti gli effetti: prenota, si iscrive ai tornei, ha i suoi punti. La console
+non e un'identita alternativa ma un'area in piu.
+
+Il passaggio fra le due aree e un interruttore a due posizioni,
+`UiVrsusWorkspaceSwitch`, che vive dentro `UiVrsusSessionCard`, cioe sempre
+accanto all'uscita: nel piede della colonna di sinistra su schermo largo, nella
+pagina Altro della console e nella sezione Sessione delle impostazioni
+dell'app su telefono. Chi ha il solo ruolo `staff` viene portato al check-in,
+perche `/admin` chiede admin o super-admin.
+
+Il collegamento `Console` nell'intestazione di telefono dell'app cliente e i
+due collegamenti `Check-in operativo` e `Console amministrazione` nelle
+impostazioni sono stati rimossi: erano tre porte diverse per lo stesso gesto,
+tutte a senso unico.
+
+### Motivazione
+
+Sostituisce la parte di DEC-031 che toglieva il passaggio all'area personale
+dalla shell della console. La motivazione di allora - "chi amministra non ha un
+profilo di gioco" - e stata rettificata dal proprietario: l'account che
+amministra il circolo e anche una persona che gioca, e obbligarlo a due account
+separati per fare le due cose non ha senso.
+
+Il ritorno mancava del tutto: dalla console non si tornava all'app se non
+scrivendo l'indirizzo a mano, e su schermo largo non esisteva nemmeno l'andata.
+
+### Conseguenze
+
+`VrsusSessionCard` non e piu solo "chi sei e come esci" ma il blocco della
+sessione: area corrente, identita, uscita. Chi aggiunge una shell nuova ottiene
+il passaggio gratis mettendoci quella scheda.
+
+DEC-031 resta valida per tutto il resto: la console ruota attorno all'evento
+corrente e non ha una propria pagina di profilo.
+
+## DEC-046 - La navigazione va in rete, la pagina offline e un ripiego
+
+**Status:** Accepted
+
+### Decisione
+
+Il service worker non usa `navigateFallback`. Le richieste di navigazione
+seguono una regola `NetworkOnly` con `PrecacheFallbackPlugin` su `/offline`, e
+`/offline` viene prerenderizzata (`nitro.prerender.routes`) per esistere come
+file statico dentro il precache.
+
+Il manifest dichiara icone PNG da 192 e 512 piu una `maskable` dedicata,
+generate dal logo SVG e conservate in `public/icons/`.
+
+### Motivazione
+
+`navigateFallback` e la configurazione di una SPA: Workbox registra una
+`NavigationRoute` che risponde a **ogni** navigazione con un unico documento
+precacheato. Qui il documento lo costruisce il server a ogni richiesta, quindi
+quella regola e sbagliata in partenza.
+
+Nella configurazione precedente era anche rotta: il documento indicato,
+`/offline`, non era prerenderizzato e quindi non era in precache.
+`createHandlerBoundToURL` solleva un errore su un URL non precacheato, il
+service worker non superava l'avvio e la registrazione falliva. Il risultato
+era un'app che online non era installabile e non aveva nessuna gestione
+offline, pur avendo tutta la configurazione PWA al suo posto.
+
+Le icone erano un secondo blocco indipendente: Chrome considera installabile
+un sito solo se il manifest offre icone raster da 192 e 512, e ignora le SVG
+per questo scopo. Con la sola `favicon.svg` l'evento `beforeinstallprompt` non
+sarebbe arrivato mai, quindi nessun invito a installare avrebbe potuto
+comparire.
+
+### Conseguenze
+
+Chi tocca la configurazione PWA deve ricordare che il modulo mette
+`navigateFallback: '/'` quando la chiave non compare affatto: per disattivarlo
+la chiave deve esserci e valere `undefined`.
+
+Le regole di `runtimeCaching` che devono guardare il percorso usano una
+funzione su `url.pathname` e non una regex ancorata a `^/`: Workbox confronta
+l'URL completo, quindi le regex ancorate non corrispondono mai.
+
+## DEC-047 - Gli slug non si scrivono a mano
+
+**Status:** Accepted
+
+### Decisione
+
+Nessun modulo dell'applicazione ha un campo slug compilabile. Lo slug nasce
+dal nome o dal titolo del record e, quando due record si chiamano allo stesso
+modo, la collisione la risolve chi scrive con un numero progressivo
+(`serata`, `serata-2`, `serata-3`), tramite `uniqueSlug` in
+`shared/utils/slug.ts`.
+
+Per postazioni, serate e post della bacheca il numero libero lo calcola
+l'endpoint prima dell'insert; per giochi e pagine servizi, che si scrivono dal
+browser, lo calcola la pagina prima dell'insert.
+
+In modifica lo slug gia salvato non cambia, nemmeno se cambia il nome.
+
+### Motivazione
+
+Il campo era compilabile ma opzionale, e nessuno vuole scrivere a mano
+l'indirizzo di ogni record. Toglierlo pero non bastava: senza un campo da
+correggere, due postazioni con lo stesso nome sarebbero diventate impossibili
+da creare, e l'operatore avrebbe visto un errore senza rimedio.
+
+Lo slug resta fermo in modifica perche e un indirizzo pubblico: una serata gia
+annunciata puo avere il suo link in giro, e un titolo corretto per un refuso
+non deve rompere quel link.
+
+### Conseguenze
+
+I messaggi di conflitto delle maschere non parlano piu di slug: parlano di
+codice, di nome o di conflitto generico, perche lo slug non e piu qualcosa che
+l'operatore possa sbagliare.
+
+`slugify` resta duplicato in tre punti (`app/utils`, `server/utils`, la copia
+locale in `servizi.vue`). L'unificazione non e stata fatta in questa sessione
+per non allargare il perimetro; `uniqueSlug` invece nasce gia condiviso.

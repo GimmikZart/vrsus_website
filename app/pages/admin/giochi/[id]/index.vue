@@ -261,9 +261,6 @@ useSeoMeta({
             <UFormField label="Nome"
               ><UInput v-model="form.name" class="w-full"
             /></UFormField>
-            <UFormField label="Slug"
-              ><UInput v-model="form.slug" class="w-full"
-            /></UFormField>
             <UFormField label="Genere"
               ><UInput v-model="form.genre" class="w-full"
             /></UFormField>

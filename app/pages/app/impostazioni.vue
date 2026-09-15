@@ -5,7 +5,7 @@ definePageMeta({ layout: 'app', middleware: ['auth'] })
 
 const client = useSupabaseClient<Database>()
 const user = useSupabaseUser()
-const { isAdmin, isStaff, signOut } = useVrsusAuth()
+const { signOut } = useVrsusAuth()
 
 const { data: profile, refresh: refreshProfile } = await useAsyncData(
   'my-profile',
@@ -256,30 +256,15 @@ useSeoMeta({ title: 'Impostazioni — VRSUS', robots: 'noindex, nofollow' })
           <span>Notifiche</span>
           <UIcon name="i-lucide-chevron-right" class="size-4 text-white/30" />
         </NuxtLink>
-        <NuxtLink
-          v-if="isStaff"
-          to="/admin/checkin"
-          class="flex min-h-11 items-center justify-between rounded-xl px-3 text-sm text-white/75 hover:bg-white/5"
-        >
-          <span>Check-in operativo</span>
-          <UIcon name="i-lucide-chevron-right" class="size-4 text-white/30" />
-        </NuxtLink>
-        <NuxtLink
-          v-if="isAdmin"
-          to="/admin"
-          class="flex min-h-11 items-center justify-between rounded-xl px-3 text-sm text-white/75 hover:bg-white/5"
-        >
-          <span>Console amministrazione</span>
-          <UIcon name="i-lucide-chevron-right" class="size-4 text-white/30" />
-        </NuxtLink>
       </div>
     </section>
 
     <section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
       <h2 class="font-display text-base font-semibold text-white">Sessione</h2>
       <p class="mt-1 text-sm text-white/50">{{ user?.email }}</p>
+      <UiVrsusWorkspaceSwitch class="mt-4" />
       <UButton
-        class="mt-4"
+        class="mt-3"
         color="neutral"
         variant="outline"
         block

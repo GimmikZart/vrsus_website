@@ -29,7 +29,6 @@ const successMessage = ref('')
 const form = reactive({
   name: '',
   code: '',
-  slug: '',
   description: '',
   imagePath: '',
   categoryId: '',
@@ -42,7 +41,6 @@ function resetForm() {
   Object.assign(form, {
     name: '',
     code: '',
-    slug: '',
     description: '',
     imagePath: '',
     categoryId: '',
@@ -68,7 +66,6 @@ async function create() {
       body: {
         name: form.name,
         code: form.code,
-        slug: form.slug || undefined,
         description: form.description,
         imagePath: form.imagePath,
         categoryId: form.categoryId || null,
@@ -84,7 +81,7 @@ async function create() {
   } catch (error) {
     errorMessage.value =
       (error as { statusCode?: number })?.statusCode === 409
-        ? 'Esiste già una postazione con questo slug o codice.'
+        ? 'Esiste già una postazione con questo codice.'
         : 'Creazione non riuscita. Controlla i dati.'
   } finally {
     saving.value = false
@@ -146,9 +143,6 @@ useSeoMeta({ title: 'Postazioni — Admin VRSUS', robots: 'noindex, nofollow' })
           help="Label breve mostrata sulle card dei giochi."
         >
           <UInput v-model="form.code" class="w-full" placeholder="PS5" />
-        </UFormField>
-        <UFormField label="Slug" help="Lascia vuoto per generarlo dal nome.">
-          <UInput v-model="form.slug" class="w-full" />
         </UFormField>
         <UFormField label="Categoria">
           <select v-model="form.categoryId" class="vrsus-select">

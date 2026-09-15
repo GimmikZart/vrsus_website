@@ -11,12 +11,14 @@ scuro imposto ai componenti (DEC-031, DEC-032, DEC-033, DEC-035). Sopra questa
 sono arrivate l'uscita dalla console con le voci di secondo piano in colonna
 (DEC-040) e il dominio della tessera ARCI (DEC-041).
 
-Restano da fare i contenuti reali al posto dei segnaposto, la validazione dei
-testi legali, le prove su dispositivo fisico (PWA e fotocamera) e il deploy.
-Il repository e pronto per il deploy su Cloudflare Pages (script
-`pnpm build:cloudflare`, lockfile pnpm unico, procedura completa in
-`docs/dev/guideline_implementations.md`): manca la configurazione manuale
-del progetto Cloudflare, che non puo essere svolta dall'agente.
+La beta e online su Cloudflare Pages con deploy automatico da `main`. Restano
+da fare i contenuti reali al posto dei segnaposto, la validazione dei testi
+legali e le prove su dispositivo fisico.
+
+Sopra la V2 sono arrivati il passaggio fra area cliente e area operativa
+accanto all'uscita (DEC-045), l'invito a installare l'app al primo accesso e la
+riparazione della PWA, che online non si registrava affatto (DEC-046), e la
+rimozione di tutti i campi slug compilabili (DEC-047).
 
 ## Cosa e stato costruito
 
@@ -154,11 +156,12 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
   in `shared/constants/site-content.ts`.
 - Testi legali del consenso e informativa privacy da validare (DEC-026).
 - Verifica su dispositivo fisico di installazione PWA, fotocamera e scanner QR.
-- Deploy beta su Cloudflare Pages: procedura, variabili e verifiche sono
-  pronte in `docs/dev/guideline_implementations.md` (sezione BETA), ma la
-  creazione del progetto Cloudflare e l'inserimento delle credenziali sono
-  USER ACTION REQUIRED. Finche non e fatto, l'app esiste solo in locale e
-  PWA, fotocamera e prove multiutente vere restano impossibili (DEC-044).
+- La beta e pubblicata su Cloudflare Pages (`vrsus-website.pages.dev`) con
+  deploy automatico da `main`. Restano da verificare online, su browser reale:
+  installazione della PWA, ripiego offline e il caricamento dopo il login, che
+  in produzione si bloccava (DEC-044, DEC-046).
+- La secret key Supabase usata in produzione va rigenerata: e transitata in
+  chiaro in una conversazione. USER ACTION REQUIRED.
 - Configurazione OneSignal e separazione QUALITY/PRODUCTION.
 - Il pannello ARCI del check-in non e stato provato a schermo: serve un QR
   reale. La RPC `check_in_booking` che lo alimenta e coperta dai test pgTAP.

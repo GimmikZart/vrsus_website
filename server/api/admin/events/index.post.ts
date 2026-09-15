@@ -10,6 +10,19 @@ export default defineEventHandler(async (event) => {
   const payload = normalizeEventPayload(body)
   const client = serverSupabaseServiceRole<Database>(event)
 
+  // Lo slug nasce dal titolo della serata. Due serate possono chiamarsi allo
+  // stesso modo (le ricorrenti si chiamano sempre uguale), quindi la
+  // collisione la risolve il server invece di rimbalzarla all'operatore.
+  const { data: siblings } = await client
+    .from('events')
+    .select('slug')
+    .like('slug', `${payload.slug}%`)
+
+  payload.slug = uniqueSlug(
+    payload.slug,
+    (siblings ?? []).map((row) => row.slug),
+  )
+
   const { data, error } = await client
     .from('events')
     .insert(payload)
@@ -17,7 +30,6 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error) {
-    // A duplicate slug is a user-correctable conflict, not a server fault.
     throw createError({
       statusCode: error.code === '23505' ? 409 : 500,
       statusMessage:

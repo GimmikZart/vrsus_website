@@ -10,6 +10,18 @@ export default defineEventHandler(async (event) => {
   const payload = normalizePlatformPayload(body)
   const client = serverSupabaseServiceRole<Database>(event)
 
+  // Lo slug non arriva piu dal modulo: nasce dal nome. Due postazioni possono
+  // chiamarsi allo stesso modo, quindi la collisione la risolve il server.
+  const { data: siblings } = await client
+    .from('platforms')
+    .select('slug')
+    .like('slug', `${payload.slug}%`)
+
+  payload.slug = uniqueSlug(
+    payload.slug,
+    (siblings ?? []).map((row) => row.slug),
+  )
+
   const { data, error } = await client
     .from('platforms')
     .insert(payload)

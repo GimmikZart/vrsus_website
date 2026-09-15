@@ -28,10 +28,16 @@ const tabs = computed<TabItem[]>(() => [
   { to: '/app/impostazioni', label: 'Impostazioni', icon: 'i-lucide-settings' },
 ])
 
-const { isAdmin, loadRoles } = useVrsusAuth()
+const { loadRoles } = useVrsusAuth()
 
-// I ruoli servono per decidere se mostrare il passaggio alla console.
-await loadRoles().catch(() => undefined)
+// I ruoli servono solo a decidere se mostrare il passaggio all'area operativa,
+// quindi non devono bloccare il rendering della shell: un `await` qui dentro
+// mette l'intero layout dietro a Suspense e, subito dopo il login, lascia la
+// pagina in caricamento finche la chiamata non torna. Il passaggio compare
+// appena i ruoli arrivano.
+onMounted(() => {
+  loadRoles().catch(() => undefined)
+})
 </script>
 
 <template>
@@ -57,12 +63,6 @@ await loadRoles().catch(() => undefined)
             >VRSUS</span
           >
         </NuxtLink>
-        <NuxtLink
-          v-if="isAdmin"
-          to="/admin"
-          class="text-brand-red-400 text-sm font-medium"
-          >Console</NuxtLink
-        >
       </div>
     </header>
 
@@ -71,6 +71,13 @@ await loadRoles().catch(() => undefined)
     >
       <slot />
     </main>
+
+    <!--
+      L'invito a installare l'app vive nella shell del cliente: e il primo
+      posto dove si arriva dopo l'accesso, e installarla ha senso per chi usa
+      l'app, non per chi apre la console da un computer del circolo.
+    -->
+    <UiVrsusInstallPrompt />
 
     <UiVrsusTabBar :items="tabs">
       <template #footer>

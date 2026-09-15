@@ -46,7 +46,7 @@ async function createEvent() {
   } catch (error) {
     errorMessage.value =
       (error as { statusCode?: number })?.statusCode === 409
-        ? 'Esiste gia un evento con questo slug.'
+        ? 'Salvataggio in conflitto: ricarica la pagina e riprova.'
         : 'Creazione non riuscita. Controlla i dati.'
   } finally {
     pending.value = false

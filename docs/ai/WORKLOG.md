@@ -1222,3 +1222,59 @@ sono stati rimossi al termine della verifica.
 
 - Il deploy effettivo e USER ACTION REQUIRED: servono account Cloudflare e
   credenziali del progetto Supabase remoto, che l'agente non deve usare.
+
+## 2026-09-15 (seconda) — PWA riparata, passaggio di area, slug automatici
+
+### Lavoro svolto
+
+- **PWA.** Il service worker generato registrava una `NavigationRoute` legata a
+  un URL non presente nel precache: Workbox sollevava un errore e la
+  registrazione falliva, quindi online l'app non era installabile e non aveva
+  gestione offline. La navigazione ora e `NetworkOnly` con ripiego sulla pagina
+  `/offline`, che viene prerenderizzata per finire nel precache. Sistemata
+  anche una regola di `runtimeCaching` ancorata a `^/`, che non aveva mai
+  corrisposto a niente (DEC-046).
+- **Icone.** Generate da `public/favicon.svg` le icone PNG 192, 512 e maskable
+  512 in `public/icons/`, dichiarate nel manifest: senza icone raster Chrome
+  non considera installabile il sito e `beforeinstallprompt` non arriva mai.
+- **Invito a installare.** Nuovo `usePwaInstall` e `UiVrsusInstallPrompt`,
+  montato nella shell dell'app: compare al primo accesso da un dispositivo, usa
+  il bottone `Installa` quando il browser lo permette e altrimenti spiega il
+  gesto (iPhone compreso). La scelta resta in `localStorage`.
+- **Passaggio fra aree.** Nuovo `UiVrsusWorkspaceSwitch` dentro
+  `UiVrsusSessionCard`, quindi sempre accanto all'uscita: colonna di sinistra
+  su schermo largo, pagina Altro della console, sezione Sessione delle
+  impostazioni su telefono. Rimossi il collegamento `Console`
+  nell'intestazione dell'app e i due collegamenti nelle impostazioni (DEC-045).
+- **Slug.** Tolti tutti i campi slug compilabili (postazioni, giochi, bacheca,
+  servizi, eventi). Lo slug nasce dal nome e la collisione si risolve con un
+  progressivo tramite `uniqueSlug` in `shared/utils/slug.ts`; in modifica lo
+  slug salvato non cambia (DEC-047).
+- **Shell dell'app.** `await loadRoles()` nel layout metteva l'intera shell
+  dietro a Suspense: dopo il login la pagina poteva restare in caricamento
+  finche la chiamata non tornava. Ora i ruoli si caricano da `onMounted` senza
+  bloccare il rendering.
+
+### File principali modificati
+
+- `nuxt.config.ts`, `public/icons/*`
+- `app/composables/usePwaInstall.ts`, `app/components/ui/VrsusInstallPrompt.vue`
+- `app/components/ui/VrsusWorkspaceSwitch.vue`, `app/components/ui/VrsusSessionCard.vue`
+- `app/layouts/app.vue`, `app/layouts/admin.vue`, `app/pages/app/impostazioni.vue`
+- `shared/utils/slug.ts`, `tests/unit/slug.test.ts`
+- maschere admin: postazioni, giochi, bacheca, servizi, `EventInfoForm.vue`, `useEventForm.ts`
+- endpoint: `platforms/index.post.ts`, `board/index.post.ts`, `events/index.post.ts`
+
+### Verifiche
+
+- Unit 23/23, lint, format, typecheck, build Node e build Cloudflare → PASS.
+- Prove a schermo in locale: login, invito installazione, toggle in entrambe le
+  aree, maschera postazione senza slug, doppio nome con slug progressivo.
+
+### Problemi emersi
+
+- Il browser integrato usato per le prove non consente la registrazione di un
+  service worker: la verifica a runtime della PWA resta da fare su un browser
+  reale.
+- Il blocco dopo il login non e riproducibile in locale; la causa probabile e
+  stata rimossa ma va confermata sul sito pubblicato.

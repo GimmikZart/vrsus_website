@@ -91,7 +91,6 @@ async function save() {
 // I giochi hanno grant e RLS: si scrivono direttamente col client Supabase.
 const gameForm = reactive({
   name: '',
-  slug: '',
   genre: '',
   minPlayers: undefined as number | undefined,
   maxPlayers: undefined as number | undefined,
@@ -106,17 +105,27 @@ const showGameForm = ref(false)
 async function createGame() {
   gameError.value = ''
   const name = gameForm.name.trim()
-  const slug = gameForm.slug.trim() || slugify(name)
+  const slug = slugify(name)
   if (!name || !slug) {
     gameError.value = 'Il nome del gioco è obbligatorio.'
     return
   }
 
   gameSaving.value = true
+
+  const { data: siblings } = await client
+    .from('games')
+    .select('slug')
+    .eq('platform_id', platformId.value)
+    .like('slug', `${slug}%`)
+
   const { error: insertError } = await client.from('games').insert({
     platform_id: platformId.value,
     name,
-    slug,
+    slug: uniqueSlug(
+      slug,
+      (siblings ?? []).map((row) => row.slug),
+    ),
     genre: gameForm.genre.trim() || null,
     min_players: gameForm.minPlayers ?? null,
     max_players: gameForm.maxPlayers ?? null,
@@ -129,14 +138,13 @@ async function createGame() {
   if (insertError) {
     gameError.value =
       insertError.code === '23505'
-        ? 'Esiste già un gioco con questo slug su questa postazione.'
+        ? 'Esiste già un gioco con questo nome su questa postazione.'
         : 'Creazione non riuscita. Controlla i dati.'
     return
   }
 
   Object.assign(gameForm, {
     name: '',
-    slug: '',
     genre: '',
     minPlayers: undefined,
     maxPlayers: undefined,
@@ -190,9 +198,6 @@ useSeoMeta({
           /></UFormField>
           <UFormField label="Codice"
             ><UInput v-model="form.code" class="w-full"
-          /></UFormField>
-          <UFormField label="Slug"
-            ><UInput v-model="form.slug" class="w-full"
           /></UFormField>
           <UFormField label="Categoria">
             <select v-model="form.categoryId" class="vrsus-select">

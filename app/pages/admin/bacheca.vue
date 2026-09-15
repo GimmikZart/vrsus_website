@@ -26,7 +26,6 @@ const errorMessage = ref('')
 
 const form = reactive({
   title: '',
-  slug: '',
   body: '',
   postType: 'announcement' as 'announcement' | 'poll',
   imagePath: '',
@@ -47,7 +46,7 @@ async function create() {
   message.value = ''
 
   const title = form.title.trim()
-  const slug = form.slug.trim() || slugify(title)
+  const slug = slugify(title)
   if (!title || !slug) {
     errorMessage.value = 'Il titolo è obbligatorio.'
     return
@@ -77,7 +76,6 @@ async function create() {
     message.value = 'Post pubblicato.'
     Object.assign(form, {
       title: '',
-      slug: '',
       body: '',
       postType: 'announcement',
       imagePath: '',
@@ -90,7 +88,7 @@ async function create() {
   } catch (error) {
     errorMessage.value =
       (error as { statusCode?: number })?.statusCode === 409
-        ? 'Esiste già un post con questo slug.'
+        ? 'Pubblicazione in conflitto: riprova.'
         : 'Pubblicazione non riuscita. Controlla i dati.'
   } finally {
     saving.value = false
@@ -168,9 +166,6 @@ useSeoMeta({ title: 'Bacheca — Admin VRSUS', robots: 'noindex, nofollow' })
         <UFormField label="Titolo"
           ><UInput v-model="form.title" class="w-full"
         /></UFormField>
-        <UFormField label="Slug" help="Lascia vuoto per generarlo dal titolo.">
-          <UInput v-model="form.slug" class="w-full" />
-        </UFormField>
         <UFormField label="Tipo">
           <select v-model="form.postType" class="vrsus-select">
             <option value="announcement">Annuncio</option>

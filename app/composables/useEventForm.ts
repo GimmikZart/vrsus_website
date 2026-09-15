@@ -133,6 +133,8 @@ export function eventFormFromRow(row: EventRow): EventFormState {
  */
 export function eventFormToPayload(form: EventFormState) {
   const title = form.title.trim()
+  // In modifica `form.slug` e quello gia salvato e non cambia con il titolo:
+  // l'indirizzo di una serata pubblicata puo essere gia stato condiviso.
   const slug = slugify(form.slug || title)
   const startsAt = form.startsAt ? new Date(form.startsAt) : null
   const endsAt = form.endsAt ? new Date(form.endsAt) : null
@@ -141,7 +143,7 @@ export function eventFormToPayload(form: EventFormState) {
   const fail = (message: string) => ({ error: message, payload: null })
 
   if (!title) return fail('Il titolo e obbligatorio.')
-  if (!slug) return fail('Lo slug non e valido.')
+  if (!slug) return fail('Il titolo non e valido.')
   if (!startsAt || !endsAt) {
     return fail('Inizio e fine evento sono obbligatori.')
   }

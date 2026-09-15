@@ -103,15 +103,30 @@ async function saveService() {
   errorMessage.value = ''
   successMessage.value = ''
   const title = form.title.trim()
-  const slug = slugify(form.slug || title)
+  // In modifica `form.slug` contiene quello gia salvato e resta com'e: un
+  // servizio pubblicato ha un indirizzo che puo essere gia stato condiviso.
+  const baseSlug = slugify(form.slug || title)
   const content = form.content.trim()
 
-  if (!title || !slug || !content) {
-    errorMessage.value = 'Titolo, slug e contenuto sono obbligatori.'
+  if (!title || !baseSlug || !content) {
+    errorMessage.value = 'Titolo e contenuto sono obbligatori.'
     return
   }
 
   saving.value = true
+
+  let slug = baseSlug
+  if (!editingId.value) {
+    const { data: siblings } = await client
+      .from('service_pages')
+      .select('slug')
+      .like('slug', `${baseSlug}%`)
+
+    slug = uniqueSlug(
+      baseSlug,
+      (siblings ?? []).map((row) => row.slug),
+    )
+  }
   const payload: Database['public']['Tables']['service_pages']['Insert'] = {
     title,
     slug,
@@ -134,7 +149,7 @@ async function saveService() {
   if (result.error) {
     errorMessage.value =
       result.error.code === '23505'
-        ? 'Esiste già un servizio con questo slug.'
+        ? 'Esiste già un servizio con questo titolo.'
         : 'Salvataggio non riuscito. Controlla i dati e riprova.'
     saving.value = false
     return
@@ -235,12 +250,6 @@ async function saveService() {
         <form class="mt-6 space-y-4" @submit.prevent="saveService">
           <UFormField label="Titolo" name="title"
             ><UInput v-model="form.title" class="w-full" required
-          /></UFormField>
-          <UFormField
-            label="Slug"
-            name="slug"
-            hint="Lascia vuoto per generarlo dal titolo."
-            ><UInput v-model="form.slug" class="w-full"
           /></UFormField>
           <UFormField label="Excerpt" name="excerpt"
             ><UTextarea v-model="form.excerpt" class="w-full" :rows="3"

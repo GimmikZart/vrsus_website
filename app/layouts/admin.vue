@@ -45,9 +45,9 @@ const tabs = computed<TabItem[]>(() => [
       class="pt-safe sticky top-0 z-30 border-b border-white/10 bg-[#08090d]/90 backdrop-blur-xl lg:hidden"
     >
       <!--
-        Nessun passaggio all area personale: chi amministra non ha un profilo
-        di gioco, non prenota e non si iscrive ai tornei. Il collegamento
-        offriva una destinazione senza senso per questo ruolo.
+        Il passaggio all'area cliente non sta qui ma nella pagina Altro,
+        accanto all'uscita: chi amministra e anche un cliente del circolo, e i
+        due gesti di uscita dalla console vivono nello stesso posto (DEC-045).
       -->
       <div class="flex h-14 items-center px-5">
         <span

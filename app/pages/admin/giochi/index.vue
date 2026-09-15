@@ -56,7 +56,6 @@ const errorMessage = ref('')
 const form = reactive({
   platformId: '',
   name: '',
-  slug: '',
   genre: '',
   minPlayers: undefined as number | undefined,
   maxPlayers: undefined as number | undefined,
@@ -68,7 +67,7 @@ const form = reactive({
 async function create() {
   errorMessage.value = ''
   const name = form.name.trim()
-  const slug = form.slug.trim() || slugify(name)
+  const slug = slugify(name)
 
   if (!form.platformId) {
     errorMessage.value = 'Scegli la postazione a cui appartiene il gioco.'
@@ -89,10 +88,20 @@ async function create() {
   }
 
   saving.value = true
+
+  const { data: siblings } = await client
+    .from('games')
+    .select('slug')
+    .eq('platform_id', form.platformId)
+    .like('slug', `${slug}%`)
+
   const { error } = await client.from('games').insert({
     platform_id: form.platformId,
     name,
-    slug,
+    slug: uniqueSlug(
+      slug,
+      (siblings ?? []).map((row) => row.slug),
+    ),
     genre: form.genre.trim() || null,
     min_players: form.minPlayers ?? null,
     max_players: form.maxPlayers ?? null,
@@ -105,7 +114,7 @@ async function create() {
   if (error) {
     errorMessage.value =
       error.code === '23505'
-        ? 'Esiste già un gioco con questo slug su questa postazione.'
+        ? 'Esiste già un gioco con questo nome su questa postazione.'
         : 'Creazione non riuscita. Controlla i dati.'
     return
   }
@@ -113,7 +122,6 @@ async function create() {
   Object.assign(form, {
     platformId: '',
     name: '',
-    slug: '',
     genre: '',
     minPlayers: undefined,
     maxPlayers: undefined,
@@ -177,9 +185,6 @@ useSeoMeta({ title: 'Giochi — Admin VRSUS', robots: 'noindex, nofollow' })
         <UFormField label="Genere"
           ><UInput v-model="form.genre" class="w-full"
         /></UFormField>
-        <UFormField label="Slug" help="Lascia vuoto per generarlo dal nome.">
-          <UInput v-model="form.slug" class="w-full" />
-        </UFormField>
         <UFormField label="Giocatori minimi">
           <UInput
             v-model.number="form.minPlayers"

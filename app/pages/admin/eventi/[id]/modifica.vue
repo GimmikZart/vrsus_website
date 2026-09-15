@@ -137,7 +137,7 @@ async function saveInfo(nextStep?: string) {
   } catch (error) {
     errorMessage.value =
       (error as { statusCode?: number })?.statusCode === 409
-        ? 'Esiste gia un evento con questo slug.'
+        ? 'Salvataggio in conflitto: ricarica la pagina e riprova.'
         : 'Salvataggio non riuscito. Controlla i dati.'
     return false
   } finally {

@@ -1422,3 +1422,66 @@ in corso e una data programmata. In locale aiutano
 
 <!-- Inserire qui eventuali osservazioni -->
 
+
+## Installazione dell'app, passaggio di area, slug automatici
+
+**Prerequisiti:** sito pubblicato in HTTPS (`vrsus-website.pages.dev`), un
+account con ruolo `admin` o `super_admin`, un telefono Android e/o un iPhone.
+
+### 1. Invito a installare l'app (telefono)
+
+- [ ] 1. Apri il sito pubblicato dal telefono, in una scheda nuova, e accedi.
+- [ ] 2. Entro pochi secondi dalla bacheca deve comparire la finestra
+      "Installa VRSUS".
+- [ ] 3. Su Android deve esserci il bottone rosso **Installa**: toccandolo si
+      apre la richiesta del browser e l'icona finisce nella schermata Home.
+- [ ] 4. Su iPhone non c'e bottone: al suo posto le tre istruzioni per
+      Condividi -> Aggiungi alla schermata Home. Segui il gesto e verifica che
+      l'icona compaia con la V su fondo scuro.
+- [ ] 5. Chiudi con "Non ora" o "Ho capito": ricaricando la pagina la finestra
+      **non** deve ricomparire.
+- [ ] 6. Apri l'app installata dall'icona: deve partire a schermo intero, senza
+      barra degli indirizzi, e la finestra dell'invito non deve comparire.
+
+Commenti:
+
+### 2. Ripiego offline
+
+- [ ] 1. Con l'app aperta, attiva la modalita aereo.
+- [ ] 2. Naviga verso una pagina non ancora visitata: deve comparire la pagina
+      "Sei offline" e non l'errore del browser.
+- [ ] 3. Togli la modalita aereo e ricarica: si torna alla pagina normale.
+
+Commenti:
+
+### 3. Passaggio fra area cliente e console
+
+- [ ] 1. Da computer, accedi con un account admin: in fondo alla colonna di
+      sinistra, sopra l'indirizzo email e il tasto Esci, c'e un interruttore a
+      due posizioni **Cliente / Console**.
+- [ ] 2. Tocca `Console`: si apre la console e la posizione attiva si sposta.
+- [ ] 3. Dalla console tocca `Cliente`: si torna alla bacheca.
+- [ ] 4. Da telefono, nell'app: `Impostazioni` -> sezione `Sessione`, sopra il
+      tasto Esci, stesso interruttore.
+- [ ] 5. Da telefono, nella console: `Altro` -> sezione `Sessione`, stesso
+      interruttore.
+- [ ] 6. Con un account che ha il solo ruolo `staff` la seconda posizione si
+      chiama `Staff` e porta al check-in, non alla console.
+- [ ] 7. Con un account senza ruoli speciali l'interruttore non compare per
+      niente.
+
+Commenti:
+
+### 4. Slug automatici
+
+- [ ] 1. Console -> `Postazioni` -> `Nuova postazione`: il modulo non ha piu
+      nessun campo Slug.
+- [ ] 2. Crea una postazione "Sala prove" con un codice qualsiasi.
+- [ ] 3. Crea una seconda postazione con lo **stesso nome** e codice diverso:
+      deve essere accettata senza errori.
+- [ ] 4. Stessa prova su `Giochi`, `Bacheca`, `Servizi` e sulla creazione di
+      una serata: nessun campo Slug, nessun errore sui doppioni di nome.
+- [ ] 5. Modifica il nome di una postazione gia esistente: l'indirizzo pubblico
+      della postazione **non** deve cambiare.
+
+Commenti:

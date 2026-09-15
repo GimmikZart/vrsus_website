@@ -40,11 +40,23 @@ export default defineEventHandler(async (event) => {
 
   const client = serverSupabaseServiceRole<Database>(event)
 
+  // Lo slug arriva dal titolo, non da un campo compilato a mano: due post
+  // possono avere lo stesso titolo, quindi la collisione la risolve il server.
+  const { data: siblings } = await client
+    .from('board_posts')
+    .select('slug')
+    .like('slug', `${slug}%`)
+
+  const freeSlug = uniqueSlug(
+    slug,
+    (siblings ?? []).map((row) => row.slug),
+  )
+
   const { data: post, error } = await client
     .from('board_posts')
     .insert({
       title,
-      slug,
+      slug: freeSlug,
       body: body?.body?.trim() || null,
       post_type: postType,
       image_path: body?.imagePath?.trim() || null,

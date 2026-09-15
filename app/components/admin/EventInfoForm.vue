@@ -17,9 +17,6 @@ const form = defineModel<EventFormState>({ required: true })
       <UFormField label="Titolo">
         <UInput v-model="form.title" class="w-full" required />
       </UFormField>
-      <UFormField label="Slug" hint="Lascia vuoto per generarlo dal titolo.">
-        <UInput v-model="form.slug" class="w-full" />
-      </UFormField>
       <UFormField label="Tipo evento">
         <select v-model="form.eventType" class="vrsus-select w-full">
           <option

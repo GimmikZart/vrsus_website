@@ -68,6 +68,10 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       autoSubfolderIndex: false,
+      // `/offline` e l'unica pagina che deve esistere come file statico: il
+      // service worker la puo servire solo se e finita nel precache, e nel
+      // precache ci finiscono i file, non le rotte renderizzate dal server.
+      routes: ['/offline'],
     },
   },
   pwa: {
@@ -81,19 +85,61 @@ export default defineNuxtConfig({
       display: 'standalone',
       lang: 'it-IT',
       start_url: '/',
+      // Chrome dichiara installabile un sito solo se trova icone raster da
+      // 192 e 512: le SVG le ignora per questo scopo, quindi con la sola
+      // favicon l'invito a installare non compariva mai.
+      //
+      // `maskable` e un'immagine a parte perche il sistema la ritaglia: il
+      // segno sta dentro l'80% centrale, il resto e fondo.
       icons: [
+        {
+          src: '/icons/icon-192.png',
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'any',
+        },
+        {
+          src: '/icons/icon-512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any',
+        },
+        {
+          src: '/icons/icon-maskable-512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable',
+        },
         {
           src: '/favicon.svg',
           sizes: 'any',
           type: 'image/svg+xml',
-          purpose: 'any maskable',
+          purpose: 'any',
         },
       ],
     },
     workbox: {
-      navigateFallback: '/offline',
-      navigateFallbackDenylist: [/^\/admin/],
+      // Senza gli html il precache non contiene nessuna pagina, e la pagina
+      // offline non e servibile.
+      globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
+      // La chiave deve esserci anche se vale `undefined`: il modulo controlla
+      // `'navigateFallback' in workbox` e, se manca, ci mette `/`, che non e
+      // in precache e fa fallire l'avvio del service worker.
+      navigateFallback: undefined,
+      // Niente `navigateFallback`: quella e la configurazione di una SPA, dove
+      // esiste un solo documento da restituire per qualunque rotta. Qui il
+      // documento lo genera il server a ogni richiesta, quindi la navigazione
+      // deve andare in rete e ripiegare sulla pagina offline solo quando la
+      // rete non c'e.
       runtimeCaching: [
+        {
+          urlPattern: ({ request }: { request: Request }) =>
+            request.mode === 'navigate',
+          handler: 'NetworkOnly',
+          options: {
+            precacheFallback: { fallbackURL: '/offline' },
+          },
+        },
         {
           urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
           handler: 'CacheFirst',
@@ -103,7 +149,11 @@ export default defineNuxtConfig({
           },
         },
         {
-          urlPattern: /^\/(_nuxt|favicon\.svg|.*\.(?:png|jpg|jpeg|webp|svg))$/i,
+          // La regex precedente era ancorata a `^/`: Workbox confronta l'URL
+          // completo, quindi non ha mai corrisposto a niente.
+          urlPattern: ({ url }: { url: URL }) =>
+            url.pathname.startsWith('/_nuxt/') ||
+            /\.(?:png|jpg|jpeg|webp|svg|ico|woff2)$/i.test(url.pathname),
           handler: 'CacheFirst',
           options: {
             cacheName: 'vrsus-assets',

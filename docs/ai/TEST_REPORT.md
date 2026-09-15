@@ -718,3 +718,54 @@ corso, sfide dimostrative caricate.
   `docs/dev/guideline_implementations.md`).
 - Di conseguenza restano non provati l'URL pubblico, il login con Supabase
   remoto, l'installazione PWA e lo scanner QR su dispositivo fisico.
+
+## Sessione 2026-09-15 (seconda) — PWA, passaggio di area, slug
+
+### Suite
+
+| Verifica | Comando | Esito |
+| --- | --- | --- |
+| Unit | `corepack pnpm test` | PASS — 23 test, 5 file (nuovo `slug.test.ts`) |
+| Lint | `corepack pnpm lint` | PASS |
+| Format | `corepack pnpm format:check` | PASS |
+| Typecheck | `corepack pnpm typecheck` | PASS |
+| Build Node | `corepack pnpm build` | PASS |
+| Build Cloudflare | `corepack pnpm run build:cloudflare` | PASS |
+
+### Service worker, analisi dell'artefatto generato
+
+| Controllo | Prima | Dopo |
+| --- | --- | --- |
+| `NavigationRoute` su URL non precacheato | presente (`/offline`, poi `/`) | assente |
+| Pagina offline in precache | no | si (`offline`) |
+| Voci in precache | 3, nessuna pagina | 138 |
+| Ripiego offline | non raggiungibile | `PrecacheFallbackPlugin` su `/offline` |
+| Icone raster nel manifest | nessuna | 192, 512 e maskable 512 |
+
+### Verifica funzionale nel browser (ambiente locale)
+
+| Caso | Esito |
+| --- | --- |
+| Login da `/login` con account super-admin: arriva a `/app` senza restare in caricamento | PASS |
+| Invito a installare l'app al primo accesso, con istruzioni per la piattaforma | PASS |
+| L'invito non ricompare dopo "Ho capito" (memoria su `localStorage`) | PASS |
+| Passaggio Cliente/Console nel piede della colonna, accanto all'uscita | PASS |
+| Da `/app` a `/admin` con il toggle, posizione attiva corretta | PASS |
+| Da `/admin` a `/app` con il toggle | PASS |
+| "Nuova postazione" non ha piu il campo Slug | PASS |
+| Due postazioni con lo stesso nome: slug `test-agente` e `test-agente-2` | PASS (verificato a database) |
+
+### Non verificato
+
+- **Registrazione del service worker a runtime.** Il browser integrato usato
+  per le prove rifiuta `navigator.serviceWorker.register` con "An unknown error
+  occurred when fetching the script" anche per uno script servito
+  correttamente (200, `text/javascript`, scaricabile con `fetch` dalla stessa
+  pagina): e un limite dell'ambiente di prova, non dell'artefatto. La
+  registrazione, la comparsa del bottone `Installa` e il ripiego offline vanno
+  verificati su un browser reale, sul sito pubblicato.
+- **Blocco del caricamento dopo il login in produzione.** Non riproducibile in
+  locale (Supabase locale risponde in pochi millisecondi). La causa piu
+  probabile e stata rimossa: l'`await loadRoles()` nel layout dell'app metteva
+  l'intera shell dietro a Suspense. Da riverificare online.
+- Prove su dispositivo fisico: installazione, fotocamera, scanner QR.

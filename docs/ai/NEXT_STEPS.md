@@ -13,15 +13,19 @@ implementative bloccanti.
 
 ## USER ACTION REQUIRED
 
-- **Deploy beta su Cloudflare Pages.** E il passo che sblocca tutto il
-  resto delle prove: senza un URL HTTPS pubblico non si installano PWA,
-  non si apre la fotocamera per il QR e non si prova in due o piu
-  persone. Il repository e gia pronto (`pnpm build:cloudflare`, un solo
-  lockfile pnpm, DEC-044); restano da fare la creazione del progetto
-  Cloudflare collegato a GitHub, le variabili d'ambiente, il flag
-  `nodejs_compat` e gli URL di redirect in Supabase Auth. Procedura passo
-  passo in `docs/dev/guideline_implementations.md`, sezione
-  "BETA — deploy su Cloudflare Pages".
+- **Rigenerare la secret key Supabase di produzione.** La chiave attuale e
+  transitata in chiaro in una conversazione: va creata una nuova secret key dal
+  dashboard Supabase, aggiornata la variabile `SUPABASE_SERVICE_ROLE_KEY` su
+  Cloudflare, rilanciato il deploy e revocata la vecchia. Nella stessa
+  occasione conviene marcare come cifrate le due variabili segrete, che il
+  modulo di creazione del progetto non permetteva di proteggere.
+- **Verificare online cio che in locale non e verificabile.** Installazione
+  della PWA da telefono, ripiego offline e caricamento dopo il login. Il
+  service worker era rotto e non si registrava affatto (DEC-046): ora
+  l'artefatto e corretto, ma la registrazione va vista su un browser vero.
+- **Flag `nodejs_compat` su Cloudflare.** Se non e ancora stato messo, va
+  aggiunto in Settings -> Functions per Production e Preview, con
+  compatibility date pari o successiva a `2024-09-23`.
 - **Contenuti reali.** Home, chi siamo e servizi usano testi segnaposto,
   raccolti in `shared/constants/site-content.ts` e nelle fixture di
   `supabase/seed.sql`. Sostituirli e una singola operazione.
@@ -70,9 +74,8 @@ implementative bloccanti.
 3. Prove manuali multiutente secondo `docs/dev/guideline_test_features.md`,
    in particolare le sezioni sulla console dinamica, le schede condivise e il
    wizard evento.
-4. Deploy beta su Cloudflare Pages secondo
-   `docs/dev/guideline_implementations.md`, poi configurazione OneSignal e
-   separazione QUALITY/PRODUCTION.
+4. Configurazione OneSignal e separazione QUALITY/PRODUCTION, secondo
+   `docs/dev/guideline_implementations.md`.
 
 ## Progettazione aperta
 
