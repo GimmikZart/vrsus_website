@@ -16,13 +16,14 @@ intervento sugli account esterni.
 
 **USER ACTION REQUIRED — attivare e provare le notifiche in QUALITY.**
 Creare/configurare OneSignal Web Push per l'origine della PWA di test;
-applicare le migration `20261002103000` e `20261002104000` a Supabase QUALITY;
+applicare le migration `20261002103000`, `20261002104000` e
+`20261002105000` a Supabase QUALITY; distribuire la nuova vista `/admin/altro`;
 impostare App ID, REST API Key, `NOTIFICATION_WEBHOOK_SECRET` e `APP_BASE_URL`
 su Cloudflare; configurare il Database Webhook `INSERT` su
 `public.notifications`. Procedura dettagliata in
 `docs/dev/guideline_implementations.md`. Poi eseguire la checklist A/B in
 `docs/dev/guideline_test_features.md`: push sul dispositivo, badge e inbox
-senza refresh, isolamento dell'utente, segna come letto su due browser e
+senza refresh, isolamento dell'utente, invio manuale ai due pubblici, segna come letto su due browser e
 disattivazione. Criterio di completamento: ricezione verificata su device
 reale e log webhook/OneSignal coerenti. Le verifiche automatiche DEV sono
 PASS (pgTAP 301/301, unit 23/23, lint, typecheck, build `node-server`).

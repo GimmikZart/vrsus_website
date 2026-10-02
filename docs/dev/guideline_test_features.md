@@ -531,6 +531,40 @@ prenotazioni, check-in e risultati restano esplicitamente online-only.
 
 <!-- Inserire qui eventuali osservazioni -->
 
+## Invio manuale delle notifiche dalla console
+
+**Stato:** pronto per test DEV; push da verificare in QUALITY dopo la
+configurazione OneSignal e del Database Webhook.
+
+### Prerequisiti
+
+- Migration `20261002105000_manual_notifications.sql` applicata nell'ambiente.
+- Account `admin` o `super_admin`; due account cliente A e B. Per il pubblico
+  live, evento in stato `running` con A gia registrato tramite check-in e B
+  senza check-in.
+
+### Procedura di test
+
+- [ ] 1. Aprire `/admin/altro` come admin: trovare **Invia notifica**.
+      Ripetere come `staff`: la sezione non deve comparire. Commenti: <!-- -->
+- [ ] 2. Scegliere **Tutti gli utenti dell'app**, scrivere un testo di massimo
+      300 caratteri e confermare. Verificare il numero destinatari e la nuova
+      riga nella inbox di A e B, con badge aggiornato senza refresh.
+      Commenti: <!-- -->
+- [ ] 3. Scegliere **Partecipanti a un evento in corso** e l'evento live.
+      Inviare un testo diverso: A deve riceverlo, B no. Il numero mostrato
+      deve corrispondere agli utenti con check-in. Commenti: <!-- -->
+- [ ] 4. Provare messaggio vuoto, oltre 300 caratteri, nessun evento live e
+      evento senza presenti: il pulsante di invio deve restare disabilitato.
+      Commenti: <!-- -->
+- [ ] 5. In QUALITY, con push abilitata per A, ripetere il punto 3 con la PWA
+      in background: verificare la push e la riga inbox. Senza provider push,
+      verificare comunque inbox e badge. Commenti: <!-- -->
+
+### Esito manuale
+
+- [ ] PASS
+
 ## Inbox e notifiche push
 
 **Stato:** inbox e badge Realtime verificabili in DEV; push effettive dopo

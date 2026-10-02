@@ -1727,3 +1727,27 @@ Ogni ambiente richiede una propria app OneSignal, App ID, REST API Key,
 webhook secret e Database Webhook. Senza configurazione, inbox e badge
 Realtime funzionano ma la push resta disabilitata. La prova su dispositivi
 reali resta un test QUALITY.
+
+## DEC-059 — Invio manuale con pubblico calcolato nel database
+
+**Status:** Accepted
+
+### Decisione
+
+La console permette ad admin/super admin di inviare un testo fino a 300
+caratteri a tutti i profili oppure agli utenti con check-in su un evento
+`running` selezionato. La RPC `send_manual_notification` valida ruolo e stato
+evento, crea una notifica personale per destinatario in una transazione e
+registra un audit. Un UUID di invio rende sicuri i retry. Push, badge e inbox
+seguono il flusso comune di DEC-058.
+
+### Motivazione
+
+Il pubblico live deve riflettere le presenze effettive, come nella specifica
+V2. Il calcolo nel database evita limiti di paginazione e invii parziali dal
+server. Il registro impedisce duplicati quando la risposta HTTP si perde.
+
+### Conseguenze
+
+La migration `20261002105000` deve precedere l'uso della nuova vista in ogni
+ambiente. La push richiede la configurazione esterna gia descritta in DEC-058.

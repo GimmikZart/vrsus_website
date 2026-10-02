@@ -1,0 +1,52 @@
+import { createError, readBody } from 'h3'
+
+type Payload = {
+  scope?: 'all' | 'live_event'
+  eventId?: string | null
+  message?: string
+  dispatchId?: string
+}
+
+export default defineEventHandler(async (event) => {
+  const { client } = await requireServerAnyRole(event, ['admin', 'super_admin'])
+  const body = await readBody<Payload>(event)
+  const message = body?.message?.trim()
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+  if (
+    !message ||
+    [...message].length > 300 ||
+    !['all', 'live_event'].includes(body?.scope ?? '') ||
+    !body?.dispatchId ||
+    !uuid.test(body.dispatchId) ||
+    (body.scope === 'all' && body.eventId != null) ||
+    (body.scope === 'live_event' && (!body.eventId || !uuid.test(body.eventId)))
+  ) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid notification',
+    })
+  }
+
+  const { data, error } = await client.rpc('send_manual_notification', {
+    p_scope: body.scope!,
+    p_event_id: body.scope === 'live_event' ? body.eventId! : null,
+    p_message: message,
+    p_dispatch_id: body.dispatchId,
+  })
+
+  if (error) {
+    if (error.message.includes('EVENT_NOT_RUNNING')) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'Event no longer running',
+      })
+    }
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Notification dispatch failed',
+    })
+  }
+
+  return { notified: data }
+})

@@ -2,6 +2,17 @@
 
 Ultimo aggiornamento: 2026-10-02
 
+## Verifica 2026-10-02 — invio manuale notifiche
+
+- Migration `20261002105000_manual_notifications.sql` applicata al DB DEV
+  locale. pgTAP: PASS 312/312 su 15 file; nuovo test verifica ruolo admin,
+  limite 300 caratteri, pubblico live con check-in, pubblico completo, audit e
+  idempotenza del retry.
+- Lint dei file applicativi: PASS. `nuxt typecheck`: PASS con il warning noto
+  Volar/vue-router. Vitest: PASS 23/23. Build `node-server`: PASS con i permessi
+  di lettura necessari al bundler.
+- Prova manuale UI e push sul dispositivo QUALITY: **NON ESEGUITE**.
+
 ## Verifica 2026-10-02 — notifiche Realtime e predisposizione push
 
 - Migration `20261002103000` e `20261002104000` applicate al database DEV

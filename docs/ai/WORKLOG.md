@@ -1589,3 +1589,28 @@ Resta da riprovare sul dispositivo Apple reale.
 
 Implementazione locale pronta; l'attivazione esterna e la prova QUALITY sono
 la prossima attivita.
+
+## 2026-10-02 — Invio manuale notifiche
+
+### Lavoro svolto
+
+- Aggiunto in `/admin/altro` il form admin per tutti gli utenti o presenti
+  all'evento live, con limite 300 caratteri, conteggio e conferma.
+- RPC transazionale per notifiche personali, audit e retry idempotente;
+  route amministrative per pubblico e invio.
+
+### File principali modificati
+
+- `app/pages/admin/altro.vue`, `server/api/admin/manual-notifications.*.ts`
+- `supabase/migrations/20261002105000_manual_notifications.sql`
+- `supabase/tests/manual_notifications.test.sql`
+
+### Verifiche
+
+- Migration DEV locale, pgTAP 312/312, Vitest 23/23, lint, typecheck e build
+  `node-server` → PASS. UI manuale e push QUALITY → pendenti.
+
+### Stato finale della sessione
+
+Funzione pronta in DEV. Applicare la migration su QUALITY e pubblicare il
+codice prima di provare l'invio e la push sul dispositivo.

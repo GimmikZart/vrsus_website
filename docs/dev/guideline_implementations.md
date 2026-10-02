@@ -227,7 +227,8 @@ account esterni e devono essere inseriti dal proprietario.
    app riferita all'origine locale effettivamente aperta nel browser.
 2. Applicare sul Supabase QUALITY le migration ancora pendenti, comprese
    `20261002103000_notifications_realtime.sql` e
-   `20261002104000_push_subscription_owner_guard.sql`, usando il normale
+   `20261002104000_push_subscription_owner_guard.sql` e
+   `20261002105000_manual_notifications.sql`, usando il normale
    workflow `supabase db push` verso il progetto esplicitamente collegato.
    Non usare `db reset` sul progetto remoto. Controllare in **Database →
    Publications → supabase_realtime** che `public.notifications` sia presente.

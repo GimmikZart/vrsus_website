@@ -3134,6 +3134,15 @@ export type Database = {
         Args: { p_day: number; p_month: number }
         Returns: Json
       }
+      send_manual_notification: {
+        Args: {
+          p_dispatch_id: string
+          p_event_id: string | null
+          p_message: string
+          p_scope: string
+        }
+        Returns: number
+      }
       set_user_role: {
         Args: {
           should_assign: boolean

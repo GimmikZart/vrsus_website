@@ -1,5 +1,16 @@
 # Current Project State
 
+## Invio manuale notifiche — aggiornamento 2026-10-02
+
+`/admin/altro` include il form per admin/super admin: tutti i profili oppure
+utenti con check-in a un evento `running`, testo massimo 300 caratteri,
+anteprima del numero di destinatari e conferma. La RPC crea le notifiche
+personali in una transazione, registra l'audit ed evita duplicati sui retry.
+Migration `20261002105000` applicata solo al DEV locale. Verifiche: pgTAP
+312/312, unit 23/23, lint, typecheck e build `node-server` PASS. Prova UI e
+push QUALITY ancora pendenti. Per usarla su QUALITY occorre applicare la nuova
+migration e distribuire questa versione del codice. Avanzamento stimato: 91%.
+
 ## Notifiche — aggiornamento 2026-10-02
 
 L'inbox e collegata alla toolbar con badge non lette per utente e refresh via
@@ -14,7 +25,7 @@ variabili e webhook Supabase secondo `docs/dev/guideline_implementations.md`;
 applicare le migration sul Supabase QUALITY prima del test. Verifiche locali:
 pgTAP 301/301, Realtime live con due account, unit 23/23, lint, typecheck e
 build `node-server`/Cloudflare Pages PASS.
-Avanzamento stimato progetto: 90%.
+Avanzamento stimato progetto: 91%.
 
 ## Stato sintetico
 
