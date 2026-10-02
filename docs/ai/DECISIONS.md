@@ -1218,7 +1218,7 @@ notifiche.
 
 ## DEC-043 - Il ranking e una sfida, non una proprieta del gioco
 
-**Status:** Accepted, supersedes part of DEC-023
+**Status:** Accepted; la selezione UI a tre tende e superseded by DEC-055
 
 ### Decisione
 
@@ -1632,3 +1632,45 @@ obbligatori superano la stessa validazione usata dal salvataggio.
 La shell a quattro sezioni non era coerente se i comandi delle pagine admin
 rimanevano nel contenuto. La validazione condivisa evita un pulsante
 attivabile che poi fallisce immediatamente per campi mancanti.
+
+## DEC-055 - Il ranking si esplora tramite card delle sfide
+
+**Status:** Accepted
+
+### Decisione
+
+La pagina ranking mostra i Punti VRSUS e tutte le sfide pubbliche nella stessa
+griglia di card, da due, tre o sei colonne. Punti VRSUS e la prima card. La
+scelta di una card apre la pagina dedicata alla sua classifica; una sfida mostra
+sempre prima stato e regolamento, in un'intestazione contenuta entro un terzo
+del viewport, poi la classifica.
+Il filtro per postazione e gioco vive in un pannello dal basso e usa solo
+giochi con sfide pubbliche. L'immagine del gioco arriva dalla view
+`public_games`; se non esiste, si usa un fondo grafico.
+
+### Motivazione
+
+La lista visuale rende disponibili tutte le sfide senza tre selettori
+permanenti nella pagina. Il catalogo pubblico contiene gia le immagini, percio
+non serve una nuova view o migration per il layout.
+
+## DEC-056 - Aggiornamento con trascinamento nella PWA Apple
+
+**Status:** Accepted
+
+### Decisione
+
+Nell'area cliente, su iPhone e iPad con PWA aperta in modalita standalone,
+trascinare verso il basso quando il contenuto e in cima ricarica la rotta
+corrente. L'interfaccia mostra la progressione del gesto, la soglia di rilascio
+e un breve stato di caricamento. In Safari e su Android resta il comportamento
+del browser. La console admin non riceve questo gesto, per evitare di perdere
+dati ancora non salvati nei moduli. I comandi `Aggiorna` delle due viste Ranking
+sono rimossi.
+
+### Motivazione
+
+La PWA Apple non mostra la barra di Safari e, sul dispositivo del proprietario,
+il trascinamento non ricarica la pagina. La shell cliente usa inoltre un
+contenitore di scorrimento interno, percio il gesto viene legato a quel
+contenitore e si attiva solo quando e in cima.

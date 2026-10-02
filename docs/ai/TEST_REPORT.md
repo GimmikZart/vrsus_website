@@ -886,3 +886,39 @@ poi migration, seed e ricreazione degli account DEV.
 Le azioni pagina sono state spostate nel float menu; le azioni di riga e
 partita restano nel contesto. Il salvataggio evento viene disabilitato dalla
 stessa validazione del payload usata al submit.
+
+## 2026-10-02 — Rifiniture app cliente
+
+| Verifica | Esito |
+| --- | --- |
+| ESLint su Notifiche, Ranking, Tornei e Impostazioni | PASS |
+| `nuxt typecheck` | PASS (warning noto Volar/vue-router) |
+| Build `node-server` | PASS dopo la correzione dell'espressione nel template Ranking |
+| Unit test Vitest | PASS — 23/23 (rieseguiti con permessi di lettura necessari) |
+| Prova mobile autenticata | PENDENTE |
+
+Ranking usa `public_game_rankings` e la `image_path` della view `public_games`:
+nessuna modifica al database. La disponibilita effettiva delle copertine
+dipende dai dati caricati nel catalogo.
+
+Aggiornamento successivo: Punti VRSUS e una card sempre disponibile nella
+stessa griglia delle sfide; ogni card apre la relativa pagina, dove stato e
+regolamento precedono sempre la classifica.
+
+Verifica della pagina dedicata al ranking: ESLint sulle due viste Ranking,
+`nuxt typecheck` e build `node-server` → PASS. Il typecheck conserva il warning
+noto di Volar su `vue-router/volar/sfc-route-blocks`, senza errori di tipo.
+
+Correzione del click sulla card: la build precedente registrava
+`/app/ranking/:id` come figlia di `ranking.vue`, che non aveva `<NuxtPage>`.
+Dopo lo spostamento dell'elenco a `ranking/index.vue`, la build `node-server`
+e PASS e la tabella delle rotte generata registra `/app/ranking` e
+`/app/ranking/:id` come rotte sorelle. Click nel browser autenticato ancora
+da verificare.
+
+Aggiornamento PWA Apple e Ranking: Prettier, ESLint sui file toccati,
+`nuxt typecheck`, `git diff --check` e build `node-server` → PASS. Il typecheck
+emette ancora il warning noto Volar/vue-router, senza errori. Il gesto
+pull-to-refresh e limitato alla shell cliente in modalita standalone su iOS;
+non e stato provato su hardware Apple. La checklist manuale e in
+`docs/dev/guideline_test_features.md`.

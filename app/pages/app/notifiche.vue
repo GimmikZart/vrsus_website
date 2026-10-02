@@ -69,6 +69,21 @@ async function disablePush() {
   }
 }
 
+usePageActions(
+  computed(() =>
+    unread.value.length
+      ? [
+          {
+            label: 'Segna tutte come lette',
+            onClick: markAllRead,
+            loading: allPending.value,
+            disabled: allPending.value,
+          },
+        ]
+      : [],
+  ),
+)
+
 useSeoMeta({ title: 'Notifiche — VRSUS', robots: 'noindex, nofollow' })
 </script>
 
@@ -90,14 +105,6 @@ useSeoMeta({ title: 'Notifiche — VRSUS', robots: 'noindex, nofollow' })
           Aggiornamenti sulle prenotazioni, sui tornei e sugli eventi.
         </p>
       </div>
-      <UButton
-        v-if="unread.length"
-        :loading="allPending"
-        variant="outline"
-        color="neutral"
-        label="Segna tutte come lette"
-        @click="markAllRead"
-      />
     </div>
     <div class="mt-10 space-y-3">
       <UCard class="border border-white/10 bg-white/[0.04]">

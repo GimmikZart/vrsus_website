@@ -552,6 +552,9 @@ OneSignal.
       errore.
 - [ ] 5. Verificare che una chiamata indirizzata a due giocatori non compaia
       nell'inbox degli altri utenti.
+- [ ] 6. Con notifiche non lette, verificare `Segna tutte come lette` nel
+      float menu e la card push in alto. Premere il comando: i segni di non
+      letto spariscono e il comando non compare piu.
 
 ### Risultato atteso
 
@@ -918,15 +921,24 @@ Copre la riorganizzazione descritta in `docs/technical/VRSUS_APP_SPEC_V2.md`.
       prenotarsi.
 - [ ] 12. Prenotare: si passa da una pagina di conferma, poi la card diventa
       il biglietto con il QR.
-- [ ] 13. Ranking: i selettori postazione e gioco filtrano; senza gioco si
-      vedono i punti, con un gioco il record.
+- [ ] 13. Ranking: Punti VRSUS e la prima card. Il filtro nel float menu
+      restringe postazione e gioco; toccando ogni card si apre la relativa
+      pagina con la classifica.
+- [ ] 13a. In Ranking il float menu offre solo i filtri e nella pagina della
+      classifica non compare `Aggiorna`. Con la PWA installata su iPhone o iPad,
+      trascinare verso il basso quando la pagina e in cima: compare
+      l'indicatore, dopo la soglia il rilascio ricarica la stessa rotta. Un
+      gesto breve o da meta pagina non ricarica. Commenti: __________
 - [ ] 14. Tornei: i prossimi hanno il bordo acceso, quelli a cui si e iscritti
       il bordo verde, i passati nessun bordo. Ogni bordo ha anche l'etichetta
       testuale.
 - [ ] 15. Iscriversi a un torneo passando dalla pagina di conferma.
 - [ ] 16. Bacheca: votare un sondaggio e verificare le percentuali; inviare un
       messaggio dal pulsante "Scrivici".
-- [ ] 17. Impostazioni: cambiare nickname e fare logout.
+- [ ] 17. Impostazioni: il nickname corrente e testo. Toccare la matita,
+      annullare una modifica, riaprire il pannello e salvare un nickname
+      valido; controllare poi il messaggio di errore con uno gia in uso.
+      Fare logout.
 
 ### Consenso genitoriale
 
@@ -1481,12 +1493,16 @@ in corso e una data programmata. In locale aiutano
 - [ ] 19. Eliminare un tentativo dall'elenco: sparisce dalla classifica.
 - [ ] 20. Chiudere la sfida dalle impostazioni: il comando "Registra" si
       disattiva.
-- [ ] 21. App, `/app/ranking`: la prima tenda parte da "Punti VRSUS" e le altre
-      voci sono solo le postazioni che hanno una sfida.
-- [ ] 22. Scegliere una postazione: compare la tenda dei giochi (solo quelli
-      con sfide) e sotto la tenda delle sfide, aperta sull'ultima creata.
-- [ ] 23. La scheda sopra la classifica mostra stato, scadenza e regolamento
-      della sfida.
+- [ ] 21. App, `/app/ranking`: la griglia mostra tutte le sfide pubbliche in
+      due colonne su telefono, tre su tablet e sei su desktop. Ogni card usa
+      la copertina del gioco se presente, oppure il fondo grafico, con
+      etichetta della postazione, gioco e nome della sfida leggibili in basso.
+- [ ] 22. Aprire `Filtri` dal float menu: le postazioni sono solo quelle con
+      sfide. Scegliendo una postazione, il menu Giochi mostra solo i suoi giochi
+      con sfide. Applicare e azzerare i filtri; le card devono aggiornarsi.
+- [ ] 23. Toccare una card: si apre una pagina dedicata, dove sopra la
+      classifica compaiono stato, scadenza e regolamento della sfida. Punti
+      VRSUS resta la prima card della griglia.
 - [ ] 24. Su una sfida a tempo la classifica ordina dal tempo piu basso e lo
       scrive come `6:36.402`; su una a punteggio dal piu alto.
 
@@ -1611,7 +1627,7 @@ rinuncia con tornei, un'iscrizione attiva a un torneo collegato. Aprire l'app
 su un telefono oppure in una viewport stretta (per esempio 375 × 667 px).
 
 - [ ] 1. Aprire `/app/tornei`: i tre campi di ricerca non occupano la pagina.
-      Toccare l'icona in alto a destra; il menu sale dal basso. Scegliere
+      Toccare `Filtri` nel float menu; il pannello sale dal basso. Scegliere
       postazione, gioco e data, poi `Filtra`: il menu si chiude e le card si
       aggiornano. Le etichette dei filtri compaiono in alto; la `x` su ognuna
       rimuove solo quel filtro.

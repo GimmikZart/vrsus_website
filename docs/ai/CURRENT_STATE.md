@@ -246,3 +246,25 @@ Typecheck, lint e build `node-server` PASS. La prima build nel sandbox era
 bloccata su `EPERM readlink C:\Users\User`; la ripetizione con i permessi di
 lettura necessari e riuscita. Prova visuale autenticata su mobile ancora da
 eseguire.
+
+## Revisione app cliente del 2026-10-02
+
+La pagina Notifiche conserva la card push in alto e offre `Segna tutte come
+lette` nel float menu solo con messaggi non letti. La pagina Tornei apre i
+filtri dal float menu; la rinuncia alla partecipazione mostra un tasto rosso.
+Ranking usa una singola griglia: Punti VRSUS e la prima card, seguita dalle
+sfide pubbliche con immagine del gioco presa da `public_games`. Il filtro
+dipendente postazione/gioco vive in un pannello dal basso; ogni card apre la
+pagina dedicata, con regolamento e stato in testa prima della classifica
+(DEC-055).
+L'elenco risiede in `app/pages/app/ranking/index.vue`: la precedente posizione
+`ranking.vue` rendeva il dettaglio una rotta figlia senza `<NuxtPage>`, quindi
+il click cambiava rotta senza mostrare la scheda. La build ora genera due rotte
+indipendenti.
+Nelle Impostazioni il nickname e solo testo finche non si apre il pannello di
+modifica. Verifica visuale e funzionale con account reale ancora da eseguire.
+ESLint, typecheck, build `node-server` e unit test 23/23 PASS.
+Il float menu Ranking conserva il solo filtro nell'elenco; la scheda del rank
+non ha azioni. Nella shell cliente la PWA standalone Apple offre il gesto di
+aggiornamento dall'alto con indicatore e ricarica della rotta (DEC-056). Prova
+su iPhone/iPad reale ancora da eseguire.

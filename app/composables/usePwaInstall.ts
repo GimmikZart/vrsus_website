@@ -23,7 +23,7 @@ const deferredPrompt = shallowRef<InstallPromptEvent | null>(null)
 const installed = ref(false)
 let listening = false
 
-function detectPlatform(): InstallPlatform {
+export function detectPlatform(): InstallPlatform {
   if (import.meta.server) return 'desktop'
 
   const ua = navigator.userAgent
@@ -36,7 +36,7 @@ function detectPlatform(): InstallPlatform {
 }
 
 /** Vero quando l'app e gia aperta come applicazione installata. */
-function detectStandalone(): boolean {
+export function detectStandalone(): boolean {
   if (import.meta.server) return false
 
   const iosStandalone = (navigator as Navigator & { standalone?: boolean })

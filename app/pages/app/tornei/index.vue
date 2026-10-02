@@ -237,12 +237,24 @@ function gameName(id: string | null) {
   return (games.value ?? []).find((item) => item.id === id)?.name ?? 'Gioco'
 }
 
+usePageActions(
+  computed(() => [
+    {
+      label: filterChips.value.length
+        ? `Filtri (${filterChips.value.length})`
+        : 'Filtri',
+      icon: 'i-lucide-sliders-horizontal',
+      onClick: openFilters,
+    },
+  ]),
+)
+
 useSeoMeta({ title: 'Tornei — VRSUS', robots: 'noindex, nofollow' })
 </script>
 
 <template>
   <div class="space-y-5">
-    <header class="flex items-end justify-between gap-3">
+    <header>
       <div>
         <p
           class="text-brand-red-400 text-xs font-semibold tracking-[0.24em] uppercase"
@@ -255,19 +267,6 @@ useSeoMeta({ title: 'Tornei — VRSUS', robots: 'noindex, nofollow' })
           Tornei
         </h1>
       </div>
-      <button
-        type="button"
-        class="relative grid size-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/[0.05] text-white/80 transition-colors hover:bg-white/10"
-        aria-label="Apri filtri tornei"
-        @click="openFilters"
-      >
-        <UIcon name="i-lucide-sliders-horizontal" class="size-5" />
-        <span
-          v-if="filterChips.length"
-          class="bg-brand-red-500 absolute -top-1 -right-1 grid size-5 place-items-center rounded-full text-[11px] font-semibold text-white"
-          >{{ filterChips.length }}</span
-        >
-      </button>
     </header>
 
     <div

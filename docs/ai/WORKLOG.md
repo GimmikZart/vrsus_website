@@ -1510,3 +1510,37 @@ in `NEXT_STEPS.md`.
 ### Stato finale della sessione
 
 Modifiche implementate; prova autenticata del flusso admin da eseguire.
+
+## 2026-10-02 — Rifiniture client notifiche, tornei, ranking e nickname
+
+### Lavoro svolto
+
+- Spostati nel float menu l'azione di lettura delle notifiche e i filtri Tornei.
+- Reso rosso il comando di rinuncia al torneo.
+- Ricostruita la pagina Ranking con filtri postazione/gioco dipendenti in un
+  pannello dal basso e card verticali: Punti VRSUS e la prima, seguita dalle
+  sfide con immagini del catalogo; ogni card apre una pagina con regole prima
+  della classifica.
+- Reso il nickname non editabile finche non si apre il pannello dedicato.
+- Corretto il routing Ranking: spostato l'elenco in `ranking/index.vue` per
+  rendere `/app/ranking/:id` una rotta indipendente e visibile al click.
+- Rimossi i comandi di aggiornamento dalle due viste Ranking. La shell cliente
+  offre l'aggiornamento con trascinamento nella PWA standalone Apple, con
+  indicatore, soglia e ricarica della rotta corrente (DEC-056).
+
+### File principali modificati
+
+- `app/pages/app/notifiche.vue`, `tornei/index.vue`, `tornei/[id]/index.vue`
+- `app/pages/app/ranking.vue`, `impostazioni.vue`
+
+### Verifiche
+
+- ESLint, typecheck, build `node-server` e Vitest 23/23 → PASS. La prima
+  build ha individuato un'espressione non valida nel template Ranking,
+  corretta prima della build riuscita.
+- Prova visuale autenticata → pendente.
+
+### Stato finale della sessione
+
+Intervento implementato e verificato automaticamente; prova mobile con account
+reale ancora da eseguire.

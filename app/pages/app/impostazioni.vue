@@ -28,9 +28,16 @@ const { data: consent, refresh: refreshConsent } = await useAsyncData(
 )
 
 const nickname = ref(profile.value?.nickname ?? '')
+const nicknameOpen = ref(false)
 const nicknamePending = ref(false)
 const nicknameMessage = ref('')
 const nicknameError = ref('')
+
+function editNickname() {
+  nickname.value = profile.value?.nickname ?? ''
+  nicknameError.value = ''
+  nicknameOpen.value = true
+}
 
 async function saveNickname() {
   nicknamePending.value = true
@@ -58,6 +65,7 @@ async function saveNickname() {
 
   nicknameMessage.value = 'Nickname aggiornato.'
   await refreshProfile()
+  nicknameOpen.value = false
 }
 
 // Un minore senza consenso non puo prenotare: si permette di registrarlo qui.
@@ -131,27 +139,66 @@ useSeoMeta({ title: 'Impostazioni — VRSUS', robots: 'noindex, nofollow' })
         È il nome con cui compari in classifica e nelle liste partecipanti.
       </p>
 
-      <div class="mt-4 flex flex-col gap-3 sm:flex-row">
-        <UInput
-          v-model="nickname"
-          class="flex-1"
-          placeholder="Il tuo nickname"
-        />
+      <div
+        class="mt-4 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3"
+      >
+        <span class="truncate font-medium text-white">{{
+          profile?.nickname || 'Non impostato'
+        }}</span>
         <UButton
-          color="primary"
-          :loading="nicknamePending"
-          label="Salva"
-          @click="saveNickname"
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-pencil"
+          aria-label="Modifica nickname"
+          @click="editNickname"
         />
       </div>
 
       <p v-if="nicknameMessage" class="mt-3 text-sm text-green-400">
         {{ nicknameMessage }}
       </p>
-      <p v-if="nicknameError" class="mt-3 text-sm text-red-400">
-        {{ nicknameError }}
-      </p>
     </section>
+
+    <UiVrsusBottomSheet
+      v-model="nicknameOpen"
+      title="Modifica nickname"
+      :pending="nicknamePending"
+    >
+      <div class="space-y-4">
+        <UFormField
+          label="Nickname"
+          help="Da 3 a 24 caratteri: lettere, numeri, punto, trattino e underscore."
+        >
+          <UInput
+            v-model="nickname"
+            class="w-full"
+            autofocus
+            @keyup.enter="saveNickname"
+          />
+        </UFormField>
+        <p v-if="nicknameError" class="text-sm text-red-300">
+          {{ nicknameError }}
+        </p>
+        <div class="flex gap-2">
+          <UButton
+            color="neutral"
+            variant="outline"
+            class="flex-1 justify-center"
+            label="Annulla"
+            :disabled="nicknamePending"
+            @click="nicknameOpen = false"
+          />
+          <UButton
+            color="primary"
+            class="flex-1 justify-center"
+            label="Salva"
+            :loading="nicknamePending"
+            :disabled="!nickname.trim() || nicknamePending"
+            @click="saveNickname"
+          />
+        </div>
+      </div>
+    </UiVrsusBottomSheet>
 
     <section
       v-if="consent?.is_minor"

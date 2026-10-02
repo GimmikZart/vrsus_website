@@ -26,6 +26,17 @@ i campi minimi sono incompleti; lista e scheda torneo; creazione/modifica su
 postazioni, giochi, bacheca e servizi; check-in con ruolo staff. La build
 `node-server` e PASS alla ripetizione con i permessi di lettura necessari.
 
+Verificare inoltre le nuove viste cliente: menu `Segna tutte come lette` in
+Notifiche, pulsante rosso `Annulla iscrizione`, filtro Tornei nel float menu,
+griglia Ranking a 2/3/6 colonne con Punti VRSUS come prima card, copertine e
+fallback, filtro dipendente postazione/gioco, pagina dedicata con regole prima
+della classifica,
+pannello nickname con annullamento e salvataggio.
+Su iPhone/iPad con PWA installata, verificare il trascinamento dall'inizio del
+contenuto: soglia, annullamento del gesto breve, ricarica della rotta e assenza
+di interferenze con il normale scorrimento. Verificare che su Android resti il
+refresh nativo e che la console admin non reagisca al gesto (DEC-056).
+
 Comportamento atteso: toolbar, contenuto, azioni e navbar non si sovrappongono
 su telefoni piccoli; l'utente viene guidato dall'evento al torneo, vede i
 filtri applicati come etichette, trova il QR senza scroll e annulla evento e

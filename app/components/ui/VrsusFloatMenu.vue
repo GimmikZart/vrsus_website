@@ -19,6 +19,11 @@ defineProps<{ actions: PageAction[] }>()
         :loading="actions[0].loading"
         :disabled="actions[0].disabled"
         class="w-full justify-center"
+        :class="
+          actions[0].color === 'error'
+            ? '!bg-red-600 !text-white hover:!bg-red-500'
+            : ''
+        "
         size="lg"
         :label="actions[0].label"
         @click="actions[0].onClick?.()"

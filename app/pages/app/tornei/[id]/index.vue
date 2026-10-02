@@ -211,7 +211,7 @@ usePageActions(
       return [
         {
           label: isTeam.value ? 'Lascia la squadra' : 'Annulla iscrizione',
-          color: 'neutral' as const,
+          color: 'error' as const,
           loading: pending.value,
           onClick: isTeam.value ? leaveTeam : withdraw,
         },
