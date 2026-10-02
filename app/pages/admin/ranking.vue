@@ -72,6 +72,22 @@ async function adjustPoints() {
   }
 }
 
+usePageActions(
+  computed(() => [
+    {
+      label: 'Registra aggiustamento',
+      onClick: adjustPoints,
+      loading: pending.value,
+      disabled:
+        !form.userId ||
+        !form.gameId ||
+        !form.points ||
+        !form.reason.trim() ||
+        pending.value,
+    },
+  ]),
+)
+
 useSeoMeta({
   title: 'Aggiustamenti ranking — VRSUS',
   robots: 'noindex, nofollow',
@@ -164,13 +180,6 @@ useSeoMeta({
           />
         </UFormField>
       </div>
-      <UButton
-        class="mt-6"
-        :loading="pending"
-        color="primary"
-        label="Registra aggiustamento"
-        @click="adjustPoints"
-      />
     </UCard>
 
     <p class="mt-6 text-sm text-white/45">

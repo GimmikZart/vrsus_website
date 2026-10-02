@@ -1479,7 +1479,7 @@ URLs del progetto Supabase, altrimenti viene scartato in silenzio a favore del
 
 ## DEC-049 - L'iscrizione a un torneo di una giornata segue la prenotazione confermata
 
-**Status:** Accepted
+**Status:** Superseded by DEC-050
 
 ### Decisione
 
@@ -1508,3 +1508,127 @@ torneo di provenienza. Dopo la conferma del posto la scheda evento offre il
 ritorno all'iscrizione al torneo. Gli iscritti preesistenti privi di
 prenotazione vedono l'avviso e possono completare il passaggio dall'app;
 la migration non crea prenotazioni retroattive e non altera le capienze.
+
+## DEC-050 - La rinuncia all'evento ritira anche dai tornei ospitati
+
+**Status:** Accepted
+
+### Decisione
+
+Resta obbligatoria una prenotazione evento `confirmed` per ogni membro di un
+torneo ospitato. Quando il proprietario annulla la prenotazione dall'app, la
+conferma mostra i tornei attivi coinvolti e una sola RPC ritira le sue
+iscrizioni e annulla il posto evento nella stessa transazione. Se un torneo e
+gia iniziato o un ritiro non e ammesso, l'intera operazione fallisce senza
+modifiche parziali. L'annullamento amministrativo di prenotazioni altrui
+continua a richiedere la gestione esplicita degli ingressi al torneo.
+
+### Motivazione
+
+Chiedere all'utente di uscire manualmente da ogni torneo prima di annullare
+la giornata rendeva la rinuncia difficile e lasciava spazio a stati
+incoerenti. La transazione unica conserva il vincolo evento-torneo e la
+capienza anche quando una delle iscrizioni non puo essere ritirata.
+
+### Conseguenze
+
+La pagina del biglietto deve mostrare l'impatto prima della conferma; le
+liste e le schede dei tornei devono ignorare le iscrizioni ritirate. Le RPC
+di sola lettura del biglietto e dei tornei collegati limitano i dati al
+proprietario della prenotazione, inclusi gli eventi privati.
+
+## DEC-051 - Il requisito ARCI compare solo nel contesto dell'evento
+
+**Status:** Accepted
+
+### Decisione
+
+Nell'interfaccia cliente, il requisito ARCI compare solo nelle card
+riassuntive di un evento, con l'icona tessera e l'etichetta compatta `Arci`,
+e nella griglia informativa della pagina evento accanto a Quando, Dove e
+Costo. Home, impostazioni, biglietto, conferme di prenotazione e schede
+torneo non ripetono il requisito. I comandi e gli avvisi operativi della
+console restano disponibili a chi gestisce tessere e check-in.
+
+### Motivazione
+
+Il requisito e importante, ma ripeterlo in ogni passaggio rendeva le pagine
+piu rumorose e metteva in secondo piano azioni come prenotare o mostrare il
+QR. L'evento e il posto in cui l'utente decide se partecipare e dove trova
+l'informazione completa.
+
+### Conseguenze
+
+Nuove viste cliente non aggiungono avvisi o stati personali ARCI fuori da
+questi due contesti. Il requisito continua a essere applicato e verificato
+dalle regole esistenti; cambia solo la sua presenza visiva.
+
+## DEC-052 - L'elenco admin degli eventi serve a scegliere, la scheda a gestire
+
+**Status:** Superseded by DEC-053
+
+### Decisione
+
+In `/admin/eventi` ogni evento e una card interamente cliccabile con solo
+titolo, data e ora, sede, costo e stato Pubblico o Bozza. I comandi Modifica,
+Duplica ed Elimina vivono nella scheda del singolo evento, immediatamente
+prima delle sue tab. L'eliminazione conserva una conferma esplicita.
+
+### Motivazione
+
+Azioni e metadati secondari nella lista rendevano difficile leggere e scegliere
+un evento, soprattutto da telefono. La pagina dettaglio offre gia il contesto
+necessario per intervenire senza sovraccaricare le card.
+
+### Conseguenze
+
+Nuove azioni di gestione evento vanno aggiunte alla scheda dettaglio, non alla
+lista. La lista resta una navigazione rapida e leggibile.
+
+## DEC-053 - La shell separa navigazione e azioni della pagina
+
+**Status:** Accepted
+
+### Decisione
+
+Le aree autenticata cliente e console usano quattro sezioni: toolbar fissa
+con logo, titolo della rotta e notifiche; contenuto centrale scrollabile;
+menu delle azioni della pagina fissato sopra la barra di navigazione;
+navigazione fissata in basso su mobile e in colonna su desktop. La pagina
+registra le proprie azioni presso il layout; quando non ne ha, il menu non
+compare. Una sola azione usa un pulsante a larghezza piena, piu azioni usano
+icone e la disposizione compatta della navbar.
+Le card dell'elenco eventi admin restano essenziali e cliccabili; i comandi
+della scheda evento passano dal piede del riepilogo al float menu.
+
+### Motivazione
+
+Le azioni principali mescolate a card e riepiloghi rendevano la pagina piu
+affollata e meno comoda da usare con una mano. Un'area stabile vicino al
+pollice lascia il contenuto leggibile e mantiene i comandi accessibili.
+
+### Conseguenze
+
+Le pagine con azioni primarie registrano i comandi nel layout, che riserva
+spazio nel contenuto per evitare sovrapposizioni. La navbar della console
+mostra solo rotte consentite al ruolo. La toolbar apre la pagina notifiche
+gia esistente; la configurazione delle push resta indipendente.
+
+## DEC-054 - Le azioni globali della console seguono la tab e la validita del modulo
+
+**Status:** Accepted
+
+### Decisione
+
+Anche le pagine admin secondarie registrano nel float menu le azioni della
+pagina: creazione, salvataggio, avanzamento del wizard e transizioni del torneo.
+Le azioni su una singola riga, squadra o partita restano vicine all'oggetto
+su cui agiscono. Nel wizard evento `Crea torneo` compare solo nella tab Tornei;
+`Salva evento` si abilita solo quando titolo, date, prezzo e gli altri campi
+obbligatori superano la stessa validazione usata dal salvataggio.
+
+### Motivazione
+
+La shell a quattro sezioni non era coerente se i comandi delle pagine admin
+rimanevano nel contenuto. La validazione condivisa evita un pulsante
+attivabile che poi fallisce immediatamente per campi mancanti.

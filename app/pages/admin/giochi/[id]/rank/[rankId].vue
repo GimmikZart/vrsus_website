@@ -254,6 +254,36 @@ function formatMoment(value: string) {
   }).format(new Date(value))
 }
 
+usePageActions(
+  computed(() => [
+    {
+      label: 'Registra',
+      icon: 'i-lucide-plus',
+      color: 'primary' as const,
+      onClick: recordScore,
+      loading: scorePending.value,
+      disabled:
+        !ranking.value ||
+        !isRankingOpen(ranking.value) ||
+        !scoreForm.userId ||
+        !String(scoreForm.value).trim() ||
+        !Number.isFinite(Number(String(scoreForm.value).replace(',', '.'))) ||
+        scorePending.value,
+    },
+    ...(isAdmin.value && settingsOpen.value
+      ? [
+          {
+            label: 'Salva sfida',
+            icon: 'i-lucide-save',
+            onClick: saveSettings,
+            loading: settingsPending.value,
+            disabled: !settings.name.trim() || settingsPending.value,
+          },
+        ]
+      : []),
+  ]),
+)
+
 useSeoMeta({
   title: () => `${ranking.value?.name ?? 'Sfida'} — Admin VRSUS`,
   robots: 'noindex, nofollow',
@@ -421,14 +451,6 @@ useSeoMeta({
               {{ scoreMessage }}
             </p>
 
-            <UButton
-              color="primary"
-              block
-              :disabled="!isRankingOpen(ranking)"
-              :loading="scorePending"
-              label="Registra"
-              @click="recordScore"
-            />
             <p v-if="!isRankingOpen(ranking)" class="text-xs text-white/40">
               La sfida e chiusa: riaprila dalle impostazioni per registrare
               ancora.
@@ -500,14 +522,6 @@ useSeoMeta({
             <p v-if="settingsMessage" class="text-sm text-white/70">
               {{ settingsMessage }}
             </p>
-
-            <UButton
-              color="primary"
-              block
-              :loading="settingsPending"
-              label="Salva"
-              @click="saveSettings"
-            />
           </div>
         </section>
       </aside>

@@ -4,6 +4,10 @@ export type MyBooking =
   Database['public']['Functions']['get_my_bookings']['Returns'][number]
 export type BookingQr =
   Database['public']['Functions']['get_my_booking_qr']['Returns'][number]
+export type BookingDisplay =
+  Database['public']['Functions']['get_my_booking_display']['Returns'][number]
+export type BookingTournament =
+  Database['public']['Functions']['get_my_booking_tournaments']['Returns'][number]
 
 export function useMyBookings() {
   const client = useSupabaseClient<Database>()
@@ -61,6 +65,24 @@ export async function getMyBookingQr(bookingId: string) {
   }
 
   return data?.[0] ?? null
+}
+
+export async function getMyBookingDisplay(bookingId: string) {
+  const client = useSupabaseClient<Database>()
+  const { data, error } = await client.rpc('get_my_booking_display', {
+    p_booking_id: bookingId,
+  })
+  if (error) throw error
+  return data?.[0] ?? null
+}
+
+export async function getMyBookingTournaments(bookingId: string) {
+  const client = useSupabaseClient<Database>()
+  const { data, error } = await client.rpc('get_my_booking_tournaments', {
+    p_booking_id: bookingId,
+  })
+  if (error) throw error
+  return data ?? []
 }
 
 export async function markBookingNoShow(bookingId: string) {

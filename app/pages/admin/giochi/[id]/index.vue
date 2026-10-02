@@ -203,6 +203,49 @@ async function save() {
   syncForm()
 }
 
+usePageActions(
+  computed(() => [
+    {
+      label: 'Salva gioco',
+      icon: 'i-lucide-save',
+      color: 'primary' as const,
+      onClick: save,
+      loading: saving.value,
+      disabled: !form.name.trim() || !form.platformId || saving.value,
+    },
+    ...(rankingFormOpen.value
+      ? [
+          {
+            label: 'Chiudi ranking',
+            icon: 'i-lucide-x',
+            onClick: () => {
+              rankingFormOpen.value = false
+            },
+          },
+          {
+            label: 'Crea ranking',
+            icon: 'i-lucide-plus',
+            onClick: createRanking,
+            loading: rankingPending.value,
+            disabled: !rankingForm.name.trim() || rankingPending.value,
+          },
+        ]
+      : [
+          {
+            label: 'Nuovo ranking',
+            icon: 'i-lucide-plus',
+            onClick: async () => {
+              rankingFormOpen.value = true
+              await nextTick()
+              document
+                .getElementById('new-ranking-form')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            },
+          },
+        ]),
+  ]),
+)
+
 useSeoMeta({
   title: () => `${game.value?.name ?? 'Gioco'} — Admin VRSUS`,
   robots: 'noindex, nofollow',
@@ -317,14 +360,6 @@ useSeoMeta({
             variant="subtle"
             :description="errorMessage"
           />
-
-          <UButton
-            class="mt-5"
-            color="primary"
-            :loading="saving"
-            label="Salva"
-            @click="save"
-          />
         </section>
       </div>
 
@@ -346,17 +381,12 @@ useSeoMeta({
               eventi, lo staff registra il punteggio.
             </p>
           </div>
-          <UButton
-            color="primary"
-            icon="i-lucide-plus"
-            :label="rankingFormOpen ? 'Chiudi' : 'Nuovo ranking'"
-            @click="rankingFormOpen = !rankingFormOpen"
-          />
         </div>
 
         <div
           v-if="rankingFormOpen"
-          class="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+          id="new-ranking-form"
+          class="mt-5 scroll-mt-20 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
         >
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField label="Nome della sfida">
@@ -408,14 +438,6 @@ useSeoMeta({
           <p v-if="rankingError" class="mt-3 text-sm text-red-300">
             {{ rankingError }}
           </p>
-
-          <UButton
-            class="mt-4"
-            color="primary"
-            :loading="rankingPending"
-            label="Crea la sfida"
-            @click="createRanking"
-          />
         </div>
 
         <ul v-if="rankings?.length" class="mt-5 space-y-2">

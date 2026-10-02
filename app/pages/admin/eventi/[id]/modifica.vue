@@ -175,6 +175,59 @@ async function finish() {
   if (saved) await router.push(`/admin/eventi/${eventId}`)
 }
 
+const eventValidationError = computed(() => {
+  try {
+    return eventFormToPayload(form).error
+  } catch {
+    return 'Controlla i dati della scheda Info.'
+  }
+})
+const canSaveEvent = computed(() => !eventValidationError.value)
+
+usePageActions(
+  computed(() => {
+    if (step.value === 'info') {
+      return [
+        {
+          label: 'Avanti',
+          onClick: async () => {
+            await saveInfo('platforms')
+          },
+          loading: pending.value,
+          disabled: !canSaveEvent.value || pending.value,
+        },
+      ]
+    }
+    if (step.value === 'platforms') {
+      return [
+        {
+          label: 'Avanti',
+          onClick: async () => {
+            await savePlatforms('tournaments')
+          },
+          loading: pending.value,
+          disabled: pending.value,
+        },
+      ]
+    }
+    return [
+      {
+        label: 'Crea torneo',
+        icon: 'i-lucide-plus',
+        to: `/admin/eventi/${eventId}/tornei/nuovo`,
+      },
+      {
+        label: 'Salva evento',
+        icon: 'i-lucide-save',
+        color: 'primary' as const,
+        onClick: finish,
+        loading: pending.value,
+        disabled: !canSaveEvent.value || pending.value,
+      },
+    ]
+  }),
+)
+
 const removingId = ref<string | null>(null)
 
 async function removeTournament(tournamentId: string) {
@@ -238,6 +291,7 @@ useSeoMeta({
       <AdminEventInfoForm
         v-model="form"
         :pending="pending"
+        :show-action="false"
         @submit="saveInfo('platforms')"
       />
     </section>
@@ -249,23 +303,22 @@ useSeoMeta({
         :platforms="configuration.platforms"
         :games="configuration.games"
         :pending="pending"
+        :show-action="false"
         @submit="savePlatforms('tournaments')"
       />
     </section>
 
     <section v-else class="mt-5 space-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-white/50">
-          I tornei creati qui restano legati a questo evento.
-        </p>
-        <UButton
-          :to="`/admin/eventi/${eventId}/tornei/nuovo`"
-          color="primary"
-          size="sm"
-          icon="i-lucide-plus"
-          label="Crea torneo"
-        />
-      </div>
+      <p
+        v-if="eventValidationError"
+        class="rounded-xl border border-amber-400/20 bg-amber-400/[0.07] px-4 py-3 text-sm text-amber-200"
+      >
+        Per salvare l'evento, completa la scheda Info:
+        {{ eventValidationError }}
+      </p>
+      <p class="text-sm text-white/50">
+        I tornei creati qui restano legati a questo evento.
+      </p>
 
       <p v-if="!tournaments.length" class="text-sm text-white/45">
         Nessun torneo in programma per questo evento.
@@ -315,15 +368,6 @@ useSeoMeta({
           </dl>
         </li>
       </ul>
-
-      <div class="flex justify-end pt-2">
-        <UButton
-          color="primary"
-          :loading="pending"
-          label="Salva evento"
-          @click="finish"
-        />
-      </div>
     </section>
   </div>
 </template>

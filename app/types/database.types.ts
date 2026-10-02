@@ -2992,6 +2992,15 @@ export type Database = {
         Args: { p_tournament_id: string }
         Returns: number
       }
+      get_my_booking_display: {
+        Args: { p_booking_id: string }
+        Returns: {
+          arci_required: boolean
+          event_title: string
+          payment_required: boolean
+          price_cents: number
+        }[]
+      }
       get_my_booking_qr: {
         Args: { p_booking_id: string }
         Returns: {
@@ -3004,6 +3013,14 @@ export type Database = {
           qr_issued_at: string
           qr_token: string
           status: string
+        }[]
+      }
+      get_my_booking_tournaments: {
+        Args: { p_booking_id: string }
+        Returns: {
+          tournament_id: string
+          tournament_name: string
+          tournament_status: string
         }[]
       }
       get_my_bookings: {

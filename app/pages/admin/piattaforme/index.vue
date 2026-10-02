@@ -88,6 +88,41 @@ async function create() {
   }
 }
 
+usePageActions(
+  computed(() =>
+    creating.value
+      ? [
+          {
+            label: 'Chiudi',
+            icon: 'i-lucide-x',
+            onClick: () => {
+              creating.value = false
+            },
+          },
+          {
+            label: 'Crea postazione',
+            icon: 'i-lucide-plus',
+            color: 'primary' as const,
+            onClick: create,
+            loading: saving.value,
+            disabled: !form.name.trim() || !form.code.trim() || saving.value,
+          },
+        ]
+      : [
+          {
+            label: 'Nuova postazione',
+            onClick: async () => {
+              creating.value = true
+              await nextTick()
+              document
+                .getElementById('new-platform-form')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            },
+          },
+        ],
+  ),
+)
+
 useSeoMeta({ title: 'Postazioni — Admin VRSUS', robots: 'noindex, nofollow' })
 </script>
 
@@ -110,12 +145,6 @@ useSeoMeta({ title: 'Postazioni — Admin VRSUS', robots: 'noindex, nofollow' })
           restano utilizzabili per eventi e tornei.
         </p>
       </div>
-      <UButton
-        :color="creating ? 'neutral' : 'primary'"
-        :variant="creating ? 'outline' : 'solid'"
-        :label="creating ? 'Chiudi' : 'Nuova postazione'"
-        @click="creating = !creating"
-      />
     </header>
 
     <UAlert
@@ -128,7 +157,8 @@ useSeoMeta({ title: 'Postazioni — Admin VRSUS', robots: 'noindex, nofollow' })
 
     <section
       v-if="creating"
-      class="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+      id="new-platform-form"
+      class="mt-6 scroll-mt-20 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
     >
       <h2 class="font-display text-lg font-semibold text-white">
         Nuova postazione
@@ -190,14 +220,6 @@ useSeoMeta({ title: 'Postazioni — Admin VRSUS', robots: 'noindex, nofollow' })
         color="error"
         variant="subtle"
         :description="errorMessage"
-      />
-
-      <UButton
-        class="mt-5"
-        color="primary"
-        :loading="saving"
-        label="Crea postazione"
-        @click="create"
       />
     </section>
 

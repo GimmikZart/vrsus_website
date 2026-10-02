@@ -173,6 +173,34 @@ async function saveSetting() {
   }
 }
 
+usePageActions(
+  computed(() => [
+    {
+      label: 'Salva rinnovo',
+      icon: 'i-lucide-calendar-check',
+      onClick: saveRenewal,
+      loading: arciPending.value,
+      disabled: arciPending.value,
+    },
+    {
+      label: 'Azzera tessere',
+      icon: 'i-lucide-rotate-ccw',
+      color: 'error' as const,
+      onClick: () => {
+        askReset.value = true
+      },
+    },
+    {
+      label: 'Salva impostazione',
+      icon: 'i-lucide-save',
+      color: 'primary' as const,
+      onClick: saveSetting,
+      loading: pending.value,
+      disabled: !form.key.trim() || pending.value,
+    },
+  ]),
+)
+
 useSeoMeta({ title: 'Impostazioni — Admin VRSUS', robots: 'noindex, nofollow' })
 </script>
 
@@ -266,12 +294,6 @@ useSeoMeta({ title: 'Impostazioni — Admin VRSUS', robots: 'noindex, nofollow' 
                 </option>
               </select>
             </UFormField>
-            <UButton
-              color="primary"
-              :loading="arciPending"
-              label="Salva data"
-              @click="saveRenewal"
-            />
           </div>
 
           <div class="border-t border-white/10 pt-5">
@@ -280,33 +302,6 @@ useSeoMeta({ title: 'Impostazioni — Admin VRSUS', robots: 'noindex, nofollow' 
               adesso: tutte le tessere tornano da mostrare, senza perdere lo
               storico.
             </p>
-            <div class="mt-3 flex flex-wrap items-center gap-3">
-              <template v-if="askReset">
-                <span class="text-sm text-white/70"
-                  >Azzerare ora tutte le tessere?</span
-                >
-                <UButton
-                  color="error"
-                  :loading="arciPending"
-                  label="Conferma azzeramento"
-                  @click="resetCards"
-                />
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  label="Annulla"
-                  @click="askReset = false"
-                />
-              </template>
-              <UButton
-                v-else
-                color="neutral"
-                variant="outline"
-                icon="i-lucide-rotate-ccw"
-                label="Azzera tessere adesso"
-                @click="askReset = true"
-              />
-            </div>
           </div>
 
           <p v-if="arciMessage" class="text-sm text-green-400">
@@ -338,19 +333,6 @@ useSeoMeta({ title: 'Impostazioni — Admin VRSUS', robots: 'noindex, nofollow' 
               :rows="8"
               class="font-mono text-sm"
           /></UFormField>
-          <div class="flex flex-wrap gap-3">
-            <UButton
-              :loading="pending"
-              color="primary"
-              label="Salva"
-              @click="saveSetting"
-            /><UButton
-              color="neutral"
-              variant="outline"
-              label="Pulisci"
-              @click="resetForm"
-            />
-          </div>
         </div>
       </UCard>
       <div>
@@ -391,5 +373,13 @@ useSeoMeta({ title: 'Impostazioni — Admin VRSUS', robots: 'noindex, nofollow' 
         </div>
       </div>
     </section>
+    <UiVrsusConfirmDialog
+      v-model="askReset"
+      title="Azzerare ora tutte le tessere?"
+      description="La stagione corrente termina subito: le tessere andranno mostrate di nuovo."
+      confirm-label="Conferma azzeramento"
+      :pending="arciPending"
+      @confirm="resetCards"
+    />
   </div>
 </template>

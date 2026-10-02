@@ -21,6 +21,7 @@ const props = defineProps<{
   platforms: Platform[]
   games: Game[]
   pending?: boolean
+  showAction?: boolean
 }>()
 
 const emit = defineEmits<{ submit: [] }>()
@@ -160,7 +161,7 @@ function toggleGame(platformId: string, gameId: string) {
       </li>
     </ul>
 
-    <div class="flex justify-end">
+    <div v-if="showAction !== false" class="flex justify-end">
       <UButton
         color="primary"
         :loading="pending"

@@ -36,14 +36,16 @@ const { data: myEntries, refresh: refreshMine } = await useAsyncData(
     if (!userId) return []
     const { data } = await client
       .from('tournament_entry_members')
-      .select('entry_id, tournament_entries(tournament_id)')
+      .select('entry_id, tournament_entries(tournament_id, status)')
       .eq('user_id', userId)
     return (data ?? [])
-      .map(
-        (row) =>
-          (row.tournament_entries as { tournament_id?: string } | null)
-            ?.tournament_id,
-      )
+      .map((row) => {
+        const entry = row.tournament_entries as {
+          tournament_id?: string
+          status?: string
+        } | null
+        return entry?.status === 'withdrawn' ? undefined : entry?.tournament_id
+      })
       .filter((id): id is string => Boolean(id))
   },
 )
@@ -55,6 +57,8 @@ const isRegistered = computed(() =>
 const { data: myBookings, refresh: refreshBookings } = await useMyBookings()
 onMounted(() => {
   void refreshBookings()
+  void refreshMine()
+  void refreshTeam()
 })
 const eventBooking = computed(() =>
   (myBookings.value ?? []).find(
@@ -91,10 +95,12 @@ const { data: myTeam, refresh: refreshTeam } = await useAsyncData(
       )
       .eq('tournament_id', tournamentId.value)
     return (
-      (data ?? []).find((entry) =>
-        (entry.tournament_entry_members ?? []).some(
-          (member) => member.user_id === userId,
-        ),
+      (data ?? []).find(
+        (entry) =>
+          entry.status !== 'withdrawn' &&
+          (entry.tournament_entry_members ?? []).some(
+            (member) => member.user_id === userId,
+          ),
       ) ?? null
     )
   },
@@ -176,6 +182,45 @@ async function leaveTeam() {
   }
 }
 
+usePageActions(
+  computed(() => {
+    if (needsEventBooking.value) {
+      return [
+        {
+          label:
+            eventBooking.value?.status === 'waitlisted'
+              ? 'Vai all’evento'
+              : 'Prenota prima l’evento',
+          color: 'primary' as const,
+          to: eventPage.value,
+        },
+      ]
+    }
+    if (isOpen.value && !isRegistered.value) {
+      return [
+        {
+          label: isFull.value ? 'Posti esauriti' : 'Iscriviti al torneo',
+          color: 'primary' as const,
+          to: `/app/tornei/${tournamentId.value}/prenota`,
+          disabled: isFull.value,
+        },
+      ]
+    }
+    if (isRegistered.value && !isCompleted.value) {
+      if (isTeam.value && !isOpen.value) return []
+      return [
+        {
+          label: isTeam.value ? 'Lascia la squadra' : 'Annulla iscrizione',
+          color: 'neutral' as const,
+          loading: pending.value,
+          onClick: isTeam.value ? leaveTeam : withdraw,
+        },
+      ]
+    }
+    return []
+  }),
+)
+
 useSeoMeta({
   title: () => `${detail.value?.name ?? 'Torneo'} — VRSUS`,
   robots: 'noindex, nofollow',
@@ -221,39 +266,6 @@ useSeoMeta({
           variant="subtle"
           :description="message"
         />
-        <div class="flex flex-col gap-2 sm:flex-row">
-          <UButton
-            v-if="needsEventBooking"
-            :to="eventPage"
-            color="primary"
-            size="lg"
-            block
-            :label="
-              eventBooking?.status === 'waitlisted'
-                ? 'Vai all’evento'
-                : 'Prenota prima l’evento'
-            "
-          />
-          <UButton
-            v-else-if="isOpen && !isRegistered"
-            :to="`/app/tornei/${tournamentId}/prenota`"
-            color="primary"
-            size="lg"
-            block
-            :disabled="isFull"
-            :label="isFull ? 'Posti esauriti' : 'Iscriviti al torneo'"
-          />
-          <UButton
-            v-if="isRegistered && !isCompleted"
-            color="neutral"
-            variant="outline"
-            size="lg"
-            block
-            :loading="pending"
-            label="Annulla iscrizione"
-            @click="withdraw"
-          />
-        </div>
       </template>
     </TournamentSummary>
 
@@ -307,17 +319,6 @@ useSeoMeta({
             Passalo a chi vuoi in squadra: senza questo codice non puo entrare.
           </p>
         </div>
-
-        <UButton
-          v-if="detail.status === 'registration_open'"
-          class="mt-4"
-          color="neutral"
-          variant="outline"
-          size="sm"
-          :loading="pending"
-          label="Lascia la squadra"
-          @click="leaveTeam"
-        />
       </div>
 
       <ul class="space-y-2">

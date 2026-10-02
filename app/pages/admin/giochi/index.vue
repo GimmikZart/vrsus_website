@@ -133,6 +133,41 @@ async function create() {
   await refresh()
 }
 
+usePageActions(
+  computed(() =>
+    creating.value
+      ? [
+          {
+            label: 'Chiudi',
+            icon: 'i-lucide-x',
+            onClick: () => {
+              creating.value = false
+            },
+          },
+          {
+            label: 'Crea gioco',
+            icon: 'i-lucide-plus',
+            color: 'primary' as const,
+            onClick: create,
+            loading: saving.value,
+            disabled: !form.name.trim() || !form.platformId || saving.value,
+          },
+        ]
+      : [
+          {
+            label: 'Nuovo gioco',
+            onClick: async () => {
+              creating.value = true
+              await nextTick()
+              document
+                .getElementById('new-game-form')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            },
+          },
+        ],
+  ),
+)
+
 useSeoMeta({ title: 'Giochi — Admin VRSUS', robots: 'noindex, nofollow' })
 </script>
 
@@ -154,17 +189,12 @@ useSeoMeta({ title: 'Giochi — Admin VRSUS', robots: 'noindex, nofollow' })
           Ogni gioco appartiene a una sola postazione.
         </p>
       </div>
-      <UButton
-        :color="creating ? 'neutral' : 'primary'"
-        :variant="creating ? 'outline' : 'solid'"
-        :label="creating ? 'Chiudi' : 'Nuovo gioco'"
-        @click="creating = !creating"
-      />
     </header>
 
     <section
       v-if="creating"
-      class="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+      id="new-game-form"
+      class="mt-6 scroll-mt-20 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
     >
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField label="Postazione">
@@ -225,14 +255,6 @@ useSeoMeta({ title: 'Giochi — Admin VRSUS', robots: 'noindex, nofollow' })
         color="error"
         variant="subtle"
         :description="errorMessage"
-      />
-
-      <UButton
-        class="mt-5"
-        color="primary"
-        :loading="saving"
-        label="Crea gioco"
-        @click="create"
       />
     </section>
 

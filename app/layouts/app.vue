@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import type { TabItem } from '~/components/ui/VrsusTabBar.vue'
 
-// Shell dell'utente autenticato: header contestuale sottile e tab bar
-// inferiore (DEC-025).
+// Shell dell'utente autenticato: toolbar, contenuto, azioni contestuali e
+// navigazione sono quattro sezioni indipendenti.
 //
 // La prima voce non e una home generica: e la bacheca, cioe quello che
 // succede al circolo. Quando una serata e in corso davanti a tutto compare
 // `Live` con il pallino rosso: durante l'evento e l'unica pagina che serve
 // davvero (DEC-042).
 const { data: liveEvent } = usePublicLiveEvent()
+const actions = providePageActions()
+const pageTitle = useShellPageTitle('app')
 
 const tabs = computed<TabItem[]>(() => [
   ...(liveEvent.value
@@ -41,36 +43,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen lg:pl-64">
-    <!--
-      Niente overflow-x qui: un antenato con overflow diverso da visible annulla
-      position: sticky sui discendenti, e sia l'header sia le barre di schede si
-      reggono su quello. Il contenuto largo (tabelle, tabelloni) scorre gia
-      dentro il proprio contenitore.
-    -->
-
-    <header
-      class="pt-safe sticky top-0 z-30 border-b border-white/10 bg-[#08090d]/90 backdrop-blur-xl lg:hidden"
-    >
-      <div class="flex h-14 items-center justify-between px-5">
-        <NuxtLink to="/app" class="inline-flex items-center gap-2">
-          <span
-            class="bg-brand-red-500 font-display grid size-7 place-items-center rounded-lg text-xs font-bold text-white"
-            >V</span
-          >
-          <span
-            class="font-display text-base font-bold tracking-[0.16em] text-white"
-            >VRSUS</span
-          >
-        </NuxtLink>
-      </div>
-    </header>
+  <div
+    class="h-dvh overflow-hidden lg:pl-64"
+    :style="{ '--float-menu-height': actions.length ? '3.5rem' : '0rem' }"
+  >
+    <UiVrsusAppToolbar :title="pageTitle" home="/app" />
 
     <main
-      class="app-scroll-area mx-auto max-w-3xl px-4 py-5 lg:max-w-5xl lg:px-8 lg:py-10"
+      class="app-scroll-area mx-auto h-full max-w-3xl overflow-y-auto px-4 lg:max-w-5xl lg:px-8"
     >
       <slot />
     </main>
+
+    <UiVrsusFloatMenu :actions="actions" />
 
     <!--
       L'invito a installare l'app vive nella shell del cliente: e il primo

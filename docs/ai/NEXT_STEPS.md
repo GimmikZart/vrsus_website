@@ -13,17 +13,27 @@ implementative bloccanti.
 
 ## Prossima attivita prioritaria
 
-Provare nel browser locale il percorso torneo → prenotazione evento → torneo
-con un account cliente, poi pubblicare codice e migration sulla beta dopo la
-revisione. Aree: `app/pages/app/tornei/[id]`, `app/pages/app/eventi/[id].vue`,
-`supabase/migrations/2026100210*.sql`.
+Provare nel browser locale, a viewport mobile e con account cliente e admin,
+la nuova shell a quattro sezioni e il percorso torneo → prenotazione evento
+→ torneo, i filtri e le tab dei tornei, il biglietto compatto e la rinuncia
+contestuale. Aree: `app/layouts/`, `app/components/ui/VrsusFloatMenu.vue`,
+`app/pages/app/tornei/`, `app/pages/app/prenotazioni/[id].vue`,
+`app/pages/app/eventi/[id].vue`, `supabase/migrations/2026100210*.sql`.
 
-Comportamento atteso: senza posto confermato l'iscrizione al torneo e guidata
-verso l'evento; dopo la conferma si torna al torneo; la lista d'attesa resta
-bloccata. Criterio di completamento: la checklist dedicata in
-`docs/dev/guideline_test_features.md` e provata e le due migration risultano
-applicate sull'ambiente destinatario. Verifica: percorso UI e
-`supabase test db --local` (gia PASS: 284/284).
+Nella stessa prova verificare il float menu admin: wizard evento con azioni
+diverse nelle tab Info, Piattaforme e Tornei; salvataggio disabilitato finche
+i campi minimi sono incompleti; lista e scheda torneo; creazione/modifica su
+postazioni, giochi, bacheca e servizi; check-in con ruolo staff. La build
+`node-server` e PASS alla ripetizione con i permessi di lettura necessari.
+
+Comportamento atteso: toolbar, contenuto, azioni e navbar non si sovrappongono
+su telefoni piccoli; l'utente viene guidato dall'evento al torneo, vede i
+filtri applicati come etichette, trova il QR senza scroll e annulla evento e
+tornei collegati con una sola conferma. Criterio di completamento: completare
+la checklist in `docs/dev/guideline_test_features.md`, verificare le migration
+sul database destinatario e solo dopo pubblicare la nuova UI. La verifica
+automatizzata locale e gia PASS: pgTAP 294/294, unit 23/23, lint, typecheck
+e build.
 
 ## USER ACTION REQUIRED
 

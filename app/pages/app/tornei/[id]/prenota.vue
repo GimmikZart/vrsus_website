@@ -64,11 +64,6 @@ const eventPage = computed(() => ({
   query: { torneo: tournamentId.value },
 }))
 
-// Il torneo eredita il requisito dalla giornata che lo ospita: chi si iscrive
-// lo legge qui, non alla porta.
-const { data: arciStatus } = await useMyArciStatus()
-const arciRequired = computed(() => Boolean(detail.value?.arciRequired))
-
 const isTeam = computed(() => (detail.value?.entrySize ?? 1) > 1)
 const summary = computed(() =>
   detail.value ? tournamentSummary(detail.value) : [],
@@ -134,6 +129,54 @@ const joinTeam = (entryId: string) =>
 
 const joinByCode = () =>
   runSignup(() => joinTournamentTeam({ code: teamForm.code.trim() }))
+
+usePageActions(
+  computed(() => {
+    if (needsEventBooking.value) {
+      return [
+        {
+          label: 'Prenota prima l’evento',
+          color: 'primary' as const,
+          to: eventPage.value,
+        },
+      ]
+    }
+    if (
+      blockedByConsent.value &&
+      detail.value?.status === 'registration_open'
+    ) {
+      return [
+        {
+          label: 'Vai alle impostazioni',
+          color: 'primary' as const,
+          to: '/app/impostazioni',
+        },
+      ]
+    }
+    if (detail.value?.status !== 'registration_open') return []
+    if (!isTeam.value) {
+      return [
+        {
+          label: 'Conferma iscrizione',
+          color: 'primary' as const,
+          loading: pending.value,
+          onClick: confirm,
+        },
+      ]
+    }
+    if (detail.value.teamFormation !== 'admin') {
+      return [
+        {
+          label: 'Crea la squadra',
+          color: 'primary' as const,
+          loading: pending.value,
+          onClick: createTeam,
+        },
+      ]
+    }
+    return []
+  }),
+)
 
 useSeoMeta({
   title: 'Conferma iscrizione — VRSUS',
@@ -227,32 +270,6 @@ useSeoMeta({
         title="Iscrizioni non aperte"
         description="Le iscrizioni a questo torneo non sono disponibili in questo momento."
       />
-      <UButton
-        v-if="needsEventBooking"
-        class="mt-4"
-        :to="eventPage"
-        color="primary"
-        size="lg"
-        block
-        :label="
-          eventBooking?.status === 'waitlisted'
-            ? 'Vai all’evento'
-            : 'Prenota prima l’evento'
-        "
-      />
-
-      <UAlert
-        v-if="arciRequired && !arciStatus?.card_valid"
-        class="mt-6"
-        color="warning"
-        variant="subtle"
-        icon="i-lucide-id-card"
-        title="Serve la tessera ARCI"
-        description="La giornata che ospita questo torneo richiede la tessera ARCI. Puoi farla da noi all’ingresso."
-      />
-      <p v-else-if="arciRequired" class="mt-4 text-sm text-emerald-300/85">
-        Questa giornata richiede la tessera ARCI: la tua risulta valida.
-      </p>
 
       <UAlert
         v-if="
@@ -276,37 +293,9 @@ useSeoMeta({
         :description="errorMessage"
       />
 
-      <UButton
-        v-if="
-          blockedByConsent &&
-          !needsEventBooking &&
-          detail.status === 'registration_open'
-        "
-        class="mt-6"
-        to="/app/impostazioni"
-        color="primary"
-        size="lg"
-        block
-        label="Vai alle impostazioni"
-      />
-
-      <!-- Torneo in singolo: un solo pulsante. -->
-      <UButton
-        v-else-if="
-          !needsEventBooking && detail.status === 'registration_open' && !isTeam
-        "
-        class="mt-6"
-        color="primary"
-        size="lg"
-        block
-        :loading="pending"
-        label="Conferma iscrizione"
-        @click="confirm"
-      />
-
       <!-- Torneo a squadre composte dallo staff: qui non si fa nulla. -->
       <UAlert
-        v-else-if="
+        v-if="
           !needsEventBooking &&
           detail.status === 'registration_open' &&
           detail.teamFormation === 'admin'
@@ -319,7 +308,13 @@ useSeoMeta({
       />
 
       <div
-        v-else-if="!needsEventBooking && detail.status === 'registration_open'"
+        v-if="
+          !needsEventBooking &&
+          detail.status === 'registration_open' &&
+          isTeam &&
+          detail.teamFormation !== 'admin' &&
+          !blockedByConsent
+        "
         class="mt-6 space-y-6"
       >
         <section>
@@ -347,15 +342,6 @@ useSeoMeta({
               <option value="open">Chiunque abbia bisogno di squadra</option>
             </select>
           </UFormField>
-          <UButton
-            class="mt-4"
-            color="primary"
-            size="lg"
-            block
-            :loading="pending"
-            label="Crea la squadra"
-            @click="createTeam"
-          />
         </section>
 
         <section v-if="openTeams.length" class="border-t border-white/10 pt-6">

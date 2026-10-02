@@ -106,8 +106,6 @@ const myBooking = computed(
     ) ?? null,
 )
 
-const { data: arciStatus } = await useMyArciStatus()
-
 // Un minore senza consenso non puo prenotare: la guardia e nel database, qui
 // la si anticipa per spiegare il motivo invece di mostrare un errore generico.
 const { data: consent } = await useAsyncData('my-consent-status', async () => {
@@ -240,6 +238,55 @@ const infoRows = computed(() => {
   return rows
 })
 
+usePageActions(
+  computed(() => {
+    if (myBooking.value) {
+      return [
+        {
+          label: 'Apri il biglietto',
+          icon: 'i-lucide-ticket',
+          color: 'primary' as const,
+          to: `/app/prenotazioni/${myBooking.value.id}`,
+        },
+        ...(returnTournament.value && myBooking.value.status === 'confirmed'
+          ? [
+              {
+                label: 'Vai al torneo',
+                icon: 'i-lucide-swords',
+                color: 'secondary' as const,
+                to: `/app/tornei/${returnTournament.value.id}/prenota`,
+              },
+            ]
+          : []),
+      ]
+    }
+    if (canBook.value) {
+      return [
+        {
+          label: waitlistOnly.value
+            ? 'Entra in lista d’attesa'
+            : 'Prenota il tuo posto',
+          color: 'primary' as const,
+          loading: bookingPending.value,
+          onClick: () => {
+            askBooking.value = true
+          },
+        },
+      ]
+    }
+    if (blockedByConsent.value) {
+      return [
+        {
+          label: 'Vai alle impostazioni',
+          color: 'primary' as const,
+          to: '/app/impostazioni',
+        },
+      ]
+    }
+    return []
+  }),
+)
+
 useSeoMeta({
   title: () => `${event.value?.title ?? 'Evento'} — VRSUS`,
   robots: 'noindex, nofollow',
@@ -265,7 +312,6 @@ useSeoMeta({
           <UiVrsusLiveDot v-if="event.status === 'running'" size="0.4rem" />
           {{ statusLabel }}
         </span>
-        <UiVrsusArciChip :required="event.arci_required" size="sm" />
       </div>
 
       <h1
@@ -299,13 +345,6 @@ useSeoMeta({
         Sei in lista d’attesa: attendi la conferma del posto prima di iscriverti
         al torneo.
       </p>
-      <UButton
-        v-if="myBooking?.status === 'confirmed'"
-        class="mt-4"
-        :to="`/app/tornei/${returnTournament.id}/prenota`"
-        color="primary"
-        :label="`Continua con ${returnTournament.name}`"
-      />
     </section>
 
     <!-- Prenotazione: stato attuale e comando, sempre nello stesso posto. -->
@@ -332,13 +371,6 @@ useSeoMeta({
               : 'Se si libera un posto ricevi il biglietto e una notifica.'
           }}
         </p>
-        <UButton
-          class="mt-4"
-          :to="`/app/prenotazioni/${myBooking.id}`"
-          color="neutral"
-          variant="outline"
-          label="Apri il biglietto"
-        />
       </template>
 
       <template v-else-if="canBook">
@@ -352,24 +384,6 @@ useSeoMeta({
               : 'Prenotando riservi un posto per te. Il pagamento, quando previsto, avviene sul posto.'
           }}
         </p>
-
-        <p
-          v-if="event.arci_required && !arciStatus?.card_valid"
-          class="mt-3 text-sm leading-6 text-amber-200/85"
-        >
-          Per questa giornata serve la tessera ARCI in corso di validità. Se non
-          ce l’hai puoi farla da noi all’ingresso.
-        </p>
-
-        <UButton
-          class="mt-4"
-          color="primary"
-          size="lg"
-          :label="
-            waitlistOnly ? 'Entra in lista d’attesa' : 'Prenota il tuo posto'
-          "
-          @click="askBooking = true"
-        />
       </template>
 
       <template v-else-if="blockedByConsent">
@@ -380,12 +394,6 @@ useSeoMeta({
           Hai meno di 18 anni e non risulta un consenso registrato. Puoi
           aggiungerlo dalle impostazioni.
         </p>
-        <UButton
-          class="mt-4"
-          to="/app/impostazioni"
-          color="primary"
-          label="Vai alle impostazioni"
-        />
       </template>
 
       <template v-else>
@@ -519,10 +527,6 @@ useSeoMeta({
               formatPublicEventPrice(event.price_cents, event.payment_required)
             }}
           </dd>
-        </div>
-        <div v-if="event.arci_required" class="flex justify-between gap-3">
-          <dt class="text-white/45">Tessera ARCI</dt>
-          <dd class="text-right text-amber-200">Obbligatoria</dd>
         </div>
       </dl>
     </UiVrsusConfirmDialog>

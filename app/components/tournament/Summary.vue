@@ -64,7 +64,6 @@ const statusColor = computed(() => {
         class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/70"
         >{{ tournament.platformCode }}</span
       >
-      <UiVrsusArciChip :required="tournament.arciRequired" size="sm" />
       <span
         v-if="!tournament.rankingEnabled"
         class="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] text-amber-200"

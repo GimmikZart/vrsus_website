@@ -72,17 +72,6 @@ const stats = computed(() => [
             >{{ role }}</span
           >
           <span
-            v-if="!publicOnly"
-            class="rounded-full px-2.5 py-0.5 text-[11px] tracking-wide uppercase"
-            :class="
-              profile.arciCardValid
-                ? 'bg-emerald-500/15 text-emerald-300'
-                : 'bg-white/10 text-white/50'
-            "
-          >
-            {{ profile.arciCardValid ? 'Tessera ARCI' : 'Senza tessera' }}
-          </span>
-          <span
             v-if="profile.isMinor"
             class="rounded-full px-2.5 py-0.5 text-[11px] tracking-wide uppercase"
             :class="

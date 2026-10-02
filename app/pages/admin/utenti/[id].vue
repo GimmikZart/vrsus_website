@@ -79,6 +79,19 @@ const tabs = computed(() => [
   },
 ])
 
+usePageActions(
+  computed(() => [
+    {
+      label: profile.value?.arciCardValid
+        ? 'Revoca tessera'
+        : 'Registra tessera ARCI',
+      onClick: () => setArciCard(!profile.value?.arciCardValid),
+      loading: arciPending.value,
+      disabled: arciPending.value,
+    },
+  ]),
+)
+
 useSeoMeta({
   title: () =>
     `${profile.value?.nickname ?? profile.value?.displayName ?? 'Utente'} — Admin VRSUS`,
@@ -92,28 +105,12 @@ useSeoMeta({
       ← Utenti
     </NuxtLink>
 
-    <ProfileHeader :profile="profile">
-      <template #actions>
-        <div class="text-right">
-          <UButton
-            :color="profile.arciCardValid ? 'neutral' : 'primary'"
-            :variant="profile.arciCardValid ? 'outline' : 'solid'"
-            icon="i-lucide-id-card"
-            :loading="arciPending"
-            :label="
-              profile.arciCardValid ? 'Revoca tessera' : 'Registra tessera ARCI'
-            "
-            @click="setArciCard(!profile.arciCardValid)"
-          />
-          <p v-if="arciVerifiedLabel" class="mt-2 text-xs text-white/40">
-            Vista il {{ arciVerifiedLabel }}
-          </p>
-          <p v-if="arciError" class="mt-2 text-xs text-red-300">
-            {{ arciError }}
-          </p>
-        </div>
-      </template>
-    </ProfileHeader>
+    <ProfileHeader :profile="profile"> </ProfileHeader>
+
+    <p v-if="arciVerifiedLabel" class="text-xs text-white/40">
+      Tessera vista il {{ arciVerifiedLabel }}
+    </p>
+    <p v-if="arciError" class="text-xs text-red-300">{{ arciError }}</p>
 
     <div class="sticky-tabs">
       <UiVrsusTabs v-model="activeTab" :items="tabs" />

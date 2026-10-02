@@ -4,7 +4,9 @@ import { EVENT_TYPE_OPTIONS } from '~/composables/useEventForm'
 
 // Primo passo del wizard evento: solo i dati della giornata. Descrizioni
 // lunghe, note interne e SEO non passano piu da qui.
-defineProps<{ pending?: boolean }>()
+withDefaults(defineProps<{ pending?: boolean; showAction?: boolean }>(), {
+  showAction: true,
+})
 
 const emit = defineEmits<{ submit: [] }>()
 
@@ -97,7 +99,7 @@ const form = defineModel<EventFormState>({ required: true })
       giornate private: chi prenota lo legge in vetrina e in app.
     </p>
 
-    <div class="flex justify-end">
+    <div v-if="showAction" class="flex justify-end">
       <UButton
         type="submit"
         color="primary"

@@ -10,19 +10,49 @@ import type { TabItem } from '~/components/ui/VrsusTabBar.vue'
 // cosi si distingue a colpo d occhio da una console ferma.
 const { data: liveState } = useAdminLiveEvent()
 const { groups } = useAdminMenu()
+const { isAdmin, hasAnyRole } = useVrsusAuth()
+const actions = providePageActions()
+const pageTitle = useShellPageTitle('admin')
+const homeRoute = computed(() =>
+  isAdmin.value
+    ? '/admin'
+    : hasAnyRole(['staff'])
+      ? '/admin/checkin'
+      : '/admin/tornei',
+)
 
 const tabs = computed<TabItem[]>(() => [
-  {
-    to: '/admin',
-    label: 'Live',
-    icon: 'i-lucide-radio',
-    exact: true,
-    live: liveState.value?.live ?? false,
-  },
-  { to: '/admin/eventi', label: 'Eventi', icon: 'i-lucide-calendar-days' },
-  { to: '/admin/tornei', label: 'Tornei', icon: 'i-lucide-swords' },
-  { to: '/admin/piattaforme', label: 'Postazioni', icon: 'i-lucide-monitor' },
-  { to: '/admin/giochi', label: 'Giochi', icon: 'i-lucide-gamepad-2' },
+  ...(isAdmin.value
+    ? [
+        {
+          to: '/admin',
+          label: 'Live',
+          icon: 'i-lucide-radio',
+          exact: true,
+          live: liveState.value?.live ?? false,
+        },
+        {
+          to: '/admin/eventi',
+          label: 'Eventi',
+          icon: 'i-lucide-calendar-days',
+        },
+      ]
+    : hasAnyRole(['staff'])
+      ? [{ to: '/admin/checkin', label: 'Check-in', icon: 'i-lucide-qr-code' }]
+      : []),
+  ...(hasAnyRole(['tournament_admin', 'admin', 'super_admin'])
+    ? [{ to: '/admin/tornei', label: 'Tornei', icon: 'i-lucide-swords' }]
+    : []),
+  ...(isAdmin.value
+    ? [
+        {
+          to: '/admin/piattaforme',
+          label: 'Postazioni',
+          icon: 'i-lucide-monitor',
+        },
+        { to: '/admin/giochi', label: 'Giochi', icon: 'i-lucide-gamepad-2' },
+      ]
+    : []),
   {
     to: '/admin/altro',
     label: 'Altro',
@@ -33,35 +63,19 @@ const tabs = computed<TabItem[]>(() => [
 </script>
 
 <template>
-  <div class="min-h-screen lg:pl-64">
-    <!--
-      Niente overflow-x qui: un antenato con overflow diverso da visible annulla
-      position: sticky sui discendenti, e sia l'header sia le barre di schede si
-      reggono su quello. Il contenuto largo (tabelle, tabelloni) scorre gia
-      dentro il proprio contenitore.
-    -->
-
-    <header
-      class="pt-safe sticky top-0 z-30 border-b border-white/10 bg-[#08090d]/90 backdrop-blur-xl lg:hidden"
-    >
-      <!--
-        Il passaggio all'area cliente non sta qui ma nella pagina Altro,
-        accanto all'uscita: chi amministra e anche un cliente del circolo, e i
-        due gesti di uscita dalla console vivono nello stesso posto (DEC-045).
-      -->
-      <div class="flex h-14 items-center px-5">
-        <span
-          class="font-display text-base font-bold tracking-[0.16em] text-white"
-          >Console</span
-        >
-      </div>
-    </header>
+  <div
+    class="h-dvh overflow-hidden lg:pl-64"
+    :style="{ '--float-menu-height': actions.length ? '3.5rem' : '0rem' }"
+  >
+    <UiVrsusAppToolbar :title="pageTitle" :home="homeRoute" />
 
     <main
-      class="app-scroll-area mx-auto max-w-5xl px-4 py-5 lg:max-w-7xl lg:px-8 lg:py-10"
+      class="app-scroll-area mx-auto h-full max-w-5xl overflow-y-auto px-4 lg:max-w-7xl lg:px-8"
     >
       <slot />
     </main>
+
+    <UiVrsusFloatMenu :actions="actions" />
 
     <UiVrsusTabBar :items="tabs" :groups="groups">
       <template #footer>

@@ -41,6 +41,81 @@ tastiera e non mostrano dati inventati come date, prezzi o numeri di capienza.
 
 <!-- Inserire qui eventuali osservazioni -->
 
+## Float menu admin su telefono
+
+**Prerequisiti.** Ambiente locale con almeno un evento e un torneo; account
+admin e, per il check-in, un account staff. Usare una viewport 375 × 667 px.
+
+- [ ] 1. Aprire `/admin/eventi/[id]/modifica`: nelle tab Info e Piattaforme
+      compare solo `Avanti`; nella tab Tornei compaiono `Crea torneo` e
+      `Salva evento`. Il primo pulsante sparisce cambiando tab.
+- [ ] 2. Svuotare il titolo o una data obbligatoria: l'azione di salvataggio
+      dell'evento resta disabilitata. Ricompilare dati validi e verificare che
+      torni attiva; salvare.
+- [ ] 3. Aprire `/admin/tornei`: `Nuovo torneo` e nel menu in basso. Aprire
+      il modulo, verificare `Chiudi` e `Crea torneo`, poi creare un torneo.
+- [ ] 4. Aprire la scheda del torneo: transizione di stato, avvio quando
+      disponibile, modifica, annullamento ed eliminazione sono nel menu.
+      Entrare in modifica e verificare `Annulla` e `Salva`; aprire la
+      conferma di eliminazione e chiuderla senza eliminare.
+- [ ] 5. Verificare creazione e salvataggio dal menu su Postazioni, Giochi,
+      Bacheca e Servizi; su Ranking, Impostazioni e Check-in controllare che
+      i comandi siano raggiungibili senza scroll. Le azioni di singole righe
+      e partite restano accanto ai dati interessati.
+- [ ] 6. Con l'account staff aprire Check-in e una sfida ranking: il menu
+      mostra solo le azioni consentite al ruolo. Su un telefono stretto il
+      menu resta entro l'altezza della navbar e le azioni extra scorrono in
+      orizzontale senza coprire il contenuto.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## Shell mobile e menu delle azioni
+
+**Prerequisiti.** Account cliente, account admin e, se disponibili, account
+staff e responsabile tornei. Un evento programmato con prenotazioni aperte e
+un torneo collegato. Provare a 375 × 667 px, su un telefono piccolo e poi su
+desktop.
+
+- [ ] 1. Aprire Bacheca, Eventi e Tornei: toolbar fissa con logo a sinistra,
+      nome della pagina al centro e campana a destra. La campana apre le
+      notifiche. Il contenuto scorre senza passare sotto le barre fisse.
+- [ ] 2. Aprire una pagina senza azioni: il float menu non compare e la navbar
+      resta fissata in basso. Cambiare rotta dopo una pagina con azioni: i
+      comandi della pagina precedente spariscono.
+- [ ] 3. Aprire un evento prenotabile: `Prenota il tuo posto` occupa tutta la
+      larghezza del float menu sopra la navbar. La conferma e la prenotazione
+      funzionano. Dopo la conferma il menu propone il biglietto e, se si
+      arrivava da un torneo, anche il ritorno al torneo.
+- [ ] 4. Aprire un torneo: il menu guida prima all'evento se manca il posto;
+      dopo la conferma permette l'iscrizione. Sul biglietto il menu offre
+      l'annullamento e apre la conferma con i tornei collegati.
+- [ ] 5. Con account admin, aprire una scheda evento: Modifica, Duplica ed
+      Elimina appaiono nel float menu con icone. Da staff la scheda non mostra
+      questi comandi. La plancia Live offre Modifica e Start evento o
+      Check-in secondo lo stato.
+- [ ] 6. Da staff la navbar mostra solo le rotte autorizzate; da responsabile
+      tornei mostra Tornei. Il logo porta alla prima pagina consentita.
+- [ ] 7. Su desktop controllare toolbar, sidebar, contenuto e menu azioni:
+      nessuna sovrapposizione, tab leggibili e comandi raggiungibili.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
 ## Area utente: eventi, tornei e profilo
 
 **Stato:** READY TO TEST
@@ -1029,45 +1104,50 @@ Copre le modifiche descritte in DEC-033 e DEC-034.
       avviato compare il cronometro.
 - [ ] 5. I tornei elencati sono solo quelli dell'evento mostrato.
 
-### Elenco eventi
+### Elenco e scheda evento
 
-- [ ] 6. La pagina contiene solo l'elenco: nessun form di creazione.
+- [ ] 6. La pagina contiene solo card cliccabili e il comando "Nuovo evento":
+      ogni card mostra solo nome, data e ora, sede, costo e stato Pubblico o
+      Bozza. Non ci sono altri pulsanti, icone di azione, slug o stati.
 - [ ] 7. "Nuovo evento" apre `/admin/eventi/nuovo`.
-- [ ] 8. "Duplica" crea con un clic una copia in bozza non pubblicata e apre il
-      wizard sulla copia. Verificare nella scheda Piattaforme che postazioni e
-      giochi siano stati copiati.
-- [ ] 9. "Elimina" chiede conferma e poi rimuove l'evento. Provarlo su un
+- [ ] 8. Toccare una card: si apre la sua scheda. Prima delle tab ci sono
+      le informazioni dell'evento; `Modifica`, `Duplica` ed `Elimina` sono
+      nel float menu sopra la navbar.
+- [ ] 9. `Duplica` crea una copia in bozza non pubblicata e apre il wizard
+      sulla copia. Verificare nella scheda Piattaforme che postazioni e giochi
+      siano stati copiati.
+- [ ] 10. `Elimina` chiede conferma e poi rimuove l'evento. Provarlo su un
       evento che ha almeno un torneo e una prenotazione: deve sparire tutto,
       senza errori.
 
 ### Wizard di creazione
 
-- [ ] 10. La scheda Info contiene solo: titolo, slug, tipo evento, inizio,
+- [ ] 11. La scheda Info contiene solo: titolo, slug, tipo evento, inizio,
       fine, apertura e chiusura prenotazioni, prezzo sul posto, capienza
       massima, luogo, indirizzo, cover locandina e le quattro caselle.
-- [ ] 11. "Avanti" salva l'evento come bozza e porta alla scheda Piattaforme
+- [ ] 12. "Avanti" salva l'evento come bozza e porta alla scheda Piattaforme
       dell'evento appena creato.
-- [ ] 12. Selezionando una postazione la card si apre da sola sull'elenco dei
+- [ ] 13. Selezionando una postazione la card si apre da sola sull'elenco dei
       giochi. Le caselle dei giochi restano disattivate finche la postazione
       non e selezionata.
-- [ ] 13. "Avanti" salva la configurazione e porta alla scheda Tornei.
-- [ ] 14. "Crea torneo": la select delle postazioni mostra solo quelle scelte
+- [ ] 14. "Avanti" salva la configurazione e porta alla scheda Tornei.
+- [ ] 15. "Crea torneo": la select delle postazioni mostra solo quelle scelte
       per l'evento e quella dei giochi solo i giochi resi disponibili su quella
       postazione.
-- [ ] 15. Alla creazione si torna al wizard e il torneo compare come card con
+- [ ] 16. Alla creazione si torna al wizard e il torneo compare come card con
       piattaforma, gioco, orario, tipo e massimo di partecipanti.
-- [ ] 16. "Salva evento" riporta all'elenco. Con "Pubblica sul sito" spuntata
+- [ ] 17. "Salva evento" riporta all'elenco. Con "Pubblica sul sito" spuntata
       l'evento risulta pubblico e programmato; senza, resta bozza e privato.
-- [ ] 17. Riaprendo l'evento con "Modifica" i tre passi mostrano i dati
+- [ ] 18. Riaprendo l'evento e scegliendo "Modifica" i tre passi mostrano i dati
       salvati.
 
 ### Spaziature e sticky
 
-- [ ] 18. A 375 px le pagine della console usano tutta la larghezza utile: il
+- [ ] 19. A 375 px le pagine della console usano tutta la larghezza utile: il
       contenuto non e stretto fra due margini larghi.
-- [ ] 19. Scorrendo una pagina lunga l'intestazione della console resta in
+- [ ] 20. Scorrendo una pagina lunga l'intestazione della console resta in
       alto.
-- [ ] 20. Nessuna pagina scorre in orizzontale. Tabelle e tabelloni scorrono
+- [ ] 21. Nessuna pagina scorre in orizzontale. Tabelle e tabelloni scorrono
       dentro il proprio riquadro.
 
 ### Risultato atteso
@@ -1110,8 +1190,9 @@ promettono; su telefono il contenuto respira senza sprecare spazio.
 
 ### Scheda evento
 
-- [ ] 8. In `/admin/eventi` toccare il titolo di un evento apre la sua scheda.
-- [ ] 9. La scheda mostra informazioni e le tre schede, senza comandi.
+- [ ] 8. In `/admin/eventi` toccare una card di evento apre la sua scheda.
+- [ ] 9. La scheda mostra informazioni e le tab; nel float menu sopra la
+      navbar ci sono `Modifica`, `Duplica` ed `Elimina`.
 
 ### Tornei
 
@@ -1305,34 +1386,31 @@ un account utente normale. Utile la giornata dimostrativa
 
 - [ ] 10. Console -> `Impostazioni sito`, riquadro "Tessere ARCI": leggere il
       conteggio dei tesserati e la data di inizio della stagione corrente.
-- [ ] 11. Aprire la scheda di un utente senza tessera: badge "Senza tessera" e
-      comando `Registra tessera ARCI`. Premerlo: il badge diventa "Tessera
-      ARCI" con la data, il comando diventa `Revoca tessera`.
-- [ ] 12. Dall'account di quell'utente aprire `/app/impostazioni`: il riquadro
-      "Tessera ARCI" dice che risulta valida.
+- [ ] 11. Aprire la scheda di un utente senza tessera e usare il comando
+      `Registra tessera ARCI`. Premerlo: compare la data e il comando diventa
+      `Revoca tessera`.
+- [ ] 12. Dall'account di quell'utente aprire `/app/impostazioni`: non compare
+      lo stato della tessera.
 - [ ] 13. Dallo stesso account provare a modificare il proprio profilo: non
       esiste nessun comando per spuntarsi la tessera (la scrittura diretta e
       rifiutata dal database).
 - [ ] 14. Wizard evento, primo passo: togliere "Tessera ARCI obbligatoria" e
-      salvare. In vetrina l'evento non mostra piu il chip "Tessera ARCI
-      richiesta"; rimettendola il chip torna, insieme all'avviso sopra il
-      comando di prenotazione.
-- [ ] 15. Aprire la conferma di prenotazione (`/app/prenota/<id>`) con un
-      account senza tessera: riga "Tessera ARCI — Obbligatoria" e avviso
-      giallo. Con un account tesserato l'avviso diventa la riga verde.
-- [ ] 16. Biglietto (`/app/prenotazioni/<id>`) e scheda del torneo ospitato
-      dalla giornata: dicono anche loro che la tessera serve.
-- [ ] 17. Check-in: scansionare il QR di un prenotato senza tessera su una
+      salvare. Nelle card riassuntive dell'evento il chip "Arci" con icona
+      tessera non compare piu; rimettendola il chip torna. Nella scheda evento
+      il requisito compare solo nella griglia Quando/Dove/Costo/Tessera ARCI.
+- [ ] 15. Conferma prenotazione, biglietto e scheda del torneo ospitato non
+      mostrano riferimenti alla tessera.
+- [ ] 16. Check-in: scansionare il QR di un prenotato senza tessera su una
       giornata che la richiede. Dopo il check-in compare il riquadro giallo
       "Tessera ARCI mancante" con il comando `Tessera vista`; premendolo il
       riquadro diventa verde. Su una giornata senza obbligo compare la riga
       "Questa giornata non richiede la tessera ARCI".
-- [ ] 18. Nella lista `Prenotati` della plancia, chi non ha la tessera e
+- [ ] 17. Nella lista `Prenotati` della plancia, chi non ha la tessera e
       marcato "mancante" e in cima compare l'avviso con il conteggio.
-- [ ] 19. `Impostazioni sito` -> `Azzera tessere adesso` -> conferma: il
+- [ ] 18. `Impostazioni sito` -> `Azzera tessere adesso` -> conferma: il
       conteggio dei tesserati va a zero e le schede utente tornano "Senza
       tessera". Rileggere la data di inizio stagione: e adesso.
-- [ ] 20. Cambiare la data di rinnovo (giorno e mese) e salvare: il testo della
+- [ ] 19. Cambiare la data di rinnovo (giorno e mese) e salvare: il testo della
       stagione corrente si aggiorna di conseguenza.
 
 ### Esito manuale
@@ -1356,7 +1434,7 @@ in corso e una data programmata. In locale aiutano
 - [ ] 1. Da cliente aprire `/app`: la prima voce della barra e "Bacheca" con
       l'icona del giornale, e la pagina mostra annunci e sondaggi.
 - [ ] 2. Con una data pubblica programmata, sopra la bacheca compare l'invito
-      con nome, giorno e ora, prezzo e tessera ARCI. Il comando porta alla
+      con nome, giorno e ora e prezzo. Il comando porta alla
       scheda dell'evento, non prenota da solo.
 - [ ] 3. Mettere in bozza (o concludere) tutte le date programmate: l'invito
       sparisce e resta la sola bacheca.
@@ -1370,7 +1448,7 @@ in corso e una data programmata. In locale aiutano
 - [ ] 6. Aprire una data programmata: informazioni, tornei della giornata,
       postazioni con i giochi.
 - [ ] 7. Premere "Prenota il tuo posto": si apre una finestra con evento,
-      orario, costo e tessera. "Annulla" non prenota; "Prenota" si.
+      orario e costo. "Annulla" non prenota; "Prenota" si.
 - [ ] 8. Dopo la conferma la scheda dice "Sei prenotato" e offre il biglietto.
 - [ ] 9. Con un account minorenne senza consenso, al posto del comando compare
       l'invito ad aggiungere il consenso dalle impostazioni.
@@ -1498,7 +1576,7 @@ abilitata; per la squadra serve un torneo a coppie o squadre.
       **Prenota prima l’evento**; non offre la conferma del torneo.
 - [ ] 2. Aprire la scheda evento dal pulsante: sopra la prenotazione si vedono
       i due passi e il nome del torneo scelto. Aprire la conferma evento,
-      verificare costo e tessera, poi prenotare.
+      verificare costo, poi prenotare.
 - [ ] 3. Dopo la conferma compare **Continua con [nome torneo]**. Aprirlo e
       confermare l'iscrizione al torneo. La scheda torneo mostra **Iscritto**.
 - [ ] 4. Con un secondo account prenotare direttamente da `/app/eventi`, poi
@@ -1510,10 +1588,50 @@ abilitata; per la squadra serve un torneo a coppie o squadre.
 - [ ] 6. Ripetere i passi 1–5 con un torneo a squadre: creare o raggiungere
       una squadra e possibile solo dopo la conferma dell'evento.
 - [ ] 7. Aprire il biglietto evento di un utente iscritto a un torneo attivo e
-      provare **Annulla prenotazione**: compare il messaggio che invita prima
-      ad annullare l'iscrizione al torneo. Dopo il ritiro, la prenotazione si
-      puo annullare.
+      provare **Annulla prenotazione**: la conferma elenca anche il torneo.
+      Confermando, entrambe le iscrizioni vengono annullate insieme.
 - [ ] 8. Aprire un torneo autonomo, senza evento: l'iscrizione resta diretta.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
+## Tornei e biglietto: prova su telefono
+
+**Prerequisiti.** Account cliente, almeno un torneo in programma e uno
+concluso; per la scheda `In corso`, un torneo effettivamente avviato. Per il
+biglietto, una prenotazione confermata a un evento con prezzo noto e, per la
+rinuncia con tornei, un'iscrizione attiva a un torneo collegato. Aprire l'app
+su un telefono oppure in una viewport stretta (per esempio 375 × 667 px).
+
+- [ ] 1. Aprire `/app/tornei`: i tre campi di ricerca non occupano la pagina.
+      Toccare l'icona in alto a destra; il menu sale dal basso. Scegliere
+      postazione, gioco e data, poi `Filtra`: il menu si chiude e le card si
+      aggiornano. Le etichette dei filtri compaiono in alto; la `x` su ognuna
+      rimuove solo quel filtro.
+- [ ] 2. Passare fra `Prossimi` e `Storico`. `In corso` compare soltanto quando
+      esiste un torneo avviato che rispetta i filtri. Verificare il messaggio
+      vuoto quando non ci sono risultati.
+- [ ] 3. Aprire `/app/prenotazioni/[id]` da una prenotazione confermata. Senza
+      scorrere devono vedersi QR, stato, prezzo, pagamento sul posto e
+      `Annulla prenotazione`. Toccare il QR: si apre a schermo intero con il
+      codice prenotazione in basso; chiuderlo con la `x`.
+- [ ] 4. Toccare `Annulla prenotazione`: la conferma sale dal basso ed elenca
+      i tornei collegati. Toccare `Torna al biglietto` e verificare che nulla
+      sia cambiato. Riaprire e confermare: biglietto e iscrizioni ai tornei
+      risultano annullati. Tornando alla lista tornei, la card non mostra
+      piu `Iscritto`.
+- [ ] 5. Con un biglietto in lista d'attesa, verificare che il QR non sia
+      ancora presente e che stato e annullamento siano disponibili.
+- [ ] 6. Ripetere il passo 3 su un telefono piccolo: contenuti principali
+      visibili senza scroll. Se le impostazioni di accessibilita ingrandiscono
+      molto il testo, verificare che gli elementi restino comunque raggiungibili.
 
 ### Esito manuale
 

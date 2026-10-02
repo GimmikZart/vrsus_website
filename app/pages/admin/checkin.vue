@@ -134,6 +134,25 @@ async function startScanner() {
 }
 
 onBeforeUnmount(() => scannerControls?.stop())
+
+usePageActions(
+  computed(() => [
+    {
+      label: 'Scansiona QR',
+      icon: 'i-lucide-camera',
+      onClick: startScanner,
+      loading: scannerPending.value,
+    },
+    {
+      label: 'Conferma check-in',
+      icon: 'i-lucide-check',
+      color: 'primary' as const,
+      onClick: checkIn,
+      loading: pending.value,
+      disabled: !extractToken(tokenInput.value) || pending.value,
+    },
+  ]),
+)
 </script>
 
 <template>
@@ -155,12 +174,6 @@ onBeforeUnmount(() => scannerControls?.stop())
           resta registrabile sul posto.
         </p>
       </div>
-      <UButton
-        to="/app"
-        color="neutral"
-        variant="outline"
-        label="Area personale"
-      />
     </div>
 
     <div class="mt-10 grid gap-6 md:grid-cols-[1.05fr_0.95fr]">
@@ -176,13 +189,6 @@ onBeforeUnmount(() => scannerControls?.stop())
             aria-label="Fotocamera per scansione QR"
           />
         </div>
-        <UButton
-          class="mt-4"
-          block
-          :loading="scannerPending"
-          label="Apri fotocamera e scansiona"
-          @click="startScanner"
-        />
         <p class="mt-3 text-center text-xs leading-5 text-white/40">
           La fotocamera viene attivata solo dopo la tua azione.
         </p>
@@ -212,13 +218,6 @@ onBeforeUnmount(() => scannerControls?.stop())
             variant="subtle"
             title="Check-in non riuscito"
             :description="errorMessage"
-          />
-          <UButton
-            type="submit"
-            block
-            size="lg"
-            :loading="pending"
-            label="Conferma check-in"
           />
         </form>
       </UCard>

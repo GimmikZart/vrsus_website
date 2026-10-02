@@ -191,6 +191,24 @@ async function createTournament() {
   await router.push(`/admin/eventi/${eventId}/modifica?step=tournaments`)
 }
 
+usePageActions(
+  computed(() => [
+    {
+      label: 'Annulla',
+      icon: 'i-lucide-x',
+      to: `/admin/eventi/${eventId}/modifica?step=tournaments`,
+    },
+    {
+      label: 'Crea torneo',
+      icon: 'i-lucide-plus',
+      color: 'primary' as const,
+      onClick: createTournament,
+      loading: pending.value,
+      disabled: !form.platformId || !form.gameId || pending.value,
+    },
+  ]),
+)
+
 useSeoMeta({ title: 'Nuovo torneo — Admin VRSUS', robots: 'noindex, nofollow' })
 </script>
 
@@ -322,21 +340,6 @@ useSeoMeta({ title: 'Nuovo torneo — Admin VRSUS', robots: 'noindex, nofollow' 
           label="Assegna punti ranking"
         />
         <UCheckbox v-model="form.isPublic" label="Visibile agli utenti" />
-      </div>
-
-      <div class="flex justify-end gap-2">
-        <UButton
-          :to="`/admin/eventi/${eventId}/modifica?step=tournaments`"
-          color="neutral"
-          variant="ghost"
-          label="Annulla"
-        />
-        <UButton
-          type="submit"
-          color="primary"
-          :loading="pending"
-          label="Crea torneo"
-        />
       </div>
     </form>
   </div>

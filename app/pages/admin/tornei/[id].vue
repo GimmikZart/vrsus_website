@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { VrsusRole } from '~/composables/useVrsusAuth'
 import type { Database } from '~/types/database.types'
+import type { PageAction } from '~/composables/usePageActions'
 import type {
   TournamentDetailView,
   TournamentMatchView,
@@ -570,6 +571,75 @@ async function startMatch() {
   )
 }
 
+usePageActions(
+  computed<PageAction[]>(() => {
+    if (editing.value) {
+      return [
+        {
+          label: 'Annulla',
+          icon: 'i-lucide-x',
+          onClick: () => {
+            editing.value = false
+          },
+        },
+        {
+          label: 'Salva',
+          icon: 'i-lucide-save',
+          color: 'primary',
+          onClick: saveTournament,
+          loading: pending.value,
+          disabled: !form.name.trim() || pending.value,
+        },
+      ]
+    }
+
+    return [
+      ...nextStatuses.value.map((option) => ({
+        label: option.label,
+        icon: 'i-lucide-arrow-right-circle',
+        onClick: () => setStatus(option.value),
+        loading: pending.value,
+      })),
+      ...(canStart.value
+        ? [
+            {
+              label: 'Avvia torneo',
+              icon: 'i-lucide-play',
+              color: 'primary' as const,
+              onClick: startTournament,
+              loading: pending.value,
+            },
+          ]
+        : []),
+      {
+        label: 'Modifica',
+        icon: 'i-lucide-pencil',
+        onClick: () => {
+          editing.value = true
+        },
+      },
+      ...(canCancel.value
+        ? [
+            {
+              label: 'Annulla torneo',
+              icon: 'i-lucide-ban',
+              onClick: () => setStatus('cancelled'),
+              loading: pending.value,
+            },
+          ]
+        : []),
+      {
+        label: 'Elimina',
+        icon: 'i-lucide-trash-2',
+        color: 'error',
+        onClick: () => {
+          askDelete.value = true
+        },
+      },
+    ]
+  }),
+)
+
 useSeoMeta({
   title: () => `${detail.value?.name ?? 'Torneo'} — Admin VRSUS`,
   robots: 'noindex, nofollow',
@@ -582,74 +652,16 @@ useSeoMeta({
       ← Tornei
     </NuxtLink>
 
-    <TournamentSummary :tournament="detail">
-      <template #actions>
-        <div class="flex flex-wrap items-center gap-2">
-          <UButton
-            v-for="option in nextStatuses"
-            :key="option.value"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            :loading="pending"
-            :label="option.label"
-            @click="setStatus(option.value)"
-          />
-          <UButton
-            v-if="canStart"
-            color="primary"
-            size="sm"
-            icon="i-lucide-play"
-            :loading="pending"
-            label="Avvia torneo"
-            @click="startTournament"
-          />
-          <UButton
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            icon="i-lucide-pencil"
-            :label="editing ? 'Chiudi modifica' : 'Modifica'"
-            @click="editing = !editing"
-          />
-          <template v-if="askDelete">
-            <span class="text-sm text-white/60">Eliminare il torneo?</span>
-            <UButton
-              color="error"
-              size="sm"
-              :loading="pending"
-              label="Conferma"
-              @click="deleteTournament"
-            />
-            <UButton
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              label="Annulla"
-              @click="askDelete = false"
-            />
-          </template>
-          <UButton
-            v-else
-            color="error"
-            variant="ghost"
-            size="sm"
-            icon="i-lucide-trash-2"
-            label="Elimina"
-            @click="askDelete = true"
-          />
-          <UButton
-            v-if="canCancel"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            :loading="pending"
-            label="Annulla torneo"
-            @click="setStatus('cancelled')"
-          />
-        </div>
-      </template>
-    </TournamentSummary>
+    <TournamentSummary :tournament="detail" />
+
+    <UiVrsusConfirmDialog
+      v-model="askDelete"
+      title="Eliminare il torneo?"
+      description="L'operazione non si può annullare."
+      confirm-label="Elimina torneo"
+      :pending="pending"
+      @confirm="deleteTournament"
+    />
 
     <UAlert
       v-if="message"
@@ -710,20 +722,6 @@ useSeoMeta({
           label="Assegna punti ranking"
         />
         <UCheckbox v-model="form.checkinRequired" label="Richiede check-in" />
-      </div>
-      <div class="mt-5 flex gap-2">
-        <UButton
-          color="primary"
-          :loading="pending"
-          label="Salva"
-          @click="saveTournament"
-        />
-        <UButton
-          color="neutral"
-          variant="ghost"
-          label="Annulla"
-          @click="editing = false"
-        />
       </div>
     </section>
 

@@ -2,6 +2,54 @@
 
 Ultimo aggiornamento: 2026-10-02
 
+## Verifica 2026-10-02 — shell e azioni contestuali
+
+- Toolbar, contenuto scrollabile, float menu e navbar implementati nei due
+  layout autenticati; navbar della console filtrata per ruolo.
+- ESLint sui file modificati: PASS.
+- `nuxt typecheck`: PASS, con il warning noto Volar/vue-router.
+- `nuxt build`: PASS, preset `node-server`.
+- Prova visuale mobile e desktop, compresa verifica delle aree fisse e dei
+  flussi di prenotazione/admin: **DA ESEGUIRE**.
+
+## Verifica 2026-10-02 — card e azioni della console eventi
+
+- Lista `/admin/eventi`: card semplificate a titolo, data e ora, sede, costo e
+  stato Pubblico/Bozza; verifica statica dei comandi rimossi dalla lista.
+- Scheda `/admin/eventi/[id]`: Modifica, Duplica ed Elimina sono nel blocco
+  sopra le tab; l'eliminazione usa la conferma esplicita esistente.
+- ESLint e formattazione dei file modificati: PASS.
+- `nuxt typecheck`: PASS, con il warning noto Volar/vue-router.
+- `nuxt build`: PASS, preset `node-server`.
+- Prova manuale con account admin: **DA ESEGUIRE** con la checklist aggiornata
+  in `docs/dev/guideline_test_features.md`.
+
+## Verifica 2026-10-02 — presenza compatta del requisito ARCI
+
+- Riferimenti cliente ricontrollati: il chip `Arci` con icona tessera resta
+  solo nelle card evento; la riga completa resta solo nella griglia
+  informativa della pagina evento (DEC-051).
+- ESLint e formattazione dei file modificati: PASS.
+- `nuxt typecheck`: PASS, con il warning noto Volar/vue-router.
+- `nuxt build`: PASS, preset `node-server`.
+- Prova visuale mobile: **DA ESEGUIRE** con la checklist aggiornata in
+  `docs/dev/guideline_test_features.md`.
+
+## Verifica 2026-10-02 — filtri tornei, biglietto e rinuncia contestuale
+
+- Migration locale `20261002102000`: applicata con `supabase migration up --local`.
+- `supabase test db --local`: PASS, 294/294 pgTAP su 13 file. I nuovi casi
+  coprono preview dei tornei, rinuncia singola e di squadra, rollback se il
+  torneo e gia iniziato e lettura del biglietto limitata al proprietario.
+- `vitest run`: PASS, 23/23 unit test.
+- ESLint sui sei file applicativi modificati: PASS.
+- `nuxt typecheck`: PASS, con il warning noto Volar/vue-router.
+- `nuxt build`: PASS, preset `node-server`.
+- Prova a schermo su telefono e percorso completo con un account cliente:
+  **DA ESEGUIRE** con la checklist in `docs/dev/guideline_test_features.md`.
+- Nessun test di pagamento online: fuori scope per scelta del proprietario;
+  il biglietto mostra il metodo attualmente supportato.
+
 ## Verifica 2026-10-02 — prenotazione evento prima del torneo
 
 - Migration locali `20261002100000` e `20261002101000`: applicate con
@@ -825,3 +873,16 @@ poi migration, seed e ricreazione degli account DEV.
   vecchio.
 - I sedici utenti dimostrativi e i dati di prova creati a mano non sono stati
   ricreati dopo il reset.
+
+## 2026-10-02 — Float menu su tutte le pagine admin con azioni globali
+
+| Verifica | Esito |
+| --- | --- |
+| `nuxt typecheck` | PASS (warning noto Volar/vue-router) |
+| ESLint sui componenti e sulle pagine admin | PASS |
+| Build `node-server` | PASS alla seconda esecuzione con permessi di lettura; primo tentativo bloccato dal sandbox su `EPERM readlink C:\Users\User` |
+| Prova manuale admin su mobile | PENDENTE |
+
+Le azioni pagina sono state spostate nel float menu; le azioni di riga e
+partita restano nel contesto. Il salvataggio evento viene disabilitato dalla
+stessa validazione del payload usata al submit.

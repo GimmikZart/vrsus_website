@@ -53,6 +53,25 @@ async function createEvent() {
   }
 }
 
+const canCreateEvent = computed(() => {
+  try {
+    return !eventFormToPayload(form).error
+  } catch {
+    return false
+  }
+})
+
+usePageActions(
+  computed(() => [
+    {
+      label: 'Avanti',
+      onClick: createEvent,
+      loading: pending.value,
+      disabled: !canCreateEvent.value || pending.value,
+    },
+  ]),
+)
+
 useSeoMeta({ title: 'Crea evento — Admin VRSUS', robots: 'noindex, nofollow' })
 </script>
 
@@ -88,6 +107,7 @@ useSeoMeta({ title: 'Crea evento — Admin VRSUS', robots: 'noindex, nofollow' }
       <AdminEventInfoForm
         v-model="form"
         :pending="pending"
+        :show-action="false"
         @submit="createEvent"
       />
     </section>

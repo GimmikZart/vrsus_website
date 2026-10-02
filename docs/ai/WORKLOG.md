@@ -1365,3 +1365,148 @@ account di servizio con ruoli.
 
 Correzione implementata e verificata localmente a livello database/build;
 restano prova UI e pubblicazione della beta.
+
+## 2026-10-02 — Filtri, biglietto e annullamento evento con tornei
+
+### Lavoro svolto
+
+- La lista tornei usa tab In corso/Prossimi/Storico, un pannello filtri dal
+  basso e chip rimovibili; le iscrizioni ritirate non risultano piu attive.
+- Il biglietto mette QR, stato, prezzo e pagamento sul posto nella prima
+  schermata. Il QR si ingrandisce a schermo intero con codice prenotazione.
+- La conferma di annullamento mostra i tornei collegati. La RPC ritira le
+  iscrizioni e annulla la prenotazione in un'unica transazione (DEC-050).
+- Aggiunte RPC di lettura del biglietto e dei tornei limitate al proprietario.
+
+### File principali modificati
+
+- `app/pages/app/tornei/index.vue`, `app/pages/app/tornei/[id]/index.vue`
+- `app/pages/app/prenotazioni/[id].vue`, `app/components/ui/VrsusBottomSheet.vue`
+- `app/composables/useBookings.ts`, `app/types/database.types.ts`
+- `supabase/migrations/20261002102000_cancel_booking_with_tournaments.sql`
+- `supabase/tests/tournament_event_booking_required.test.sql`
+
+### Verifiche
+
+- Migration locale applicata; pgTAP 294/294, unit 23/23, lint sui file
+  modificati, typecheck e build `node-server` → PASS.
+- Prova visuale mobile e percorso cliente completo → ancora da eseguire.
+
+### Problemi emersi
+
+- La beta richiede la verifica/applicazione delle migration prima dell'uso
+  della nuova UI; nessuna pubblicazione eseguita in questa sessione.
+
+### Stato finale della sessione
+
+Intervento implementato e verificato localmente con test automatici;
+checklist manuale e stato remoto documentati in `NEXT_STEPS.md`.
+
+## 2026-10-02 — Riduzione dei riferimenti ARCI lato cliente
+
+### Lavoro svolto
+
+- Rimossi gli avvisi e gli stati ARCI da home, impostazioni, profilo,
+  biglietto, conferme e tornei dell'area cliente.
+- Il chip delle card evento e stato abbreviato a `Arci` e conserva l'icona
+  tessera; il dettaglio evento mantiene il requisito solo nella sua griglia
+  informativa.
+- La console conserva i controlli ARCI per operatore, check-in e gestione.
+
+### File principali modificati
+
+- `app/components/ui/VrsusArciChip.vue`
+- `app/pages/app/eventi/[id].vue`, `app/pages/app/index.vue`
+- `app/pages/app/impostazioni.vue`, `app/pages/app/prenotazioni/[id].vue`
+- `app/pages/app/tornei/[id]/prenota.vue`
+
+### Verifiche
+
+- Ricerca statica dei riferimenti cliente, lint, typecheck e build
+  `node-server` → PASS.
+
+### Stato finale della sessione
+
+Riduzione UI applicata e verificata; resta la prova visuale mobile.
+
+## 2026-10-02 — Semplificazione della lista eventi admin
+
+### Lavoro svolto
+
+- Card di `/admin/eventi` ridotte alle informazioni utili per scegliere
+  l'evento e rese interamente cliccabili.
+- Spostati Modifica, Duplica ed Elimina nella scheda evento, prima delle tab.
+- Conservata la duplicazione in bozza e aggiunta conferma modale alla
+  cancellazione nella nuova posizione.
+
+### File principali modificati
+
+- `app/pages/admin/eventi/index.vue`
+- `app/pages/admin/eventi/[id]/index.vue`
+- `docs/dev/guideline_test_features.md`
+
+### Verifiche
+
+- ESLint, typecheck e build `node-server` → PASS.
+
+### Stato finale della sessione
+
+Intervento implementato e verificato tecnicamente; resta la prova manuale
+autenticata della console.
+
+## 2026-10-02 — Shell mobile e float menu
+
+### Lavoro svolto
+
+- Separati toolbar fissa, contenuto scrollabile, menu azioni contestuali e
+  navbar nei layout cliente e admin.
+- La toolbar mostra logo, titolo della rotta e accesso alle notifiche gia
+  presenti. Il menu compare solo per le pagine che registrano azioni.
+- Spostate nel menu le azioni principali di evento, torneo, iscrizione,
+  biglietto, plancia admin ed elenco/scheda evento admin.
+- Navbar console filtrata per admin, staff e responsabile tornei.
+
+### File principali modificati
+
+- `app/layouts/app.vue`, `app/layouts/admin.vue`, `app/assets/css/main.css`
+- `app/components/ui/VrsusAppToolbar.vue`, `VrsusFloatMenu.vue`
+- `app/composables/usePageActions.ts`, `useShellPageTitle.ts`
+- Pagine evento, torneo, biglietto e plancia admin.
+
+### Verifiche
+
+- ESLint, typecheck e build `node-server` → PASS.
+- Prova mobile con account reale → ancora da eseguire.
+
+### Stato finale della sessione
+
+Shell e prime azioni contestuali implementate; verifica visuale registrata
+in `NEXT_STEPS.md`.
+
+## 2026-10-02 — Completamento float menu admin
+
+### Lavoro svolto
+
+- Spostate nel float menu le azioni globali delle viste admin con moduli e
+  operazioni di pagina, inclusi wizard evento e scheda torneo.
+- Nel wizard evento la disponibilita dei pulsanti segue la tab; il salvataggio
+  si abilita solo se i dati superano la validazione del payload.
+- I comandi relativi a righe, squadre e partite restano nel contenuto.
+
+### File principali modificati
+
+- `app/pages/admin/` (wizard, tornei, postazioni, giochi, bacheca, servizi,
+  ranking, live, check-in, impostazioni, scheda utente)
+- `app/components/admin/EventInfoForm.vue`, `EventPlatformPicker.vue`
+- `app/components/ui/VrsusFloatMenu.vue`
+
+### Verifiche
+
+- Typecheck ed ESLint delle pagine admin → PASS.
+- Build `node-server` → PASS alla ripetizione con permessi di lettura;
+  prima esecuzione bloccata dal sandbox su `EPERM readlink C:\Users\User`.
+- Prova visuale su mobile → pendente.
+
+### Stato finale della sessione
+
+Modifiche implementate; prova autenticata del flusso admin da eseguire.

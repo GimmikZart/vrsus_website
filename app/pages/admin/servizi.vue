@@ -163,6 +163,20 @@ async function saveService() {
   editingId.value = null
   Object.assign(form, emptyForm())
 }
+
+usePageActions(
+  computed(() => [
+    { label: 'Nuovo servizio', icon: 'i-lucide-plus', onClick: startNew },
+    {
+      label: 'Salva servizio',
+      icon: 'i-lucide-save',
+      color: 'primary' as const,
+      onClick: saveService,
+      loading: saving.value,
+      disabled: !form.title.trim() || !form.content.trim() || saving.value,
+    },
+  ]),
+)
 </script>
 
 <template>
@@ -186,7 +200,6 @@ async function saveService() {
           Attiva o aggiorna le pagine dei servizi esterni all'evento mensile.
         </p>
       </div>
-      <UButton variant="outline" label="Nuovo servizio" @click="startNew" />
     </div>
 
     <div
@@ -294,16 +307,6 @@ async function saveService() {
             variant="subtle"
             :description="successMessage"
           />
-          <div class="flex gap-3 pt-2">
-            <UButton type="submit" :loading="saving" label="Salva" />
-            <UButton
-              type="button"
-              variant="outline"
-              color="neutral"
-              label="Annulla"
-              @click="startNew"
-            />
-          </div>
         </form>
       </UCard>
     </div>

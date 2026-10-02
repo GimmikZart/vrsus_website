@@ -156,6 +156,49 @@ async function createGame() {
   await refresh()
 }
 
+usePageActions(
+  computed(() => [
+    {
+      label: 'Salva postazione',
+      icon: 'i-lucide-save',
+      color: 'primary' as const,
+      onClick: save,
+      loading: saving.value,
+      disabled: !form.name.trim() || !form.code.trim() || saving.value,
+    },
+    ...(showGameForm.value
+      ? [
+          {
+            label: 'Chiudi gioco',
+            icon: 'i-lucide-x',
+            onClick: () => {
+              showGameForm.value = false
+            },
+          },
+          {
+            label: 'Crea gioco',
+            icon: 'i-lucide-plus',
+            onClick: createGame,
+            loading: gameSaving.value,
+            disabled: !gameForm.name.trim() || gameSaving.value,
+          },
+        ]
+      : [
+          {
+            label: 'Nuovo gioco',
+            icon: 'i-lucide-plus',
+            onClick: async () => {
+              showGameForm.value = true
+              await nextTick()
+              document
+                .getElementById('platform-game-form')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            },
+          },
+        ]),
+  ]),
+)
+
 useSeoMeta({
   title: () => `${data.value?.platform.name ?? 'Postazione'} — Admin VRSUS`,
   robots: 'noindex, nofollow',
@@ -253,14 +296,6 @@ useSeoMeta({
           variant="subtle"
           :description="errorMessage"
         />
-
-        <UButton
-          class="mt-5"
-          color="primary"
-          :loading="saving"
-          label="Salva"
-          @click="save"
-        />
       </section>
 
       <section class="mt-8">
@@ -268,18 +303,12 @@ useSeoMeta({
           <h2 class="font-display text-lg font-semibold text-white">
             Giochi ({{ data.games.length }})
           </h2>
-          <UButton
-            :color="showGameForm ? 'neutral' : 'primary'"
-            :variant="showGameForm ? 'outline' : 'solid'"
-            size="sm"
-            :label="showGameForm ? 'Chiudi' : 'Nuovo gioco'"
-            @click="showGameForm = !showGameForm"
-          />
         </div>
 
         <div
           v-if="showGameForm"
-          class="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+          id="platform-game-form"
+          class="mt-4 scroll-mt-20 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
         >
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField label="Nome"
@@ -328,14 +357,6 @@ useSeoMeta({
             color="error"
             variant="subtle"
             :description="gameError"
-          />
-
-          <UButton
-            class="mt-5"
-            color="primary"
-            :loading="gameSaving"
-            label="Crea gioco"
-            @click="createGame"
           />
         </div>
 

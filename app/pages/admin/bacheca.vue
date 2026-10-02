@@ -117,6 +117,41 @@ async function markFeedbackReviewed(feedbackId: string) {
   await refresh()
 }
 
+usePageActions(
+  computed(() =>
+    creating.value
+      ? [
+          {
+            label: 'Chiudi',
+            icon: 'i-lucide-x',
+            onClick: () => {
+              creating.value = false
+            },
+          },
+          {
+            label: 'Salva post',
+            icon: 'i-lucide-save',
+            color: 'primary' as const,
+            onClick: create,
+            loading: saving.value,
+            disabled: !form.title.trim() || saving.value,
+          },
+        ]
+      : [
+          {
+            label: 'Nuovo post',
+            onClick: async () => {
+              creating.value = true
+              await nextTick()
+              document
+                .getElementById('new-post-form')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            },
+          },
+        ],
+  ),
+)
+
 useSeoMeta({ title: 'Bacheca — Admin VRSUS', robots: 'noindex, nofollow' })
 </script>
 
@@ -142,12 +177,6 @@ useSeoMeta({ title: 'Bacheca — Admin VRSUS', robots: 'noindex, nofollow' })
           Annunci e sondaggi mostrati agli utenti autenticati.
         </p>
       </div>
-      <UButton
-        :color="creating ? 'neutral' : 'primary'"
-        :variant="creating ? 'outline' : 'solid'"
-        :label="creating ? 'Chiudi' : 'Nuovo post'"
-        @click="creating = !creating"
-      />
     </header>
 
     <UAlert
@@ -160,7 +189,8 @@ useSeoMeta({ title: 'Bacheca — Admin VRSUS', robots: 'noindex, nofollow' })
 
     <section
       v-if="creating"
-      class="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+      id="new-post-form"
+      class="mt-6 scroll-mt-20 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
     >
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField label="Titolo"
@@ -233,14 +263,6 @@ useSeoMeta({ title: 'Bacheca — Admin VRSUS', robots: 'noindex, nofollow' })
         color="error"
         variant="subtle"
         :description="errorMessage"
-      />
-
-      <UButton
-        class="mt-5"
-        color="primary"
-        :loading="saving"
-        label="Salva post"
-        @click="create"
       />
     </section>
 

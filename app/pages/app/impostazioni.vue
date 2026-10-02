@@ -27,8 +27,6 @@ const { data: consent, refresh: refreshConsent } = await useAsyncData(
   },
 )
 
-const { data: arciStatus } = await useMyArciStatus()
-
 const nickname = ref(profile.value?.nickname ?? '')
 const nicknamePending = ref(false)
 const nicknameMessage = ref('')
@@ -152,26 +150,6 @@ useSeoMeta({ title: 'Impostazioni — VRSUS', robots: 'noindex, nofollow' })
       </p>
       <p v-if="nicknameError" class="mt-3 text-sm text-red-400">
         {{ nicknameError }}
-      </p>
-    </section>
-
-    <section
-      class="rounded-2xl border p-5"
-      :class="
-        arciStatus?.card_valid
-          ? 'border-emerald-500/30 bg-emerald-500/[0.05]'
-          : 'border-white/10 bg-white/[0.03]'
-      "
-    >
-      <h2 class="font-display text-base font-semibold text-white">
-        Tessera ARCI
-      </h2>
-      <p class="mt-1 text-sm text-white/55">
-        {{
-          arciStatus?.card_valid
-            ? 'Risulta valida per la stagione associativa in corso.'
-            : 'Non risulta una tessera valida. Molte serate la richiedono: puoi farla da noi all’ingresso, te la registriamo al check-in.'
-        }}
       </p>
     </section>
 

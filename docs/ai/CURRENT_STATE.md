@@ -16,10 +16,25 @@ da fare i contenuti reali al posto dei segnaposto, la validazione dei testi
 legali e le prove su dispositivo fisico.
 
 La correzione del 2026-10-02 rende obbligatoria una prenotazione evento
-`confirmed` prima dell'iscrizione a un torneo ospitato (DEC-049). Il cliente
-vede il percorso torneo → evento → torneo; la lista d'attesa non abilita
-l'iscrizione. Le migration sono applicate solo allo stack locale: il codice
-e le migration non sono ancora stati pubblicati sulla beta.
+`confirmed` prima dell'iscrizione a un torneo ospitato (DEC-049/050). Il
+cliente vede il percorso torneo → evento → torneo; la lista d'attesa non
+abilita l'iscrizione. La lista tornei usa filtri in un pannello dal basso e
+schede In corso/Prossimi/Storico. Il biglietto mostra subito QR, stato,
+prezzo e pagamento sul posto; la conferma di annullamento elenca i tornei
+collegati e li ritira nella stessa transazione della prenotazione evento.
+Il requisito ARCI e compatto nelle card evento e compare per esteso solo
+nella griglia informativa del dettaglio evento (DEC-051); resta operativo in
+console per gestione e check-in.
+La lista eventi della console usa card essenziali cliccabili; Modifica,
+Duplica ed Elimina sono raccolti nel float menu della scheda evento
+(DEC-052/053).
+La shell mobile delle aree autenticate e stata riorganizzata in toolbar fissa,
+contenuto scrollabile, menu azioni contestuali e navbar fissa. Le azioni
+primarie di evento, torneo, biglietto e plancia admin usano il nuovo menu;
+su desktop la navbar resta una colonna e il menu azioni occupa il piede del
+contenuto (DEC-053).
+Le migration di questa revisione sono applicate allo stack locale; stato
+del database remoto da verificare prima di usare la nuova UI sulla beta.
 
 Sopra la V2 sono arrivati il passaggio fra area cliente e area operativa
 accanto all'uscita (DEC-045), l'invito a installare l'app al primo accesso e la
@@ -79,7 +94,7 @@ si prenota, con finestra di conferma. `Live` mostra il biglietto con il QR
 finche non si passa la porta, poi lo sostituisce con "I tuoi tornei" (prossima
 partita, avversario, quante partite mancano) e tiene sotto le schede Tornei e
 Piattaforme. Restano ranking, tornei con filtri e stati, bacheca con sondaggi e
-feedback interno, impostazioni con nickname, consenso e tessera.
+feedback interno, impostazioni con nickname e consenso.
 
 **Console admin.** Da `lg` in su la colonna di sinistra porta anche le voci di
 secondo piano (bacheca, servizi, richieste, rettifiche, utenti, impostazioni) e
@@ -112,9 +127,9 @@ la stagione comincia all'ultima data di rinnovo (1 ottobre, modificabile da
 `/admin/impostazioni`) o a un azzeramento manuale. Nessun lavoro schedulato:
 il rinnovo annuale e una conseguenza del confronto, non di un job (DEC-041).
 Lo staff spunta la tessera dalla scheda utente o dal check-in, che dice subito
-se la giornata la richiede e se il socio ce l'ha. Vetrina, conferma
-prenotazione, biglietto, impostazioni utente e scheda torneo la dichiarano
-prima dell'arrivo; un torneo eredita il requisito dall'evento che lo ospita.
+se la giornata la richiede e se il socio ce l'ha. Per il cliente il requisito
+compare solo nelle card dell'evento e nella sua griglia informativa; un torneo
+eredita comunque la regola dall'evento che lo ospita (DEC-051).
 
 **Schede condivise.** La scheda utente (`/admin/utenti/[id]`) e la scheda
 torneo hanno una struttura unica: intestazione, poi schede. Utente: eventi,
@@ -144,9 +159,10 @@ giocatori, risultati); nell'app utente la stessa pagina mostra i soli nickname.
 
 ## Verifiche
 
-2026-10-02: migration applicate localmente; pgTAP 284/284, unit 23/23,
-lint dei componenti modificati, typecheck e build `node-server` PASS.
-La prova manuale del nuovo percorso UI resta da eseguire. Il typecheck
+2026-10-02: migration applicate localmente; pgTAP 294/294, unit 23/23,
+lint dei file modificati, typecheck e build `node-server` PASS. Dopo la
+revisione della shell, lint, typecheck e build `node-server` PASS.
+La prova manuale del nuovo percorso UI e del layout mobile resta da eseguire. Il typecheck
 emette il warning noto Volar/vue-router. Dettaglio in `TEST_REPORT.md`.
 
 Ultima esecuzione completa: lint, format, typecheck, unit (19), pgTAP
@@ -201,9 +217,11 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
 
 ## Problemi aperti dell'app utente
 
-- Il nuovo flusso evento → torneo e verificato dai test di database e dalla
-  build ma non ancora con un account reale nel browser. La beta remota non ha
-  ancora le due migration.
+- Il nuovo flusso evento → torneo, i filtri, il biglietto e l'annullamento
+  contestuale sono verificati dai test di database e dalla build ma non
+  ancora con un account reale nel browser. Verificare/applicare sul database
+  remoto le migration `20261002100000`, `20261002101000` e `20261002102000`
+  prima di pubblicare questa revisione UI.
 - Eventuali iscritti preesistenti a tornei ospitati senza prenotazione evento
   non sono stati modificati automaticamente: l'app ora mostra il richiamo a
   prenotare la giornata. La capienza non viene alterata dalla migration.
@@ -216,3 +234,15 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
 ## Ultimo aggiornamento
 
 2026-10-02
+
+## Revisione float menu admin del 2026-10-02
+
+Il float menu e ora usato anche nei wizard evento, nelle liste e schede
+torneo, postazioni, giochi, bacheca, servizi, ranking, check-in e impostazioni
+admin. Le azioni riferite a singoli elementi (righe, squadre, partite) restano
+accanto ai rispettivi dati. `Salva evento` nel wizard usa la validazione del
+payload per abilitarsi e `Crea torneo` appare solo nella tab Tornei (DEC-054).
+Typecheck, lint e build `node-server` PASS. La prima build nel sandbox era
+bloccata su `EPERM readlink C:\Users\User`; la ripetizione con i permessi di
+lettura necessari e riuscita. Prova visuale autenticata su mobile ancora da
+eseguire.

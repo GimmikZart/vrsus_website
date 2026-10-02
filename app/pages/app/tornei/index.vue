@@ -9,7 +9,22 @@ definePageMeta({ layout: 'app', middleware: ['auth'] })
 
 const client = useSupabaseClient<Database>()
 
-const filters = reactive({ platform: '', game: '', from: '' })
+type Tournament = Database['public']['Views']['public_tournaments']['Row']
+type FilterKey = 'platform' | 'game' | 'from'
+type TournamentFilters = Record<FilterKey, string>
+
+const filters = reactive<TournamentFilters>({
+  platform: '',
+  game: '',
+  from: '',
+})
+const draftFilters = reactive<TournamentFilters>({
+  platform: '',
+  game: '',
+  from: '',
+})
+const filterOpen = ref(false)
+const activeTab = ref('prossimi')
 
 const { data: platforms } = await useAsyncData(
   'tournaments-platforms',
@@ -26,38 +41,53 @@ const { data: games } = await useAsyncData('tournaments-games', async () => {
   return data ?? []
 })
 
-const { data: bundle } = await useAsyncData('app-tournaments', async () => {
-  const [tournaments, entries] = await Promise.all([
-    client
-      .from('public_tournaments')
-      .select('*')
-      .order('starts_at', { ascending: true }),
-    client.from('public_tournament_entries').select('*'),
-  ])
+const { data: bundle, refresh: refreshTournaments } = await useAsyncData(
+  'app-tournaments',
+  async () => {
+    const [tournaments, entries] = await Promise.all([
+      client
+        .from('public_tournaments')
+        .select('*')
+        .order('starts_at', { ascending: true }),
+      client.from('public_tournament_entries').select('*'),
+    ])
 
-  return {
-    tournaments: tournaments.data ?? [],
-    entries: entries.data ?? [],
-  }
-})
+    return {
+      tournaments: tournaments.data ?? [],
+      entries: entries.data ?? [],
+    }
+  },
+)
 
 // Le iscrizioni proprie determinano il bordo verde della card. Il filtro sul
 // proprio id e esplicito: un admin puo leggere le iscrizioni di tutti, quindi
 // affidarsi alle sole RLS mostrerebbe "Iscritto" ovunque.
 const user = useSupabaseUser()
-const { data: myEntries } = await useAsyncData('app-my-entries', async () => {
-  const userId = user.value?.sub
-  if (!userId) return []
-  const { data } = await client
-    .from('tournament_entry_members')
-    .select('entry_id, tournament_entries(tournament_id)')
-    .eq('user_id', userId)
-  return (data ?? [])
-    .map((row) => {
-      const entry = row.tournament_entries as { tournament_id?: string } | null
-      return entry?.tournament_id
-    })
-    .filter((id): id is string => Boolean(id))
+const { data: myEntries, refresh: refreshMyEntries } = await useAsyncData(
+  'app-my-entries',
+  async () => {
+    const userId = user.value?.sub
+    if (!userId) return []
+    const { data } = await client
+      .from('tournament_entry_members')
+      .select('entry_id, tournament_entries(tournament_id, status)')
+      .eq('user_id', userId)
+    return (data ?? [])
+      .map(
+        (row) =>
+          row.tournament_entries as {
+            tournament_id?: string
+            status?: string
+          } | null,
+      )
+      .filter((entry) => entry?.status !== 'withdrawn')
+      .map((entry) => entry?.tournament_id)
+      .filter((id): id is string => Boolean(id))
+  },
+)
+
+onMounted(() => {
+  void Promise.all([refreshTournaments(), refreshMyEntries()])
 })
 
 const entriesByTournament = computed(() => {
@@ -82,60 +112,118 @@ const winnersByTournament = computed(() => {
 
 const gamesForPlatform = computed(() => {
   const list = games.value ?? []
-  if (!filters.platform) return list
-  return list.filter((game) => game.platform_id === filters.platform)
+  if (!draftFilters.platform) return list
+  return list.filter((game) => game.platform_id === draftFilters.platform)
 })
 
 watch(
-  () => filters.platform,
+  () => draftFilters.platform,
   () => {
-    if (!gamesForPlatform.value.some((game) => game.id === filters.game)) {
-      filters.game = ''
+    if (!gamesForPlatform.value.some((game) => game.id === draftFilters.game)) {
+      draftFilters.game = ''
     }
   },
 )
 
-function matchesFilters(
-  tournament: Database['public']['Views']['public_tournaments']['Row'],
-) {
+function openFilters() {
+  Object.assign(draftFilters, filters)
+  filterOpen.value = true
+}
+
+function applyFilters() {
+  Object.assign(filters, draftFilters)
+  filterOpen.value = false
+}
+
+function clearDraft() {
+  Object.assign(draftFilters, { platform: '', game: '', from: '' })
+}
+
+function removeFilter(key: FilterKey) {
+  filters[key] = ''
+}
+
+function dateLabel(value: string) {
+  const [year, month, day] = value.split('-')
+  return day && month && year ? `dal ${day}/${month}/${year}` : value
+}
+
+const filterChips = computed(() => {
+  const chips: { key: FilterKey; label: string }[] = []
+  if (filters.platform) {
+    const platform = (platforms.value ?? []).find(
+      (item) => item.id === filters.platform,
+    )
+    chips.push({
+      key: 'platform',
+      label: platform?.code ?? platform?.name ?? 'Postazione',
+    })
+  }
+  if (filters.game) {
+    chips.push({
+      key: 'game',
+      label:
+        (games.value ?? []).find((item) => item.id === filters.game)?.name ??
+        'Gioco',
+    })
+  }
+  if (filters.from) chips.push({ key: 'from', label: dateLabel(filters.from) })
+  return chips
+})
+
+function matchesFilters(tournament: Tournament) {
   if (filters.platform && tournament.platform_id !== filters.platform)
     return false
   if (filters.game && tournament.game_id !== filters.game) return false
   if (filters.from && tournament.starts_at) {
-    if (new Date(tournament.starts_at) < new Date(filters.from)) return false
+    const localDate = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: 'Europe/Rome',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(tournament.starts_at))
+    if (localDate < filters.from) return false
   }
   return true
 }
 
+const filtered = computed(() =>
+  (bundle.value?.tournaments ?? []).filter(matchesFilters),
+)
+const running = computed(() =>
+  filtered.value.filter((item) => item.status === 'running'),
+)
 const upcoming = computed(() =>
-  (bundle.value?.tournaments ?? [])
-    .filter(
-      (tournament) =>
-        [
-          'registration_open',
-          'registration_closed',
-          'checkin',
-          'running',
-        ].includes(String(tournament.status)) && matchesFilters(tournament),
-    )
-    .sort(
-      (a, b) =>
-        new Date(a.starts_at ?? 0).getTime() -
-        new Date(b.starts_at ?? 0).getTime(),
+  filtered.value.filter((item) =>
+    ['registration_open', 'registration_closed', 'checkin'].includes(
+      String(item.status),
     ),
+  ),
+)
+const past = computed(() =>
+  filtered.value.filter((item) => item.status === 'completed').reverse(),
 )
 
-const past = computed(() =>
-  (bundle.value?.tournaments ?? [])
-    .filter(
-      (tournament) =>
-        String(tournament.status) === 'completed' && matchesFilters(tournament),
-    )
-    .sort(
-      (a, b) =>
-        new Date(b.starts_at ?? 0).getTime() -
-        new Date(a.starts_at ?? 0).getTime(),
-    ),
+const tabs = computed(() => [
+  ...(running.value.length
+    ? [{ value: 'in-corso', label: 'In corso', count: running.value.length }]
+    : []),
+  { value: 'prossimi', label: 'Prossimi', count: upcoming.value.length },
+  { value: 'storico', label: 'Storico', count: past.value.length },
+])
+
+watch(running, (items) => {
+  if (!items.length && activeTab.value === 'in-corso')
+    activeTab.value = 'prossimi'
+})
+
+const visibleTournaments = computed(
+  () =>
+    ({
+      'in-corso': running.value,
+      prossimi: upcoming.value,
+      storico: past.value,
+    })[activeTab.value] ?? upcoming.value,
 )
 
 function isRegistered(id: string | null) {
@@ -153,87 +241,86 @@ useSeoMeta({ title: 'Tornei — VRSUS', robots: 'noindex, nofollow' })
 </script>
 
 <template>
-  <div class="space-y-6">
-    <header>
-      <p
-        class="text-brand-red-400 text-xs font-semibold tracking-[0.24em] uppercase"
+  <div class="space-y-5">
+    <header class="flex items-end justify-between gap-3">
+      <div>
+        <p
+          class="text-brand-red-400 text-xs font-semibold tracking-[0.24em] uppercase"
+        >
+          Competizioni
+        </p>
+        <h1
+          class="font-display mt-2 text-2xl font-semibold text-white sm:text-3xl"
+        >
+          Tornei
+        </h1>
+      </div>
+      <button
+        type="button"
+        class="relative grid size-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/[0.05] text-white/80 transition-colors hover:bg-white/10"
+        aria-label="Apri filtri tornei"
+        @click="openFilters"
       >
-        Competizioni
-      </p>
-      <h1
-        class="font-display mt-2 text-2xl font-semibold text-white sm:text-3xl"
-      >
-        Tornei
-      </h1>
+        <UIcon name="i-lucide-sliders-horizontal" class="size-5" />
+        <span
+          v-if="filterChips.length"
+          class="bg-brand-red-500 absolute -top-1 -right-1 grid size-5 place-items-center rounded-full text-[11px] font-semibold text-white"
+          >{{ filterChips.length }}</span
+        >
+      </button>
     </header>
 
-    <div class="grid gap-3 sm:grid-cols-3">
-      <label class="block">
-        <span
-          class="mb-1.5 block text-xs tracking-wide text-white/45 uppercase"
-        >
-          Postazione
-        </span>
-        <select v-model="filters.platform" class="vrsus-select">
-          <option value="">Tutte</option>
-          <option
-            v-for="platform in platforms"
-            :key="platform.id ?? ''"
-            :value="platform.id"
-          >
-            {{ platform.name }}
-          </option>
-        </select>
-      </label>
-      <label class="block">
-        <span class="mb-1.5 block text-xs tracking-wide text-white/45 uppercase"
-          >Gioco</span
-        >
-        <select v-model="filters.game" class="vrsus-select">
-          <option value="">Tutti</option>
-          <option
-            v-for="game in gamesForPlatform"
-            :key="game.id ?? ''"
-            :value="game.id"
-          >
-            {{ game.name }}
-          </option>
-        </select>
-      </label>
-      <label class="block">
-        <span class="mb-1.5 block text-xs tracking-wide text-white/45 uppercase"
-          >Dal</span
-        >
-        <input v-model="filters.from" type="date" class="vrsus-select" />
-      </label>
+    <div
+      v-if="filterChips.length"
+      class="flex flex-wrap gap-2"
+      aria-label="Filtri applicati"
+    >
+      <button
+        v-for="chip in filterChips"
+        :key="chip.key"
+        type="button"
+        class="border-brand-blue-400/35 bg-brand-blue-400/10 text-brand-blue-100 inline-flex min-h-9 items-center gap-2 rounded-full border px-3 text-xs font-medium"
+        :aria-label="`Rimuovi filtro ${chip.label}`"
+        @click="removeFilter(chip.key)"
+      >
+        {{ chip.label }}
+        <UIcon name="i-lucide-x" class="size-3.5" />
+      </button>
     </div>
 
-    <section>
-      <h2 class="font-display text-lg font-semibold text-white">
-        Prossimi tornei
-      </h2>
+    <UiVrsusTabs v-model="activeTab" :items="tabs" />
 
-      <p v-if="!upcoming.length" class="mt-3 text-sm text-white/45">
-        Nessun torneo in programma con questi filtri.
+    <section aria-live="polite">
+      <p
+        v-if="!visibleTournaments.length"
+        class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-white/55"
+      >
+        Nessun torneo
+        {{
+          activeTab === 'storico'
+            ? 'concluso'
+            : activeTab === 'in-corso'
+              ? 'in corso'
+              : 'in programma'
+        }}
+        con questi filtri.
       </p>
 
-      <div class="mt-4 space-y-3">
+      <div v-else class="space-y-3">
         <NuxtLink
-          v-for="tournament in upcoming"
+          v-for="tournament in visibleTournaments"
           :key="tournament.id ?? ''"
-          :to="`/app/tornei/${tournament.id}`"
+          :to="'/app/tornei/' + tournament.id"
           class="block rounded-2xl border p-4 transition-colors"
           :class="
             isRegistered(tournament.id)
               ? 'border-green-500/50 bg-green-500/[0.06] shadow-[0_0_24px_rgb(34_197_94/12%)]'
-              : 'border-brand-red-500/40 bg-brand-red-500/[0.05] shadow-[0_0_24px_rgb(239_51_64/10%)]'
+              : activeTab === 'storico'
+                ? 'border-white/10 bg-white/[0.03] hover:border-white/25'
+                : 'border-brand-red-500/40 bg-brand-red-500/[0.05] shadow-[0_0_24px_rgb(239_51_64/10%)]'
           "
         >
           <div class="flex flex-wrap items-center gap-2">
-            <!--
-              Il bordo da solo non e accessibile a chi non distingue i colori:
-              l'etichetta testuale accompagna sempre lo stato.
-            -->
             <span
               v-if="isRegistered(tournament.id)"
               class="rounded-full bg-green-500/15 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-green-300 uppercase"
@@ -246,84 +333,96 @@ useSeoMeta({ title: 'Tornei — VRSUS', robots: 'noindex, nofollow' })
             >
             <span
               class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/70"
+              >{{ platformCode(tournament.platform_id) }}</span
             >
-              {{ platformCode(tournament.platform_id) }}
-            </span>
           </div>
-
-          <h3 class="font-display mt-3 text-base font-semibold text-white">
+          <h2 class="font-display mt-3 text-base font-semibold text-white">
             {{ tournament.name }}
-          </h3>
+          </h2>
           <p class="mt-1 text-sm text-white/50">
             {{ gameName(tournament.game_id) }}
           </p>
-
           <div
             class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/45"
           >
             <span>{{ formatTournamentDate(tournament.starts_at) }}</span>
-            <span>
-              {{ entriesByTournament[String(tournament.id)] ?? 0 }} /
-              {{ tournament.max_entries ?? '∞' }} partecipanti
-            </span>
-          </div>
-        </NuxtLink>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="font-display text-lg font-semibold text-white">
-        Tornei passati
-      </h2>
-
-      <p v-if="!past.length" class="mt-3 text-sm text-white/45">
-        Nessun torneo concluso con questi filtri.
-      </p>
-
-      <div class="mt-4 space-y-3">
-        <NuxtLink
-          v-for="tournament in past"
-          :key="tournament.id ?? ''"
-          :to="`/app/tornei/${tournament.id}`"
-          class="block rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-white/25"
-        >
-          <div class="flex flex-wrap items-center gap-2">
             <span
-              class="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] tracking-wide text-white/60 uppercase"
+              >{{ entriesByTournament[String(tournament.id)] ?? 0 }} /
+              {{ tournament.max_entries ?? '∞' }} partecipanti</span
             >
-              Concluso
-            </span>
             <span
-              class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/70"
-            >
-              {{ platformCode(tournament.platform_id) }}
-            </span>
-          </div>
-
-          <h3 class="font-display mt-3 text-base font-semibold text-white">
-            {{ tournament.name }}
-          </h3>
-          <p class="mt-1 text-sm text-white/50">
-            {{ gameName(tournament.game_id) }}
-          </p>
-
-          <div
-            class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/45"
-          >
-            <span>{{ formatTournamentDate(tournament.starts_at) }}</span>
-            <span>
-              {{ entriesByTournament[String(tournament.id)] ?? 0 }} /
-              {{ tournament.max_entries ?? '∞' }} partecipanti
-            </span>
-            <span
-              v-if="winnersByTournament[String(tournament.id)]"
+              v-if="
+                activeTab === 'storico' &&
+                winnersByTournament[String(tournament.id)]
+              "
               class="text-white/70"
+              >Vincitore: {{ winnersByTournament[String(tournament.id)] }}</span
             >
-              Vincitore: {{ winnersByTournament[String(tournament.id)] }}
-            </span>
           </div>
         </NuxtLink>
       </div>
     </section>
+
+    <UiVrsusBottomSheet
+      v-model="filterOpen"
+      title="Filtra tornei"
+      description="Scegli cosa vuoi vedere nell'elenco."
+    >
+      <div class="space-y-4">
+        <label class="block">
+          <span class="mb-1.5 block text-xs font-medium text-white/60"
+            >Postazione</span
+          >
+          <select v-model="draftFilters.platform" class="vrsus-select">
+            <option value="">Tutte</option>
+            <option
+              v-for="platform in platforms"
+              :key="platform.id ?? ''"
+              :value="platform.id"
+            >
+              {{ platform.name }}
+            </option>
+          </select>
+        </label>
+        <label class="block">
+          <span class="mb-1.5 block text-xs font-medium text-white/60"
+            >Gioco</span
+          >
+          <select v-model="draftFilters.game" class="vrsus-select">
+            <option value="">Tutti</option>
+            <option
+              v-for="game in gamesForPlatform"
+              :key="game.id ?? ''"
+              :value="game.id"
+            >
+              {{ game.name }}
+            </option>
+          </select>
+        </label>
+        <label class="block">
+          <span class="mb-1.5 block text-xs font-medium text-white/60"
+            >Dal</span
+          >
+          <input v-model="draftFilters.from" type="date" class="vrsus-select" />
+        </label>
+        <div class="flex gap-2 pt-1">
+          <UButton
+            color="neutral"
+            variant="outline"
+            size="lg"
+            class="flex-1 justify-center"
+            label="Azzera"
+            @click="clearDraft"
+          />
+          <UButton
+            color="primary"
+            size="lg"
+            class="flex-1 justify-center"
+            label="Filtra"
+            @click="applyFilters"
+          />
+        </div>
+      </div>
+    </UiVrsusBottomSheet>
   </div>
 </template>

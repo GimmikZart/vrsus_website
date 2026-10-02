@@ -193,7 +193,6 @@ useHead(() => ({
               formatPublicEventPrice(event.price_cents, event.payment_required)
             }}
           </span>
-          <UiVrsusArciChip :required="event.arci_required" />
         </div>
       </header>
 
@@ -210,13 +209,6 @@ useHead(() => ({
           <p class="mt-2 text-sm leading-6 text-white/70">
             Prenota il tuo posto. Il pagamento, quando previsto, avviene sul
             posto.
-          </p>
-          <p
-            v-if="event.arci_required"
-            class="mt-2 text-sm leading-6 text-amber-200/85"
-          >
-            Per partecipare serve la tessera ARCI in corso di validità. Se non
-            ce l’hai puoi farla da noi all’ingresso.
           </p>
         </div>
         <PublicEventBookingButton

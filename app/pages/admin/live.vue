@@ -71,6 +71,18 @@ async function refreshLive() {
   refreshing.value = false
 }
 
+usePageActions(
+  computed(() => [
+    { label: 'Check-in', icon: 'i-lucide-qr-code', to: '/admin/checkin' },
+    {
+      label: 'Aggiorna',
+      icon: 'i-lucide-refresh-cw',
+      onClick: refreshLive,
+      loading: refreshing.value,
+    },
+  ]),
+)
+
 function statusLabel(status: string) {
   return status === 'waitlisted'
     ? 'Lista d’attesa'
@@ -119,21 +131,6 @@ async function markNoShow(bookingId: string) {
           Conteggi operativi e prenotazioni. Questi dati non sono esposti al
           sito pubblico.
         </p>
-      </div>
-      <div class="flex gap-2">
-        <UButton
-          to="/admin/checkin"
-          color="primary"
-          variant="soft"
-          label="Apri check-in"
-        />
-        <UButton
-          :loading="refreshing"
-          color="neutral"
-          variant="outline"
-          label="Aggiorna"
-          @click="refreshLive"
-        />
       </div>
     </div>
 

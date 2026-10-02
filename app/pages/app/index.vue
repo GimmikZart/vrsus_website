@@ -13,9 +13,7 @@ const client = useSupabaseClient<Database>()
 const { data: nextEvent } = await useAsyncData('app-next-event', async () => {
   const { data } = await client
     .from('public_events')
-    .select(
-      'id, title, starts_at, ends_at, price_cents, payment_required, arci_required',
-    )
+    .select('id, title, starts_at, ends_at, price_cents, payment_required')
     .eq('status', 'scheduled')
     .order('starts_at', { ascending: true })
     .limit(1)
@@ -181,8 +179,8 @@ useSeoMeta({ title: 'Bacheca — VRSUS', robots: 'noindex, nofollow' })
   <div class="space-y-6">
     <!--
       Invito alla prossima data. Sta sopra tutto ma resta una riga di
-      informazioni e un comando: il titolo porta il peso, data, prezzo e
-      tessera restano testo di servizio.
+      informazioni e un comando: il titolo porta il peso, data e prezzo
+      restano testo di servizio.
     -->
     <section
       v-if="nextEvent"
@@ -217,18 +215,6 @@ useSeoMeta({ title: 'Bacheca — VRSUS', robots: 'noindex, nofollow' })
                 nextEvent.payment_required,
               )
             }}</span>
-            <span
-              class="text-xs"
-              :class="
-                nextEvent.arci_required ? 'text-amber-300' : 'text-white/40'
-              "
-            >
-              {{
-                nextEvent.arci_required
-                  ? 'Tessera ARCI richiesta'
-                  : 'Senza tessera ARCI'
-              }}
-            </span>
           </p>
         </div>
 

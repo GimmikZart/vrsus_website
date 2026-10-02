@@ -247,6 +247,45 @@ const emptyLabel = computed(() =>
       : 'Nessun torneo in programma.',
 )
 
+usePageActions(
+  computed(() =>
+    creating.value
+      ? [
+          {
+            label: 'Chiudi',
+            icon: 'i-lucide-x',
+            onClick: () => {
+              creating.value = false
+            },
+          },
+          {
+            label: 'Crea torneo',
+            icon: 'i-lucide-plus',
+            color: 'primary' as const,
+            onClick: createTournament,
+            loading: pending.value,
+            disabled:
+              !form.name.trim() ||
+              !form.platformId ||
+              !form.gameId ||
+              pending.value,
+          },
+        ]
+      : [
+          {
+            label: 'Nuovo torneo',
+            onClick: async () => {
+              creating.value = true
+              await nextTick()
+              document
+                .getElementById('new-tournament-form')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            },
+          },
+        ],
+  ),
+)
+
 useSeoMeta({ title: 'Tornei — Admin VRSUS', robots: 'noindex, nofollow' })
 </script>
 
@@ -268,12 +307,6 @@ useSeoMeta({ title: 'Tornei — Admin VRSUS', robots: 'noindex, nofollow' })
           Un torneo può appartenere a un evento oppure esistere per conto suo.
         </p>
       </div>
-      <UButton
-        :color="creating ? 'neutral' : 'primary'"
-        :variant="creating ? 'outline' : 'solid'"
-        :label="creating ? 'Chiudi' : 'Nuovo torneo'"
-        @click="creating = !creating"
-      />
     </header>
 
     <UAlert
@@ -286,7 +319,8 @@ useSeoMeta({ title: 'Tornei — Admin VRSUS', robots: 'noindex, nofollow' })
 
     <section
       v-if="creating"
-      class="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+      id="new-tournament-form"
+      class="mt-6 scroll-mt-20 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
     >
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField label="Nome"
@@ -408,14 +442,6 @@ useSeoMeta({ title: 'Tornei — Admin VRSUS', robots: 'noindex, nofollow' })
         color="error"
         variant="subtle"
         :description="errorMessage"
-      />
-
-      <UButton
-        class="mt-5"
-        color="primary"
-        :loading="pending"
-        label="Crea torneo"
-        @click="createTournament"
       />
     </section>
 

@@ -53,6 +53,39 @@ async function startEvent() {
   }
 }
 
+usePageActions(
+  computed(() => {
+    const event = data.value?.event
+    if (!event) return [{ label: 'Crea un evento', to: '/admin/eventi/nuovo' }]
+    const actions = [
+      {
+        label: 'Modifica',
+        icon: 'i-lucide-pencil',
+        to: `/admin/eventi/${event.id}/modifica`,
+      },
+    ]
+    if (isLive.value) {
+      return [
+        ...actions,
+        { label: 'Check-in', icon: 'i-lucide-qr-code', to: '/admin/checkin' },
+      ]
+    }
+    if (event.status === 'scheduled') {
+      return [
+        ...actions,
+        {
+          label: 'Start evento',
+          icon: 'i-lucide-play',
+          onClick: () => {
+            askStart.value = true
+          },
+        },
+      ]
+    }
+    return actions
+  }),
+)
+
 useSeoMeta({ title: 'Console — Admin VRSUS', robots: 'noindex, nofollow' })
 </script>
 
@@ -109,72 +142,18 @@ useSeoMeta({ title: 'Console — Admin VRSUS', robots: 'noindex, nofollow' })
           La dashboard mostra l evento in corso o il prossimo evento
           programmato. Crea un evento e pubblicalo per vederlo qui.
         </p>
-        <UButton
-          class="mt-5"
-          to="/admin/eventi/nuovo"
-          color="primary"
-          size="lg"
-          label="Crea un evento"
-        />
       </section>
 
-      <AdminEventOverview v-else class="mt-5" :data="data">
-        <template #actions>
-          <!--
-            Due sole azioni, e si alternano: prima si avvia l'evento, poi si
-            fanno entrare le persone. Il check-in prima dell'avvio non serve.
-          -->
-          <div class="flex flex-wrap items-center gap-2">
-            <UButton
-              :to="`/admin/eventi/${data.event.id}/modifica`"
-              color="neutral"
-              variant="outline"
-              size="lg"
-              icon="i-lucide-pencil"
-              label="Modifica"
-            />
+      <AdminEventOverview v-else class="mt-5" :data="data" />
 
-            <UButton
-              v-if="isLive"
-              to="/admin/checkin"
-              color="primary"
-              size="lg"
-              icon="i-lucide-qr-code"
-              label="Check-in"
-            />
-
-            <template v-else-if="data.event.status === 'scheduled'">
-              <template v-if="askStart">
-                <span class="text-sm text-white/60"
-                  >Avviare l evento e avvisare gli iscritti?</span
-                >
-                <UButton
-                  color="primary"
-                  size="lg"
-                  :loading="starting"
-                  label="Conferma avvio"
-                  @click="startEvent"
-                />
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  size="lg"
-                  label="Annulla"
-                  @click="askStart = false"
-                />
-              </template>
-              <UButton
-                v-else
-                color="primary"
-                size="lg"
-                icon="i-lucide-play"
-                label="Start evento"
-                @click="askStart = true"
-              />
-            </template>
-          </div>
-        </template>
-      </AdminEventOverview>
+      <UiVrsusConfirmDialog
+        v-model="askStart"
+        title="Avviare l’evento?"
+        description="Gli iscritti riceveranno un avviso."
+        confirm-label="Avvia evento"
+        :pending="starting"
+        @confirm="startEvent"
+      />
     </template>
   </div>
 </template>

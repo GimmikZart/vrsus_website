@@ -1,7 +1,6 @@
 <script setup lang="ts">
-// "Serve la tessera ARCI": la stessa etichetta ovunque si veda una giornata o
-// un torneo, cosi chi prenota non lo scopre alla porta. Non compare quando la
-// tessera non serve: un compleanno non deve spiegare cosa non chiede.
+// Nelle card riassuntive della giornata il requisito resta riconoscibile ma
+// compatto: i dettagli vivono nella sola scheda informativa dell'evento.
 defineProps<{ required?: boolean | null; size?: 'sm' | 'md' }>()
 </script>
 
@@ -12,6 +11,6 @@ defineProps<{ required?: boolean | null; size?: 'sm' | 'md' }>()
     :class="size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs'"
   >
     <UIcon name="i-lucide-id-card" class="size-3.5 shrink-0" />
-    Tessera ARCI richiesta
+    Arci
   </span>
 </template>
