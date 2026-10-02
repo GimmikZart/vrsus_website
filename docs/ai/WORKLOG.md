@@ -1544,3 +1544,13 @@ Modifiche implementate; prova autenticata del flusso admin da eseguire.
 
 Intervento implementato e verificato automaticamente; prova mobile con account
 reale ancora da eseguire.
+
+## 2026-10-02 — Correzione login iPhone e refresh globale
+
+Il proprietario ha provato la PWA su iPhone: dopo `Accedi` restava il
+caricamento sulla pagina login e il gesto di aggiornamento li non era
+disponibile. Il login ora fa una navigazione completa dopo il salvataggio della
+sessione, gestisce errori e timeout, e il gesto vive alla radice Nuxt per tutte
+le rotte (DEC-057). Test mobile simulato su login: gesto visibile, errore di
+rete recuperabile e accesso positivo con richiesta alla rotta protetta.
+Resta da riprovare sul dispositivo Apple reale.

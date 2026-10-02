@@ -34,21 +34,40 @@ function safeRedirect() {
 }
 
 async function submit() {
+  if (pending.value) return
   pending.value = true
   errorMessage.value = ''
 
-  const { error } = await client.auth.signInWithPassword({
-    email: email.value.trim(),
-    password: password.value,
-  })
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    const result = await Promise.race([
+      client.auth.signInWithPassword({
+        email: email.value.trim(),
+        password: password.value,
+      }),
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error('login-timeout')), 15000)
+      }),
+    ])
 
-  if (error) {
-    errorMessage.value = 'Email o password non validi.'
+    if (result.error || !result.data.session) {
+      errorMessage.value = 'Email o password non validi.'
+      return
+    }
+
+    // Supabase ha gia scritto la sessione nei cookie. Una navigazione completa
+    // permette al server di leggerla senza aspettare l'aggiornamento asincrono
+    // di useSupabaseUser, che su iOS puo arrivare dopo la guardia di /app.
+    await navigateTo(safeRedirect(), { external: true })
+  } catch (error) {
+    errorMessage.value =
+      error instanceof Error && error.message === 'login-timeout'
+        ? 'La connessione sta impiegando troppo tempo. Controlla la rete e riprova.'
+        : 'Non siamo riusciti a completare l’accesso. Riprova tra poco.'
+  } finally {
+    if (timeout) clearTimeout(timeout)
     pending.value = false
-    return
   }
-
-  await navigateTo(safeRedirect())
 }
 </script>
 

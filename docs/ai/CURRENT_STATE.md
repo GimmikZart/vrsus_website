@@ -265,6 +265,8 @@ Nelle Impostazioni il nickname e solo testo finche non si apre il pannello di
 modifica. Verifica visuale e funzionale con account reale ancora da eseguire.
 ESLint, typecheck, build `node-server` e unit test 23/23 PASS.
 Il float menu Ranking conserva il solo filtro nell'elenco; la scheda del rank
-non ha azioni. Nella shell cliente la PWA standalone Apple offre il gesto di
-aggiornamento dall'alto con indicatore e ricarica della rotta (DEC-056). Prova
-su iPhone/iPad reale ancora da eseguire.
+non ha azioni. Il gesto di aggiornamento della PWA Apple e ora alla radice e
+copre login, vetrina, app e console (DEC-057). Il login usa una navigazione
+completa dopo l'accesso e termina il caricamento in caso di errore o timeout.
+Il proprietario aveva trovato login bloccato e gesto assente su iPhone nella
+versione precedente; la nuova correzione richiede una prova sul dispositivo.

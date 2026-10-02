@@ -1656,7 +1656,7 @@ non serve una nuova view o migration per il layout.
 
 ## DEC-056 - Aggiornamento con trascinamento nella PWA Apple
 
-**Status:** Accepted
+**Status:** Superseded by DEC-057
 
 ### Decisione
 
@@ -1674,3 +1674,26 @@ La PWA Apple non mostra la barra di Safari e, sul dispositivo del proprietario,
 il trascinamento non ricarica la pagina. La shell cliente usa inoltre un
 contenitore di scorrimento interno, percio il gesto viene legato a quel
 contenitore e si attiva solo quando e in cima.
+
+## DEC-057 - Il refresh PWA copre tutte le rotte e il login ricarica la sessione
+
+**Status:** Accepted
+
+### Decisione
+
+Il gesto di aggiornamento della PWA Apple e registrato alla radice Nuxt e
+funziona su login, vetrina, area cliente e console. Usa lo scroller del
+documento sulle pagine pubbliche e il main scrollabile nelle aree interne;
+parte solo dall'alto e non intercetta dialog, campi di testo o scroller figli
+gia scesi. Il login, dopo una risposta positiva di Supabase, apre la rotta
+protetta con una navigazione completa, cosi il server rilegge la sessione
+scritta nei cookie. Errori e attese oltre 15 secondi terminano lo stato di
+caricamento mostrando un messaggio.
+
+### Motivazione
+
+Il primo componente viveva solo nel layout cliente: sulla pagina login il
+gesto non esisteva. Inoltre la navigazione SPA partiva subito dopo il login,
+mentre il modulo Supabase aggiorna `useSupabaseUser` in modo asincrono tramite
+`getClaims`; la guardia della pagina protetta poteva ancora vedere l'utente
+come anonimo. Il proprietario ha riscontrato entrambi i problemi su iPhone.

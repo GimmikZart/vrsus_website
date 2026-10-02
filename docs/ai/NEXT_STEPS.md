@@ -32,10 +32,11 @@ griglia Ranking a 2/3/6 colonne con Punti VRSUS come prima card, copertine e
 fallback, filtro dipendente postazione/gioco, pagina dedicata con regole prima
 della classifica,
 pannello nickname con annullamento e salvataggio.
-Su iPhone/iPad con PWA installata, verificare il trascinamento dall'inizio del
-contenuto: soglia, annullamento del gesto breve, ricarica della rotta e assenza
-di interferenze con il normale scorrimento. Verificare che su Android resti il
-refresh nativo e che la console admin non reagisca al gesto (DEC-056).
+Su iPhone/iPad con PWA installata, riprovare il login che prima rimaneva in
+caricamento e il trascinamento su login, vetrina, app e console: soglia,
+annullamento del gesto breve, ricarica della rotta e assenza di interferenze
+con scorrimento, campi e moduli. Verificare che su Android resti il refresh
+nativo (DEC-057).
 
 Comportamento atteso: toolbar, contenuto, azioni e navbar non si sovrappongono
 su telefoni piccoli; l'utente viene guidato dall'evento al torneo, vede i

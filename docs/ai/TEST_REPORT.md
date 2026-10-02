@@ -922,3 +922,20 @@ emette ancora il warning noto Volar/vue-router, senza errori. Il gesto
 pull-to-refresh e limitato alla shell cliente in modalita standalone su iOS;
 non e stato provato su hardware Apple. La checklist manuale e in
 `docs/dev/guideline_test_features.md`.
+
+## 2026-10-02 — Login iPhone e aggiornamento PWA globale
+
+| Verifica | Esito |
+| --- | --- |
+| Prettier, ESLint sui file modificati, `nuxt typecheck` e `git diff --check` | PASS (warning noto Volar/vue-router nel typecheck) |
+| Build Nuxt `node-server` | PASS |
+| Playwright mobile simulato: gesture su `/login` | PASS |
+| Playwright mobile simulato: errore di rete con pulsante di nuovo utilizzabile | PASS |
+| Playwright mobile simulato: risposta di login positiva seguita da richiesta documento a `/app` | PASS |
+| Login e gesture su PWA iPhone con Supabase remoto reale | PENDENTE |
+
+I tre test Playwright usano Chrome con dimensioni e user agent iPhone. Il
+terzo simula la risposta di Supabase e verifica la navigazione completa; non
+dimostra ancora la lettura della sessione reale dal server remoto. Il primo
+tentativo E2E era fallito perche il browser Playwright bundled non era
+installato; i test sono stati eseguiti con il Chrome presente nel sistema.

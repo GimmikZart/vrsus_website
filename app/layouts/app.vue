@@ -49,11 +49,11 @@ onMounted(() => {
   >
     <UiVrsusAppToolbar :title="pageTitle" home="/app" />
 
-    <UiVrsusPullToRefresh
+    <main
       class="app-scroll-area mx-auto h-full max-w-3xl overflow-y-auto px-4 lg:max-w-5xl lg:px-8"
     >
       <slot />
-    </UiVrsusPullToRefresh>
+    </main>
 
     <UiVrsusFloatMenu :actions="actions" />
 

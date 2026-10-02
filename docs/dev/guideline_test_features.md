@@ -510,6 +510,11 @@ attore, attività, punti, motivazione e descrizione nel ledger/audit.
 - [ ] 4. Verificare il fallback offline con istruzioni di riconnessione.
 - [ ] 5. Verificare che le route `/admin` non siano servite dal fallback offline
       e richiedano rete/sessione.
+- [ ] 6. Su iPhone/iPad aprire la PWA dalla schermata Home. Provare il gesto
+      dall'alto su `/login`, una pagina pubblica, `/app` e `/admin`: dopo la
+      soglia si deve ricaricare la stessa rotta; un gesto breve o da meta
+      pagina non deve ricaricare. Provare anche con un campo di testo attivo e
+      con un menu aperto. Commenti: __________
 
 ### Risultato atteso
 
@@ -798,6 +803,9 @@ super-admin tramite RLS.
       generico senza dettagli sensibili.
 - [ ] 2. Accedere con l'utente locale; verificare il redirect a `/app` e il
       caricamento dell'email/profilo.
+- [ ] 2a. Ripetere sulla PWA installata su iPhone: dopo `Accedi` il caricamento
+      deve terminare dentro `/app`. Con rete assente o lenta deve comparire un
+      errore e il pulsante deve tornare utilizzabile. Commenti: __________
 - [ ] 3. Aprire `/admin` con un utente senza ruolo admin; verificare il ritorno
       a `/app` con messaggio di permessi insufficienti.
 - [ ] 4. Assegnare `admin` all'utente DEV nel database e ricaricare `/admin`;
@@ -925,10 +933,8 @@ Copre la riorganizzazione descritta in `docs/technical/VRSUS_APP_SPEC_V2.md`.
       restringe postazione e gioco; toccando ogni card si apre la relativa
       pagina con la classifica.
 - [ ] 13a. In Ranking il float menu offre solo i filtri e nella pagina della
-      classifica non compare `Aggiorna`. Con la PWA installata su iPhone o iPad,
-      trascinare verso il basso quando la pagina e in cima: compare
-      l'indicatore, dopo la soglia il rilascio ricarica la stessa rotta. Un
-      gesto breve o da meta pagina non ricarica. Commenti: __________
+      classifica non compare `Aggiorna`. Il gesto di aggiornamento della PWA
+      segue la prova globale nella sezione PWA. Commenti: __________
 - [ ] 14. Tornei: i prossimi hanno il bordo acceso, quelli a cui si e iscritti
       il bordo verde, i passati nessun bordo. Ogni bordo ha anche l'etichetta
       testuale.

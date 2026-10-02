@@ -6,6 +6,7 @@
       senza che il contenuto si aggiorni.
     -->
     <NuxtLoadingIndicator color="var(--color-brand-red)" />
+    <UiVrsusPullToRefresh />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

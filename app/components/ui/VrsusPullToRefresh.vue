@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { detectPlatform, detectStandalone } from '~/composables/usePwaInstall'
 
-defineOptions({ inheritAttrs: false })
-
-const scrollArea = ref<HTMLElement | null>(null)
 const enabled = ref(false)
 const dragging = ref(false)
 const refreshing = ref(false)
@@ -12,6 +9,7 @@ const ready = computed(() => offset.value >= 64)
 
 let mobileQuery: MediaQueryList | null = null
 let reloadTimer: number | undefined
+let scrollArea: Element | null = null
 let tracking = false
 let startX = 0
 let startY = 0
@@ -19,11 +17,12 @@ let startY = 0
 function resetGesture() {
   tracking = false
   dragging.value = false
+  scrollArea = null
   if (!refreshing.value) offset.value = 0
 }
 
-function hasScrolledChild(target: EventTarget | null, container: HTMLElement) {
-  let element = target instanceof Element ? target : null
+function hasScrolledChild(target: Element, container: Element) {
+  let element: Element | null = target
 
   while (element && element !== container) {
     if (
@@ -39,22 +38,43 @@ function hasScrolledChild(target: EventTarget | null, container: HTMLElement) {
   return false
 }
 
+function findScrollArea(target: Element): Element | null {
+  // Le aree cliente e admin scorrono nel loro main; la vetrina e il login
+  // scorrono invece sul documento. Evitiamo navbar, toolbar e dialog.
+  if (
+    target.closest(
+      'input, textarea, select, [contenteditable="true"], [role="dialog"]',
+    ) ||
+    document.body.style.overflow === 'hidden'
+  ) {
+    return null
+  }
+
+  const appArea = document.querySelector('.app-scroll-area')
+  if (appArea) return appArea.contains(target) ? appArea : null
+
+  return document.scrollingElement
+}
+
 function onTouchStart(event: TouchEvent) {
-  const container = scrollArea.value
-  if (event.touches.length !== 1) {
+  if (!enabled.value || refreshing.value || event.touches.length !== 1) {
     resetGesture()
     return
   }
+
+  const target = event.target instanceof Element ? event.target : null
+  const area = target ? findScrollArea(target) : null
   if (
-    !enabled.value ||
-    refreshing.value ||
-    !container ||
-    container.scrollTop > 1 ||
-    hasScrolledChild(event.target, container)
+    !target ||
+    !area ||
+    area.scrollTop > 1 ||
+    hasScrolledChild(target, area)
   ) {
+    resetGesture()
     return
   }
 
+  scrollArea = area
   tracking = true
   startX = event.touches[0]!.clientX
   startY = event.touches[0]!.clientY
@@ -79,15 +99,11 @@ function onTouchMove(event: TouchEvent) {
     resetGesture()
     return
   }
-  if (deltaY < -8) {
+  if (deltaY < -8 || (scrollArea && scrollArea.scrollTop > 1)) {
     resetGesture()
     return
   }
   if (deltaY <= 5) return
-  if (scrollArea.value && scrollArea.value.scrollTop > 1) {
-    resetGesture()
-    return
-  }
 
   event.preventDefault()
   dragging.value = true
@@ -97,7 +113,7 @@ function onTouchMove(event: TouchEvent) {
 function onTouchEnd() {
   if (!tracking) return
 
-  const shouldRefresh = ready.value
+  const shouldRefresh = ready.value && (scrollArea?.scrollTop ?? 1) <= 1
   resetGesture()
   if (!shouldRefresh) return
 
@@ -121,44 +137,33 @@ onMounted(() => {
   mobileQuery.addEventListener('change', updateEnabled)
   updateEnabled()
 
-  const container = scrollArea.value
-  if (!container) return
-  container.addEventListener('touchstart', onTouchStart, { passive: true })
-  container.addEventListener('touchmove', onTouchMove, { passive: false })
-  container.addEventListener('touchend', onTouchEnd)
-  container.addEventListener('touchcancel', resetGesture)
+  document.addEventListener('touchstart', onTouchStart, { passive: true })
+  document.addEventListener('touchmove', onTouchMove, { passive: false })
+  document.addEventListener('touchend', onTouchEnd)
+  document.addEventListener('touchcancel', resetGesture)
 })
 
 onBeforeUnmount(() => {
   mobileQuery?.removeEventListener('change', updateEnabled)
   if (reloadTimer !== undefined) window.clearTimeout(reloadTimer)
 
-  const container = scrollArea.value
-  container?.removeEventListener('touchstart', onTouchStart)
-  container?.removeEventListener('touchmove', onTouchMove)
-  container?.removeEventListener('touchend', onTouchEnd)
-  container?.removeEventListener('touchcancel', resetGesture)
+  document.removeEventListener('touchstart', onTouchStart)
+  document.removeEventListener('touchmove', onTouchMove)
+  document.removeEventListener('touchend', onTouchEnd)
+  document.removeEventListener('touchcancel', resetGesture)
 })
 </script>
 
 <template>
-  <main
-    ref="scrollArea"
-    v-bind="$attrs"
-    :style="{
-      transform: offset > 0 ? `translate3d(0, ${offset}px, 0)` : undefined,
-      transition: dragging ? 'none' : 'transform 220ms ease-out',
-      overscrollBehaviorY: enabled ? 'contain' : undefined,
-    }"
-  >
-    <slot />
-  </main>
-
   <div
     v-if="enabled && (offset > 0 || refreshing)"
     role="status"
     aria-live="polite"
-    class="pt-safe pointer-events-none fixed inset-x-0 top-14 z-20 flex justify-center"
+    class="pt-safe pointer-events-none fixed inset-x-0 top-14 z-50 flex justify-center"
+    :style="{
+      transform: `translateY(${Math.min(offset * 0.45, 24)}px)`,
+      transition: dragging ? 'none' : 'transform 220ms ease-out',
+    }"
   >
     <div
       class="flex items-center gap-2 rounded-full border border-white/15 bg-[#171a24] px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-black/40"
