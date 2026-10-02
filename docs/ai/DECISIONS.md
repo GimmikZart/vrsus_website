@@ -1476,3 +1476,35 @@ come farebbe un cliente. Per gli account di servizio resta la creazione con
 `emailRedirectTo` non basta da solo: l'indirizzo deve comparire nei Redirect
 URLs del progetto Supabase, altrimenti viene scartato in silenzio a favore del
 `Site URL`. La procedura e in `docs/dev/guideline_implementations.md`.
+
+## DEC-049 - L'iscrizione a un torneo di una giornata segue la prenotazione confermata
+
+**Status:** Accepted
+
+### Decisione
+
+Ogni torneo collegato a un evento richiede una prenotazione evento in stato
+`confirmed` per ogni membro, anche se il vecchio campo
+`requires_event_booking` era falso. L'iscrizione al torneo non crea piu una
+prenotazione implicita. La lista d'attesa non basta. I tornei autonomi non
+richiedono una prenotazione evento.
+
+La regola vive nelle RPC di iscrizione singola e di squadra e in un trigger
+su `tournament_entry_members`, cosi vale anche per l'aggiunta manuale dello
+staff. Una prenotazione confermata non puo essere annullata o marcata come
+`no_show` mentre l'utente appartiene a un torneo attivo di quell'evento:
+prima si ritira dal torneo.
+
+### Motivazione
+
+La vecchia iscrizione creava la prenotazione evento di nascosto. In caso di
+capienza esaurita poteva creare una riga `waitlisted` e iscrivere comunque al
+torneo. Il cliente non vedeva mai costo, tessera e conferma della giornata.
+
+### Conseguenze
+
+La scheda torneo indica il prerequisito e porta alla scheda evento con il
+torneo di provenienza. Dopo la conferma del posto la scheda evento offre il
+ritorno all'iscrizione al torneo. Gli iscritti preesistenti privi di
+prenotazione vedono l'avviso e possono completare il passaggio dall'app;
+la migration non crea prenotazioni retroattive e non altera le capienze.

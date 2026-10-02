@@ -1323,3 +1323,45 @@ account di servizio con ruoli.
 
 - Il flusso remoto resta bloccato finche `Site URL` e `Redirect URLs` del
   progetto Supabase non vengono corretti: e USER ACTION REQUIRED.
+
+## 2026-10-02 — Prenotazione evento prima del torneo
+
+### Lavoro svolto
+
+- Eliminata la prenotazione evento implicita dalle tre RPC di iscrizione al
+  torneo. Ogni torneo collegato a un evento richiede una prenotazione
+  `confirmed`; la lista d'attesa non basta (DEC-049).
+- Aggiunti trigger che coprono anche l'inserimento manuale dei membri e
+  impediscono di togliere una prenotazione confermata mentre l'iscrizione al
+  torneo ospitato e attiva.
+- Scheda e conferma torneo spiegano il prerequisito e portano all'evento;
+  la scheda evento conserva il torneo di provenienza e, a prenotazione
+  confermata, riporta alla sua iscrizione.
+- Aggiornati i test pgTAP esistenti e aggiunta la regressione per iscrizioni
+  singole, squadre, lista d'attesa, cancellazione e torneo autonomo.
+
+### File principali modificati
+
+- `supabase/migrations/20261002100000_tournament_event_booking_required.sql`
+- `supabase/migrations/20261002101000_preserve_booking_for_active_tournament.sql`
+- `supabase/tests/tournament_event_booking_required.test.sql`
+- `app/pages/app/tornei/[id]/index.vue`, `prenota.vue`
+- `app/pages/app/eventi/[id].vue`, `app/pages/app/prenotazioni/[id].vue`
+- Documenti AI e guideline di test.
+
+### Verifiche
+
+- Migration locali applicate, pgTAP 284/284, unit 23/23, lint dei componenti
+  modificati, typecheck e build `node-server` → PASS.
+- Percorso UI in browser → da provare. Nessun deploy remoto eseguito.
+
+### Problemi emersi
+
+- Le iscrizioni preesistenti prive di prenotazione evento non sono mutate in
+  automatico per non occupare capienza senza consenso del cliente. La scheda
+  torneo le segnala e offre il passaggio all'evento.
+
+### Stato finale della sessione
+
+Correzione implementata e verificata localmente a livello database/build;
+restano prova UI e pubblicazione della beta.

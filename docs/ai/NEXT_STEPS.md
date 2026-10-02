@@ -11,6 +11,20 @@ colonna (DEC-040), alla tessera ARCI (DEC-041), alla riorganizzazione dell'app
 del cliente (DEC-042) e al dominio ranking (DEC-043). Non restano attivita
 implementative bloccanti.
 
+## Prossima attivita prioritaria
+
+Provare nel browser locale il percorso torneo → prenotazione evento → torneo
+con un account cliente, poi pubblicare codice e migration sulla beta dopo la
+revisione. Aree: `app/pages/app/tornei/[id]`, `app/pages/app/eventi/[id].vue`,
+`supabase/migrations/2026100210*.sql`.
+
+Comportamento atteso: senza posto confermato l'iscrizione al torneo e guidata
+verso l'evento; dopo la conferma si torna al torneo; la lista d'attesa resta
+bloccata. Criterio di completamento: la checklist dedicata in
+`docs/dev/guideline_test_features.md` e provata e le due migration risultano
+applicate sull'ambiente destinatario. Verifica: percorso UI e
+`supabase test db --local` (gia PASS: 284/284).
+
 ## USER ACTION REQUIRED
 
 - **Sistemare gli indirizzi di Auth sul progetto Supabase remoto.** E cio che

@@ -1485,3 +1485,42 @@ Commenti:
       della postazione **non** deve cambiare.
 
 Commenti:
+
+## Iscrizione a un torneo ospitato da un evento
+
+**Prerequisiti.** Un account cliente adulto senza prenotazioni, un evento
+pubblico programmato con prenotazioni aperte e un torneo dello stesso evento
+con iscrizioni aperte. Per la lista d'attesa serve un evento pieno con lista
+abilitata; per la squadra serve un torneo a coppie o squadre.
+
+- [ ] 1. Da `/app/tornei` aprire il torneo senza aver prenotato l'evento. La
+      scheda spiega che serve prima un posto confermato alla giornata e offre
+      **Prenota prima l’evento**; non offre la conferma del torneo.
+- [ ] 2. Aprire la scheda evento dal pulsante: sopra la prenotazione si vedono
+      i due passi e il nome del torneo scelto. Aprire la conferma evento,
+      verificare costo e tessera, poi prenotare.
+- [ ] 3. Dopo la conferma compare **Continua con [nome torneo]**. Aprirlo e
+      confermare l'iscrizione al torneo. La scheda torneo mostra **Iscritto**.
+- [ ] 4. Con un secondo account prenotare direttamente da `/app/eventi`, poi
+      tornare in `/app/tornei`: l'iscrizione al torneo e disponibile senza
+      riprenotare la giornata.
+- [ ] 5. Con un account in lista d'attesa aprire il torneo: l'avviso spiega
+      che serve la conferma del posto. Nessuna iscrizione al torneo riesce
+      finche la prenotazione resta `waitlisted`.
+- [ ] 6. Ripetere i passi 1–5 con un torneo a squadre: creare o raggiungere
+      una squadra e possibile solo dopo la conferma dell'evento.
+- [ ] 7. Aprire il biglietto evento di un utente iscritto a un torneo attivo e
+      provare **Annulla prenotazione**: compare il messaggio che invita prima
+      ad annullare l'iscrizione al torneo. Dopo il ritiro, la prenotazione si
+      puo annullare.
+- [ ] 8. Aprire un torneo autonomo, senza evento: l'iscrizione resta diretta.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->

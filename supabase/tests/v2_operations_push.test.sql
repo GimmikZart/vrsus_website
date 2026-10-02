@@ -56,6 +56,15 @@ cross join (values
 ) as fixture(display_name, seed)
 where tournament.name = 'Operations Tournament';
 
+insert into public.bookings (event_id, user_id, status, confirmed_at)
+select tournament.event_id, fixture.user_id, 'confirmed', timezone('utc', now())
+from public.tournaments tournament
+cross join (values
+  ('00000000-0000-0000-0000-0000000000d1'::uuid),
+  ('00000000-0000-0000-0000-0000000000d2'::uuid)
+) as fixture(user_id)
+where tournament.name = 'Operations Tournament';
+
 insert into public.tournament_entry_members (entry_id, user_id, is_captain)
 select entry.id,
   case when entry.seed = 1 then '00000000-0000-0000-0000-0000000000d1'::uuid else '00000000-0000-0000-0000-0000000000d2'::uuid end,

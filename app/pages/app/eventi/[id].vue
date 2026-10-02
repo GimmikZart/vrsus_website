@@ -68,6 +68,15 @@ if (error.value || !detail.value?.event) {
 }
 
 const event = computed(() => detail.value?.event ?? null)
+const returnTournament = computed(() => {
+  const requestedId = route.query.torneo
+  if (typeof requestedId !== 'string') return null
+  return (
+    (detail.value?.tournaments ?? []).find(
+      (tournament) => tournament.id === requestedId,
+    ) ?? null
+  )
+})
 
 const gamesByPlatform = computed(() => {
   const map: Record<string, string[]> = {}
@@ -84,6 +93,9 @@ const gamesByPlatform = computed(() => {
 // --- Stato della mia prenotazione -----------------------------------------
 
 const { data: myBookings, refresh: refreshBookings } = await useMyBookings()
+onMounted(() => {
+  void refreshBookings()
+})
 
 const myBooking = computed(
   () =>
@@ -126,7 +138,11 @@ const bookingWindowOpen = computed(() => {
 })
 
 const canBook = computed(
-  () => bookingWindowOpen.value && !myBooking.value && !blockedByConsent.value,
+  () =>
+    bookingWindowOpen.value &&
+    !myBooking.value &&
+    !blockedByConsent.value &&
+    (!isFull.value || Boolean(event.value?.waitlist_enabled)),
 )
 
 const waitlistOnly = computed(
@@ -262,6 +278,36 @@ useSeoMeta({
       </p>
     </header>
 
+    <section
+      v-if="returnTournament"
+      class="border-brand-blue-400/30 bg-brand-blue-400/[0.08] rounded-2xl border p-4 sm:p-5"
+    >
+      <p
+        class="text-brand-blue-200 text-xs font-semibold tracking-[0.16em] uppercase"
+      >
+        Per giocare a {{ returnTournament.name }}
+      </p>
+      <p class="mt-2 text-sm leading-6 text-white/75">
+        1. Prenota un posto a questo evento. 2. Torna al torneo e conferma
+        l’iscrizione. Il posto al torneo non viene riservato dalla prenotazione
+        dell’evento.
+      </p>
+      <p
+        v-if="myBooking?.status === 'waitlisted'"
+        class="mt-2 text-sm text-amber-200"
+      >
+        Sei in lista d’attesa: attendi la conferma del posto prima di iscriverti
+        al torneo.
+      </p>
+      <UButton
+        v-if="myBooking?.status === 'confirmed'"
+        class="mt-4"
+        :to="`/app/tornei/${returnTournament.id}/prenota`"
+        color="primary"
+        :label="`Continua con ${returnTournament.name}`"
+      />
+    </section>
+
     <!-- Prenotazione: stato attuale e comando, sempre nello stesso posto. -->
     <section
       class="rounded-2xl border p-4 sm:p-5"
@@ -345,11 +391,13 @@ useSeoMeta({
       <template v-else>
         <p class="text-sm text-white/55">
           {{
-            event.status === 'running'
-              ? 'Le prenotazioni sono chiuse: la serata è già cominciata. Chiedi al personale se c’è ancora posto.'
-              : event.status === 'completed'
-                ? 'Questa giornata è conclusa.'
-                : 'Le prenotazioni per questa data non sono aperte.'
+            isFull && !event.waitlist_enabled
+              ? 'L’evento è al completo e la lista d’attesa non è disponibile.'
+              : event.status === 'running'
+                ? 'Le prenotazioni sono chiuse: la serata è già cominciata. Chiedi al personale se c’è ancora posto.'
+                : event.status === 'completed'
+                  ? 'Questa giornata è conclusa.'
+                  : 'Le prenotazioni per questa data non sono aperte.'
           }}
         </p>
       </template>

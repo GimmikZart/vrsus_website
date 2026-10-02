@@ -60,6 +60,14 @@ from public.tournaments tournament
 cross join generate_series(1, 8) as fixture(number)
 where tournament.name = 'Eight Player Tournament';
 
+insert into public.bookings (event_id, user_id, status, confirmed_at)
+select tournament.event_id,
+  ('00000000-0000-0000-0000-00000000000' || fixture.number::text)::uuid,
+  'confirmed', timezone('utc', now())
+from public.tournaments tournament
+cross join generate_series(1, 8) as fixture(number)
+where tournament.name = 'Eight Player Tournament';
+
 insert into public.tournament_entry_members (entry_id, user_id, is_captain)
 select entry.id,
   ('00000000-0000-0000-0000-00000000000' || entry.seed::text)::uuid,

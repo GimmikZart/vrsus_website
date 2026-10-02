@@ -101,7 +101,9 @@ async function cancelBooking() {
     cancelMessage.value =
       getBookingErrorCode(error) === 'BOOKING_NOT_CANCELLABLE'
         ? 'Questa prenotazione non può più essere annullata.'
-        : 'Non è stato possibile annullare la prenotazione.'
+        : getBookingErrorCode(error) === 'TOURNAMENT_ENTRY_ACTIVE'
+          ? 'Sei iscritto a un torneo di questo evento. Annulla prima l’iscrizione al torneo, poi potrai annullare la prenotazione.'
+          : 'Non è stato possibile annullare la prenotazione.'
   } finally {
     cancelPending.value = false
   }

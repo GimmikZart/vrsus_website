@@ -15,6 +15,12 @@ La beta e online su Cloudflare Pages con deploy automatico da `main`. Restano
 da fare i contenuti reali al posto dei segnaposto, la validazione dei testi
 legali e le prove su dispositivo fisico.
 
+La correzione del 2026-10-02 rende obbligatoria una prenotazione evento
+`confirmed` prima dell'iscrizione a un torneo ospitato (DEC-049). Il cliente
+vede il percorso torneo → evento → torneo; la lista d'attesa non abilita
+l'iscrizione. Le migration sono applicate solo allo stack locale: il codice
+e le migration non sono ancora stati pubblicati sulla beta.
+
 Sopra la V2 sono arrivati il passaggio fra area cliente e area operativa
 accanto all'uscita (DEC-045), l'invito a installare l'app al primo accesso e la
 riparazione della PWA, che online non si registrava affatto (DEC-046), e la
@@ -138,6 +144,11 @@ giocatori, risultati); nell'app utente la stessa pagina mostra i soli nickname.
 
 ## Verifiche
 
+2026-10-02: migration applicate localmente; pgTAP 284/284, unit 23/23,
+lint dei componenti modificati, typecheck e build `node-server` PASS.
+La prova manuale del nuovo percorso UI resta da eseguire. Il typecheck
+emette il warning noto Volar/vue-router. Dettaglio in `TEST_REPORT.md`.
+
 Ultima esecuzione completa: lint, format, typecheck, unit (19), pgTAP
 (271/271), build `node-server`. E2E Chromium (8/8) risale alla sessione
 precedente e non e stato rieseguito dopo il motore tornei. Verifica funzionale della console
@@ -190,6 +201,13 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
 
 ## Problemi aperti dell'app utente
 
+- Il nuovo flusso evento → torneo e verificato dai test di database e dalla
+  build ma non ancora con un account reale nel browser. La beta remota non ha
+  ancora le due migration.
+- Eventuali iscritti preesistenti a tornei ospitati senza prenotazione evento
+  non sono stati modificati automaticamente: l'app ora mostra il richiamo a
+  prenotare la giornata. La capienza non viene alterata dalla migration.
+
 - I Punti VRSUS oggi arrivano solo dai tornei: la parte "punti fedelta"
   (partecipazione, passaparola) e da progettare.
 - Le notifiche sul proprio turno durante la serata non ci sono: la pagina Live
@@ -197,4 +215,4 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
 
 ## Ultimo aggiornamento
 
-2026-09-15
+2026-10-02

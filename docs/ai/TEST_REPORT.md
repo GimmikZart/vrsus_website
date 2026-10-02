@@ -1,6 +1,22 @@
 # Test Report
 
-Ultimo aggiornamento: 2026-09-14
+Ultimo aggiornamento: 2026-10-02
+
+## Verifica 2026-10-02 — prenotazione evento prima del torneo
+
+- Migration locali `20261002100000` e `20261002101000`: applicate con
+  `supabase migration up --local` (PASS; nessun reset del database DEV).
+- `supabase test db --local`: PASS, 284/284 pgTAP. Casi nuovi: iscrizione
+  singola e a squadre senza posto, lista d'attesa, posto confermato,
+  inserimento manuale, annullamento e `no_show` con iscrizione attiva,
+  torneo autonomo.
+- `vitest run`: PASS, 23/23 unit test.
+- `nuxt typecheck`: PASS, con il warning noto Volar/vue-router.
+- ESLint sui quattro componenti Vue modificati: PASS.
+- `nuxt build`: PASS, preset `node-server`.
+- `git diff --check`: PASS; solo avvisi Git sui fine riga.
+- Prova manuale del percorso evento → torneo e della lista d'attesa:
+  **DA ESEGUIRE** secondo `docs/dev/guideline_test_features.md`.
 
 ## Stato verifiche
 

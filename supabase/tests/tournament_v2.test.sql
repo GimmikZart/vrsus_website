@@ -1,6 +1,6 @@
 begin;
 
-select plan(24);
+select plan(26);
 
 select has_table('public', 'tournaments', 'tournaments table exists');
 select has_table('public', 'tournament_entries', 'tournament entries table exists');
@@ -60,6 +60,29 @@ insert into tournament_fixture (id)
 select id from public.tournaments where name = 'Demo Tournament';
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000c1', true);
+set local role authenticated;
+select throws_ok(
+  $$select public.register_tournament_entry((select id from tournament_fixture))$$,
+  'P0001',
+  'EVENT_BOOKING_REQUIRED',
+  'a tournament registration requires a confirmed event booking'
+);
+set local role postgres;
+select is(
+  (select count(*)::integer from public.bookings booking where booking.user_id = '00000000-0000-0000-0000-0000000000c1'),
+  0,
+  'tournament registration does not silently create an event booking'
+);
+insert into public.bookings (event_id, user_id, status, confirmed_at)
+select tournament.event_id, fixture.user_id, 'confirmed', timezone('utc', now())
+from tournament_fixture fixture_tournament
+join public.tournaments tournament on tournament.id = fixture_tournament.id
+cross join (values
+  ('00000000-0000-0000-0000-0000000000c1'::uuid),
+  ('00000000-0000-0000-0000-0000000000c2'::uuid),
+  ('00000000-0000-0000-0000-0000000000c3'::uuid),
+  ('00000000-0000-0000-0000-0000000000c4'::uuid)
+) as fixture(user_id);
 set local role authenticated;
 select ok(
   public.register_tournament_entry((select id from tournament_fixture)) is not null,

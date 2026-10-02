@@ -12,7 +12,7 @@ import {
   teamOpenSlots,
   tournamentSummary,
 } from '~~/shared/utils/tournament-standings'
-import { getBookingErrorCode } from '~/composables/useBookings'
+import { getBookingErrorCode, useMyBookings } from '~/composables/useBookings'
 
 definePageMeta({ layout: 'app', middleware: ['auth'] })
 
@@ -41,6 +41,28 @@ const { data: consent } = await useAsyncData(
 const blockedByConsent = computed(
   () => Boolean(consent.value?.is_minor) && !consent.value?.has_consent,
 )
+
+const { data: myBookings, refresh: refreshBookings } = await useMyBookings()
+onMounted(() => {
+  void refreshBookings()
+})
+const eventBooking = computed(() =>
+  (myBookings.value ?? []).find(
+    (booking) =>
+      booking.event_id === detail.value?.eventId &&
+      ['confirmed', 'waitlisted'].includes(booking.status),
+  ),
+)
+const needsEventBooking = computed(
+  () =>
+    Boolean(detail.value?.eventId) &&
+    detail.value?.status === 'registration_open' &&
+    eventBooking.value?.status !== 'confirmed',
+)
+const eventPage = computed(() => ({
+  path: `/app/eventi/${detail.value?.eventId}`,
+  query: { torneo: tournamentId.value },
+}))
 
 // Il torneo eredita il requisito dalla giornata che lo ospita: chi si iscrive
 // lo legge qui, non alla porta.
@@ -77,6 +99,8 @@ async function runSignup(action: () => Promise<unknown>) {
   pending.value = true
   errorMessage.value = ''
   try {
+    await refreshBookings()
+    if (needsEventBooking.value) return
     await action()
     await navigateTo(`/app/tornei/${tournamentId.value}`)
   } catch (error) {
@@ -84,8 +108,10 @@ async function runSignup(action: () => Promise<unknown>) {
     errorMessage.value =
       code === 'GUARDIAN_CONSENT_REQUIRED'
         ? 'Serve il consenso di un genitore o tutore prima di iscriverti.'
-        : tournamentRegistrationError(error)
-    await refresh()
+        : code === 'EVENT_BOOKING_REQUIRED'
+          ? 'Prima prenota un posto all’evento, poi torna qui per iscriverti al torneo.'
+          : tournamentRegistrationError(error)
+    await Promise.all([refresh(), refreshBookings()])
   } finally {
     pending.value = false
   }
@@ -177,6 +203,45 @@ useSeoMeta({
       </p>
 
       <UAlert
+        v-if="needsEventBooking"
+        class="mt-6"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-ticket"
+        :title="
+          eventBooking?.status === 'waitlisted'
+            ? 'Aspetta la conferma del posto'
+            : 'Prima prenota l’evento'
+        "
+        :description="
+          eventBooking?.status === 'waitlisted'
+            ? 'Sei in lista d’attesa per l’evento. Potrai iscriverti al torneo quando il posto sarà confermato.'
+            : `Per giocare serve un posto confermato a ${detail.eventTitle ?? 'questa giornata'}. Prenota l’evento e poi torna a questa iscrizione.`
+        "
+      />
+      <UAlert
+        v-if="detail.status !== 'registration_open'"
+        class="mt-6"
+        color="info"
+        variant="subtle"
+        title="Iscrizioni non aperte"
+        description="Le iscrizioni a questo torneo non sono disponibili in questo momento."
+      />
+      <UButton
+        v-if="needsEventBooking"
+        class="mt-4"
+        :to="eventPage"
+        color="primary"
+        size="lg"
+        block
+        :label="
+          eventBooking?.status === 'waitlisted'
+            ? 'Vai all’evento'
+            : 'Prenota prima l’evento'
+        "
+      />
+
+      <UAlert
         v-if="arciRequired && !arciStatus?.card_valid"
         class="mt-6"
         color="warning"
@@ -190,7 +255,11 @@ useSeoMeta({
       </p>
 
       <UAlert
-        v-if="blockedByConsent"
+        v-if="
+          blockedByConsent &&
+          !needsEventBooking &&
+          detail.status === 'registration_open'
+        "
         class="mt-6"
         color="warning"
         variant="subtle"
@@ -208,7 +277,11 @@ useSeoMeta({
       />
 
       <UButton
-        v-if="blockedByConsent"
+        v-if="
+          blockedByConsent &&
+          !needsEventBooking &&
+          detail.status === 'registration_open'
+        "
         class="mt-6"
         to="/app/impostazioni"
         color="primary"
@@ -219,7 +292,9 @@ useSeoMeta({
 
       <!-- Torneo in singolo: un solo pulsante. -->
       <UButton
-        v-else-if="!isTeam"
+        v-else-if="
+          !needsEventBooking && detail.status === 'registration_open' && !isTeam
+        "
         class="mt-6"
         color="primary"
         size="lg"
@@ -231,7 +306,11 @@ useSeoMeta({
 
       <!-- Torneo a squadre composte dallo staff: qui non si fa nulla. -->
       <UAlert
-        v-else-if="detail.teamFormation === 'admin'"
+        v-else-if="
+          !needsEventBooking &&
+          detail.status === 'registration_open' &&
+          detail.teamFormation === 'admin'
+        "
         class="mt-6"
         color="info"
         variant="subtle"
@@ -239,7 +318,10 @@ useSeoMeta({
         description="Presentati in sede: sarai assegnato a una squadra prima dell inizio."
       />
 
-      <div v-else class="mt-6 space-y-6">
+      <div
+        v-else-if="!needsEventBooking && detail.status === 'registration_open'"
+        class="mt-6 space-y-6"
+      >
         <section>
           <h2 class="font-display text-base font-semibold text-white">
             Crea la tua squadra

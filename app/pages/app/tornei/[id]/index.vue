@@ -7,6 +7,7 @@ import {
 } from '~/composables/useTournaments'
 import { fetchPublicTournamentView } from '~/composables/useTournamentView'
 import { teamOpenSlots } from '~~/shared/utils/tournament-standings'
+import { useMyBookings } from '~/composables/useBookings'
 
 definePageMeta({ layout: 'app', middleware: ['auth'] })
 
@@ -50,6 +51,29 @@ const { data: myEntries, refresh: refreshMine } = await useAsyncData(
 const isRegistered = computed(() =>
   (myEntries.value ?? []).includes(tournamentId.value),
 )
+
+const { data: myBookings, refresh: refreshBookings } = await useMyBookings()
+onMounted(() => {
+  void refreshBookings()
+})
+const eventBooking = computed(() =>
+  (myBookings.value ?? []).find(
+    (booking) =>
+      booking.event_id === detail.value?.eventId &&
+      ['confirmed', 'waitlisted'].includes(booking.status),
+  ),
+)
+const needsEventBooking = computed(
+  () =>
+    Boolean(detail.value?.eventId) &&
+    (detail.value?.status === 'registration_open' || isRegistered.value) &&
+    !['completed', 'cancelled'].includes(detail.value?.status ?? '') &&
+    eventBooking.value?.status !== 'confirmed',
+)
+const eventPage = computed(() => ({
+  path: `/app/eventi/${detail.value?.eventId}`,
+  query: { torneo: tournamentId.value },
+}))
 
 const isTeam = computed(() => (detail.value?.entrySize ?? 1) > 1)
 
@@ -174,6 +198,23 @@ useSeoMeta({
       </template>
       <template #actions>
         <UAlert
+          v-if="needsEventBooking"
+          class="mb-4"
+          color="warning"
+          variant="subtle"
+          icon="i-lucide-ticket"
+          :title="
+            eventBooking?.status === 'waitlisted'
+              ? 'Sei in lista d’attesa per l’evento'
+              : 'Prima prenota l’evento'
+          "
+          :description="
+            eventBooking?.status === 'waitlisted'
+              ? `Potrai partecipare a ${detail.name} quando il tuo posto all’evento sarà confermato. Torna qui dopo la conferma.`
+              : `Per partecipare a ${detail.name} serve prima un posto confermato a ${detail.eventTitle ?? 'questa giornata'}. Prenota l’evento, poi torna qui per iscriverti al torneo.`
+          "
+        />
+        <UAlert
           v-if="message"
           class="mb-4"
           color="info"
@@ -182,7 +223,19 @@ useSeoMeta({
         />
         <div class="flex flex-col gap-2 sm:flex-row">
           <UButton
-            v-if="isOpen && !isRegistered"
+            v-if="needsEventBooking"
+            :to="eventPage"
+            color="primary"
+            size="lg"
+            block
+            :label="
+              eventBooking?.status === 'waitlisted'
+                ? 'Vai all’evento'
+                : 'Prenota prima l’evento'
+            "
+          />
+          <UButton
+            v-else-if="isOpen && !isRegistered"
             :to="`/app/tornei/${tournamentId}/prenota`"
             color="primary"
             size="lg"
@@ -191,7 +244,7 @@ useSeoMeta({
             :label="isFull ? 'Posti esauriti' : 'Iscriviti al torneo'"
           />
           <UButton
-            v-else-if="isRegistered && !isCompleted"
+            v-if="isRegistered && !isCompleted"
             color="neutral"
             variant="outline"
             size="lg"
