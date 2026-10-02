@@ -54,12 +54,41 @@ async function enablePush() {
     await push.enable()
     pushMessage.value = 'Notifiche push abilitate su questo dispositivo.'
   } catch (caughtError) {
+    window.reportError?.(caughtError)
     const code = String((caughtError as { message?: string }).message ?? '')
-    pushMessage.value = code.includes('PUSH_NOT_CONFIGURED')
-      ? 'Le notifiche push saranno disponibili dopo la configurazione OneSignal.'
-      : code.includes('PUSH_PERMISSION_NOT_GRANTED')
-        ? 'Permesso notifiche negato: abilitalo nelle impostazioni del browser o del dispositivo.'
-        : 'Non è stato possibile abilitare le notifiche push.'
+    const errors: Record<string, string> = {
+      PUSH_NOT_CONFIGURED: 'App ID OneSignal non configurato.',
+      AUTH_REQUIRED: 'Accedi di nuovo e riprova.',
+      PUSH_ORIGIN_MISMATCH:
+        'Il dominio configurato per l’app non coincide con quello aperto. Correggi APP_BASE_URL su Cloudflare e ripubblica il sito.',
+      PUSH_UNSUPPORTED_BROWSER:
+        'Questo browser non supporta le push web. Prova da Chrome o Edge su HTTPS.',
+      PUSH_PERMISSION_DENIED:
+        'Le notifiche sono bloccate nelle impostazioni del browser. Consenti le notifiche per questo sito e riprova.',
+      PUSH_PERMISSION_NOT_GRANTED:
+        'Permesso notifiche non concesso. Consenti la richiesta del browser e riprova.',
+      PUSH_PERMISSION_REQUEST_FAILED:
+        'Il browser non è riuscito a chiedere il permesso notifiche. Controlla le impostazioni del sito.',
+      PUSH_SDK_LOAD_FAILED:
+        'Il browser non riesce a caricare OneSignal. Controlla connessione, blocchi contenuti ed estensioni.',
+      PUSH_SDK_INIT_FAILED:
+        'OneSignal non si inizializza. Verifica che il Site URL dell’app OneSignal coincida con questo dominio e che il suo service worker sia raggiungibile.',
+      PUSH_OPT_IN_FAILED:
+        'OneSignal non riesce ad attivare il dispositivo. Verifica il service worker e la configurazione Web Push.',
+      PUSH_SUBSCRIPTION_ID_MISSING:
+        'OneSignal non ha registrato il dispositivo entro 30 secondi. Controlla il service worker e riprova.',
+      PUSH_LOGIN_FAILED:
+        'OneSignal non riesce a collegare il dispositivo al tuo account.',
+      PUSH_DATABASE_MIGRATION_MISSING:
+        'Manca la funzione di registrazione push nel database QUALITY. Applica le migration Supabase.',
+      PUSH_SUBSCRIPTION_IN_USE:
+        'Questo dispositivo è ancora associato a un altro account. Esci da quell’account e riprova.',
+      PUSH_DATABASE_SAVE_FAILED:
+        'Il dispositivo è attivo su OneSignal, ma il salvataggio su Supabase è fallito. Controlla la console del browser.',
+    }
+    pushMessage.value =
+      errors[code] ??
+      `Non è stato possibile abilitare le notifiche push (${code || 'errore sconosciuto'}).`
   }
 }
 

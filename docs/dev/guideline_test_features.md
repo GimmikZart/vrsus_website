@@ -1565,7 +1565,7 @@ in corso e una data programmata. In locale aiutano
 
 ## Installazione dell'app, passaggio di area, slug automatici
 
-**Prerequisiti:** sito pubblicato in HTTPS (`vrsus-website.pages.dev`), un
+**Prerequisiti:** sito pubblicato in HTTPS (`vrsus-app.pages.dev`), un
 account con ruolo `admin` o `super_admin`, un telefono Android e/o un iPhone.
 
 ### 1. Invito a installare l'app (telefono)

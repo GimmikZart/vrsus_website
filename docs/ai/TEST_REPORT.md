@@ -2,6 +2,21 @@
 
 Ultimo aggiornamento: 2026-10-02
 
+## Verifica 2026-10-02 — diagnosi attivazione push QUALITY
+
+- Screenshot QUALITY: pulsante Abilita push attivo e errore generico. Confermato
+  dall'utente il dominio reale `vrsus-app.pages.dev`; negli screenshot
+  Cloudflare e webhook puntavano a `vrsus-website.pages.dev`. L'utente ha
+  confermato di non aver configurato la piattaforma Web Push in OneSignal.
+- Introdotti errori specifici in UI e controllo origine, supporto browser,
+  inizializzazione SDK, permesso, opt-in, ID, login e salvataggio Supabase.
+  Attesa ID subscription aumentata a 30 secondi.
+- ESLint, Prettier, `nuxt typecheck` e build `node-server`: PASS. Il typecheck
+  mostra il warning noto Volar/vue-router.
+- Worker e subscription su QUALITY: **NON VERIFICATI**. Il browser/tool di
+  questa sessione non puo aprire `*.pages.dev`; il test su dispositivo resta
+  necessario dopo le correzioni esterne e il deploy.
+
 ## Verifica 2026-10-02 — invio manuale notifiche
 
 - Migration `20261002105000_manual_notifications.sql` applicata al DB DEV

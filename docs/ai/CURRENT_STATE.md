@@ -1,5 +1,17 @@
 # Current Project State
 
+## Push QUALITY — diagnosi 2026-10-02
+
+Il proprietario ha confermato che la PWA QUALITY reale si apre da
+`https://vrsus-app.pages.dev`, mentre Cloudflare `APP_BASE_URL` e il webhook
+Supabase erano impostati su `https://vrsus-website.pages.dev` a causa delle
+istruzioni precedenti errate. La piattaforma Web Push in OneSignal non era
+stata configurata. Entrambe le correzioni esterne sono necessarie: OneSignal
+Custom Code con Site URL reale, APP_BASE_URL reale e webhook sull'origine
+reale. Il codice locale mostra ora errori distinti per origine, SDK, permesso,
+subscription e Supabase; attende il deploy. L'invio push effettivo su device
+non e ancora verificato. L'inbox DB gia mostra una notifica di prenotazione.
+
 ## Invio manuale notifiche — aggiornamento 2026-10-02
 
 `/admin/altro` include il form per admin/super admin: tutti i profili oppure
@@ -210,7 +222,7 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
   in `shared/constants/site-content.ts`.
 - Testi legali del consenso e informativa privacy da validare (DEC-026).
 - Verifica su dispositivo fisico di installazione PWA, fotocamera e scanner QR.
-- La beta e pubblicata su Cloudflare Pages (`vrsus-website.pages.dev`) con
+- La beta e pubblicata su Cloudflare Pages (`vrsus-app.pages.dev`) con
   deploy automatico da `main`. Restano da verificare online, su browser reale:
   installazione della PWA, ripiego offline e il caricamento dopo il login, che
   in produzione si bloccava (DEC-044, DEC-046).

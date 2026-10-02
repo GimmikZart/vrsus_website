@@ -15,18 +15,21 @@ intervento sugli account esterni.
 ## Prossima attivita prioritaria
 
 **USER ACTION REQUIRED — attivare e provare le notifiche in QUALITY.**
-Creare/configurare OneSignal Web Push per l'origine della PWA di test;
-applicare le migration `20261002103000`, `20261002104000` e
-`20261002105000` a Supabase QUALITY; distribuire la nuova vista `/admin/altro`;
-impostare App ID, REST API Key, `NOTIFICATION_WEBHOOK_SECRET` e `APP_BASE_URL`
-su Cloudflare; configurare il Database Webhook `INSERT` su
-`public.notifications`. Procedura dettagliata in
-`docs/dev/guideline_implementations.md`. Poi eseguire la checklist A/B in
-`docs/dev/guideline_test_features.md`: push sul dispositivo, badge e inbox
-senza refresh, isolamento dell'utente, invio manuale ai due pubblici, segna come letto su due browser e
-disattivazione. Criterio di completamento: ricezione verificata su device
-reale e log webhook/OneSignal coerenti. Le verifiche automatiche DEV sono
-PASS (pgTAP 301/301, unit 23/23, lint, typecheck, build `node-server`).
+Configurare **Settings → Push & In-App → Web** dell'app OneSignal come
+**Custom Code**, con Site URL `https://vrsus-app.pages.dev`; impostare in
+Cloudflare `APP_BASE_URL=https://vrsus-app.pages.dev` e nel webhook Supabase
+`https://vrsus-app.pages.dev/api/notifications/webhook` (prima erano
+erroneamente su `vrsus-website.pages.dev`), poi ridistribuire il codice con
+la diagnostica push. Verificare che le migration `20261002103000`,
+`20261002104000` e `20261002105000` siano applicate a Supabase QUALITY e che
+App ID, REST API Key e `NOTIFICATION_WEBHOOK_SECRET` appartengano alla stessa
+configurazione. Procedura in `docs/dev/guideline_implementations.md`.
+Poi eseguire la checklist A/B in `docs/dev/guideline_test_features.md`:
+registrazione dispositivo, push, badge e inbox senza refresh, isolamento
+utente, invio manuale ai due pubblici e lettura. Criterio di completamento:
+ricezione verificata su device reale e log webhook/OneSignal coerenti. Le
+verifiche automatiche DEV sono PASS (pgTAP 312/312, unit 23/23, lint,
+typecheck, build `node-server`).
 
 ## Verifiche UI precedenti ancora pendenti
 
@@ -68,8 +71,8 @@ e build.
 
 - **Sistemare gli indirizzi di Auth sul progetto Supabase remoto.** E cio che
   serve perche la registrazione via email funzioni: `Site URL` su
-  `https://vrsus-website.pages.dev` e `Redirect URLs` con
-  `https://vrsus-website.pages.dev/**`. Senza, l'indirizzo di ritorno chiesto
+  `https://vrsus-app.pages.dev` e `Redirect URLs` con
+  `https://vrsus-app.pages.dev/**`. Senza, l'indirizzo di ritorno chiesto
   dall'app viene scartato e le mail continuano a puntare a `localhost:3000`
   (DEC-048). Procedura in `docs/dev/guideline_implementations.md`.
 - **Rigenerare la secret key Supabase di produzione.** La chiave attuale e

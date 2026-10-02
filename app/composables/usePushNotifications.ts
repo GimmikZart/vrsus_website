@@ -11,6 +11,7 @@ type OneSignalApi = {
   logout(): Promise<void>
   Notifications: {
     permission: boolean
+    isPushSupported(): boolean
     requestPermission(): Promise<void>
   }
   User: {
@@ -51,7 +52,7 @@ async function loadOneSignal(appId: string): Promise<OneSignalApi> {
         })
         resolve(api)
       } catch (error) {
-        reject(error)
+        reject(new Error('PUSH_SDK_INIT_FAILED', { cause: error }))
       }
     })
 
@@ -78,7 +79,7 @@ async function loadOneSignal(appId: string): Promise<OneSignalApi> {
 }
 
 async function waitForSubscriptionId(api: OneSignalApi) {
-  for (let attempt = 0; attempt < 20; attempt += 1) {
+  for (let attempt = 0; attempt < 120; attempt += 1) {
     if (api.User.PushSubscription.id) return api.User.PushSubscription.id
     await new Promise((resolve) => setTimeout(resolve, 250))
   }
@@ -118,14 +119,40 @@ export function usePushNotifications() {
     pending.value = true
     error.value = ''
     try {
+      if (
+        new URL(String(config.public.appBaseUrl)).origin !==
+        window.location.origin
+      )
+        throw new Error('PUSH_ORIGIN_MISMATCH')
+      if (!window.isSecureContext || !('serviceWorker' in navigator))
+        throw new Error('PUSH_UNSUPPORTED_BROWSER')
+      if (!('Notification' in window))
+        throw new Error('PUSH_UNSUPPORTED_BROWSER')
+      if (Notification.permission === 'denied')
+        throw new Error('PUSH_PERMISSION_DENIED')
+
       const api = await loadOneSignal(String(config.public.oneSignalAppId))
-      await api.login(user.value.sub)
-      await api.Notifications.requestPermission()
+      if (!api.Notifications.isPushSupported())
+        throw new Error('PUSH_UNSUPPORTED_BROWSER')
+      try {
+        await api.Notifications.requestPermission()
+      } catch (cause) {
+        throw new Error('PUSH_PERMISSION_REQUEST_FAILED', { cause })
+      }
       if (!api.Notifications.permission)
         throw new Error('PUSH_PERMISSION_NOT_GRANTED')
-      await api.User.PushSubscription.optIn()
+      try {
+        await api.User.PushSubscription.optIn()
+      } catch (cause) {
+        throw new Error('PUSH_OPT_IN_FAILED', { cause })
+      }
       const subscriptionId = await waitForSubscriptionId(api)
-      if (!subscriptionId) throw new Error('PUSH_PERMISSION_NOT_GRANTED')
+      if (!subscriptionId) throw new Error('PUSH_SUBSCRIPTION_ID_MISSING')
+      try {
+        await api.login(user.value.sub)
+      } catch (cause) {
+        throw new Error('PUSH_LOGIN_FAILED', { cause })
+      }
       const { error: subscriptionError } = await client.rpc(
         'upsert_push_subscription',
         {
@@ -134,7 +161,17 @@ export function usePushNotifications() {
           p_device_label: navigator.userAgent.slice(0, 120),
         },
       )
-      if (subscriptionError) throw subscriptionError
+      if (subscriptionError) {
+        throw new Error(
+          subscriptionError.code === '42883' ||
+            subscriptionError.code === 'PGRST202'
+            ? 'PUSH_DATABASE_MIGRATION_MISSING'
+            : subscriptionError.message.includes('PUSH_SUBSCRIPTION_IN_USE')
+              ? 'PUSH_SUBSCRIPTION_IN_USE'
+              : 'PUSH_DATABASE_SAVE_FAILED',
+          { cause: subscriptionError },
+        )
+      }
       localStorage.setItem('vrsus-push-subscription-id', subscriptionId)
       enabledOnThisDevice.value = true
       return subscriptionId

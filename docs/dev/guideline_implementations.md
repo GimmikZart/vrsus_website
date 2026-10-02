@@ -221,7 +221,7 @@ account esterni e devono essere inseriti dal proprietario.
 
 1. In OneSignal creare un'app **Web Push QUALITY** con Site URL uguale
    all'origine HTTPS esatta della PWA di test (per esempio
-   `https://vrsus-website.pages.dev`, senza percorso). In **Settings → Keys & IDs**
+   `https://vrsus-app.pages.dev`, senza percorso). In **Settings → Keys & IDs**
    copiare App ID e REST API Key. Usare app separate per QUALITY e PRODUCTION,
    cosi un test non raggiunge dispositivi reali. Per DEV locale creare una terza
    app riferita all'origine locale effettivamente aperta nel browser.
@@ -236,14 +236,15 @@ account esterni e devono essere inseriti dal proprietario.
    `NUXT_PUBLIC_ONESIGNAL_APP_ID` = App ID (**PUBLIC**),
    `ONESIGNAL_REST_API_KEY` = REST API Key (**SERVER-ONLY / SECRET**),
    `NOTIFICATION_WEBHOOK_SECRET` = stringa casuale lunga almeno 32 caratteri
-   (**SECRET**), `APP_BASE_URL` = origine HTTPS della PWA (**PUBLIC**).
+   (**SECRET**), `APP_BASE_URL` = origine HTTPS della PWA (**PUBLIC**):
+   `https://vrsus-app.pages.dev` per la beta attuale.
    Inserire i secret nelle variabili protette, mai nel repository. Verificare
    che `https://<origine>/onesignal/OneSignalSDKWorker.js` restituisca
    JavaScript; il worker ha uno scope separato da quello offline della PWA.
 4. In **Supabase QUALITY → Database → Webhooks**, creare un solo webhook
    `notifications_push`: tabella `public.notifications`, evento **INSERT**,
    metodo **POST**, URL
-   `https://<origine>/api/notifications/webhook`, header
+   `https://vrsus-app.pages.dev/api/notifications/webhook`, header
    `Content-Type: application/json` e header
    `x-vrsus-webhook-secret` con lo stesso secret di Cloudflare. Il payload
    standard di Supabase include `record.id`; il server rilegge la riga dal DB
@@ -290,6 +291,37 @@ raggiungibile dal telefono. La URL del worker e
 La configurazione è completa solo quando i checklist di deploy e test QUALITY
 sono compilati dal responsabile dell’ambiente. Nessun valore reale va inserito
 qui o committato nel repository.
+
+### Correzione dell'origine QUALITY (2026-10-02)
+
+L'URL reale fornito per la PWA e `https://vrsus-app.pages.dev/app/notifiche`.
+Le vecchie istruzioni indicavano per errore `vrsus-website.pages.dev`.
+Per questo ambiente tutti i riferimenti devono usare l'origine
+`https://vrsus-app.pages.dev` (senza `/app/notifiche`):
+
+1. In **OneSignal → Settings → Push & In-App → Web**, selezionare
+   **Custom Code** e impostare **Site URL** su
+   `https://vrsus-app.pages.dev`. Mantenere l'App ID della stessa app nella
+   variabile Cloudflare `NUXT_PUBLIC_ONESIGNAL_APP_ID`. Salvare.
+2. In **Cloudflare Pages → Settings → Variables and Secrets**, impostare
+   `APP_BASE_URL=https://vrsus-app.pages.dev` nell'ambiente del deploy usato
+   dalla PWA e avviare un nuovo deploy. Le variabili `ONESIGNAL_REST_API_KEY`
+   e `NOTIFICATION_WEBHOOK_SECRET` devono essere **Secret**, non Text.
+3. In **Supabase → Database Webhooks → notifications_push**, cambiare l'URL in
+   `https://vrsus-app.pages.dev/api/notifications/webhook`. Verificare
+   **INSERT**, POST e l'header `x-vrsus-webhook-secret` uguale al secret
+   Cloudflare. Salvare. Il webhook serve alla consegna delle push dopo la
+   creazione delle notifiche; non interviene nella pressione di Abilita push.
+4. Aprire nel browser
+   `https://vrsus-app.pages.dev/onesignal/OneSignalSDKWorker.js`: deve
+   apparire la riga `importScripts(...)`, senza login o pagina HTML. Poi
+   aggiornare la PWA e riprovare Abilita push. In caso di errore, leggere il
+   messaggio specifico della nuova versione e la console del browser.
+
+- [ ] Site URL OneSignal corretto e App ID corrispondente.
+- [ ] APP_BASE_URL corretto e nuovo deploy Cloudflare completato.
+- [ ] URL webhook corretto e secret header verificato.
+- [ ] Worker pubblico verificato e dispositivo visibile in OneSignal.
 
 ## BETA — deploy su Cloudflare Pages
 

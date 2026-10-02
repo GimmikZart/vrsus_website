@@ -1614,3 +1614,30 @@ la prossima attivita.
 
 Funzione pronta in DEV. Applicare la migration su QUALITY e pubblicare il
 codice prima di provare l'invio e la push sul dispositivo.
+
+## 2026-10-02 — Diagnosi push QUALITY
+
+### Lavoro svolto
+
+- Rilevata origine errata nelle istruzioni e negli screenshot Cloudflare e
+  webhook; la PWA usa `vrsus-app.pages.dev`.
+- Confermata configurazione Web Push OneSignal mancante. Documentati Custom
+  Code, Site URL, dominio Cloudflare e webhook corretti.
+- Resi espliciti gli errori di attivazione push nella UI e aggiunte verifiche
+  di origine, supporto browser e registrazione OneSignal/Supabase.
+
+### File principali modificati
+
+- `app/composables/usePushNotifications.ts`, `app/pages/app/notifiche.vue`
+- `docs/dev/guideline_implementations.md`, `docs/dev/guideline_test_features.md`
+
+### Verifiche
+
+- ESLint, Prettier, `nuxt typecheck` e build `node-server` → PASS.
+- Push dispositivo QUALITY → pendente dopo configurazione esterna e deploy.
+
+### Stato finale della sessione
+
+In attesa che OneSignal Web Push, APP_BASE_URL e webhook usino tutti
+`https://vrsus-app.pages.dev`; poi verificare subscription OneSignal,
+salvataggio Supabase e consegna push reale.
