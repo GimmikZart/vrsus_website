@@ -119,11 +119,6 @@ export function usePushNotifications() {
     pending.value = true
     error.value = ''
     try {
-      if (
-        new URL(String(config.public.appBaseUrl)).origin !==
-        window.location.origin
-      )
-        throw new Error('PUSH_ORIGIN_MISMATCH')
       if (!window.isSecureContext || !('serviceWorker' in navigator))
         throw new Error('PUSH_UNSUPPORTED_BROWSER')
       if (!('Notification' in window))

@@ -1,5 +1,15 @@
 # Current Project State
 
+## Attivazione push — correzione controllo origine 2026-10-03
+
+La versione precedente bloccava Abilita push se `APP_BASE_URL` differiva da
+`window.location.origin`. Questo controllo introdotto durante la diagnostica
+era troppo rigido: l'attivazione OneSignal usa l'origine della pagina. Ora la
+differenza e mostrata come avviso non bloccante con entrambi i valori, per
+individuare eventuali variabili Cloudflare errate senza impedire il tentativo
+di registrazione. Lint, typecheck e build Cloudflare Pages PASS. Prova su
+dispositivo QUALITY ancora pendente.
+
 ## Push QUALITY — diagnosi 2026-10-02
 
 Il proprietario ha confermato che la PWA QUALITY reale si apre da
@@ -8,8 +18,8 @@ Supabase erano impostati su `https://vrsus-website.pages.dev` a causa delle
 istruzioni precedenti errate. La piattaforma Web Push in OneSignal non era
 stata configurata. Entrambe le correzioni esterne sono necessarie: OneSignal
 Custom Code con Site URL reale, APP_BASE_URL reale e webhook sull'origine
-reale. Il codice locale mostra ora errori distinti per origine, SDK, permesso,
-subscription e Supabase; attende il deploy. L'invio push effettivo su device
+reale. Il commit diagnostico `c6a45ae` e stato pubblicato su `main`; mostra
+errori distinti per SDK, permesso, subscription e Supabase. L'invio push effettivo su device
 non e ancora verificato. L'inbox DB gia mostra una notifica di prenotazione.
 
 ## Invio manuale notifiche — aggiornamento 2026-10-02

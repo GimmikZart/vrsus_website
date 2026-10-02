@@ -17,9 +17,23 @@ const pushEnabled = push.enabledOnThisDevice
 const pending = ref<string | null>(null)
 const allPending = ref(false)
 const pushMessage = ref('')
+const actualOrigin = ref('')
+const configuredOrigin = computed(() => {
+  try {
+    return new URL(String(useRuntimeConfig().public.appBaseUrl)).origin
+  } catch {
+    return 'non valida'
+  }
+})
+const originNotice = computed(() =>
+  actualOrigin.value && configuredOrigin.value !== actualOrigin.value
+    ? `La pagina è su ${actualOrigin.value}, mentre APP_BASE_URL è ${configuredOrigin.value}. Le push si possono attivare, ma i link nelle notifiche potrebbero aprire il dominio sbagliato: correggi la variabile nell’ambiente Cloudflare di questo deploy.`
+    : '',
+)
 const { refresh: refreshUnreadCount } = useUnreadNotificationCount()
 
 onMounted(() => {
+  actualOrigin.value = window.location.origin
   void push.refreshDeviceStatus()
 })
 
@@ -59,8 +73,6 @@ async function enablePush() {
     const errors: Record<string, string> = {
       PUSH_NOT_CONFIGURED: 'App ID OneSignal non configurato.',
       AUTH_REQUIRED: 'Accedi di nuovo e riprova.',
-      PUSH_ORIGIN_MISMATCH:
-        'Il dominio configurato per l’app non coincide con quello aperto. Correggi APP_BASE_URL su Cloudflare e ripubblica il sito.',
       PUSH_UNSUPPORTED_BROWSER:
         'Questo browser non supporta le push web. Prova da Chrome o Edge su HTTPS.',
       PUSH_PERMISSION_DENIED:
@@ -171,6 +183,13 @@ useSeoMeta({ title: 'Notifiche — VRSUS', robots: 'noindex, nofollow' })
         <p v-if="!pushConfigured" class="mt-3 text-xs text-white/40">
           Provider push non configurato in questo ambiente.
         </p>
+        <UAlert
+          v-if="originNotice"
+          class="mt-4"
+          color="warning"
+          variant="subtle"
+          :description="originNotice"
+        />
         <UAlert
           v-if="pushMessage"
           class="mt-4"

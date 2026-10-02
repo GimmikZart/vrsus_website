@@ -1,6 +1,15 @@
 # Test Report
 
-Ultimo aggiornamento: 2026-10-02
+Ultimo aggiornamento: 2026-10-03
+
+## Verifica 2026-10-03 — controllo origine push
+
+- Riprodotto nel codice l'errore `PUSH_ORIGIN_MISMATCH`: il confronto fra
+  `APP_BASE_URL` e `window.location.origin` interrompeva l'attivazione prima
+  di OneSignal. Rimosso il blocco e mantenuta la differenza come avviso UI.
+- Prettier, ESLint, `nuxt typecheck` e build `cloudflare_pages`: PASS. Il
+  typecheck mostra il warning noto Volar/vue-router.
+- Registrazione push su dispositivo QUALITY: **NON VERIFICATA**.
 
 ## Verifica 2026-10-02 — diagnosi attivazione push QUALITY
 

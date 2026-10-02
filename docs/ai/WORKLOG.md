@@ -1641,3 +1641,25 @@ codice prima di provare l'invio e la push sul dispositivo.
 In attesa che OneSignal Web Push, APP_BASE_URL e webhook usino tutti
 `https://vrsus-app.pages.dev`; poi verificare subscription OneSignal,
 salvataggio Supabase e consegna push reale.
+
+## 2026-10-03 — Rimozione del blocco per origine push
+
+### Lavoro svolto
+
+- Rimosso il controllo bloccante fra APP_BASE_URL e origine corrente.
+- Mostrati entrambi i valori in un avviso non bloccante sulla pagina
+  notifiche, cosi il flusso prosegue fino a OneSignal/Supabase.
+
+### File principali modificati
+
+- `app/composables/usePushNotifications.ts`, `app/pages/app/notifiche.vue`
+
+### Verifiche
+
+- Prettier, ESLint, typecheck e build Cloudflare Pages → PASS.
+- Test dispositivo QUALITY → pendente dopo deploy.
+
+### Stato finale della sessione
+
+La correzione e pronta. Verificare i domini mostrati nell'avviso e ritentare
+Abilita push sul dispositivo dopo il deploy.

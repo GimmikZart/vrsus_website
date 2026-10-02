@@ -20,7 +20,11 @@ Configurare **Settings → Push & In-App → Web** dell'app OneSignal come
 Cloudflare `APP_BASE_URL=https://vrsus-app.pages.dev` e nel webhook Supabase
 `https://vrsus-app.pages.dev/api/notifications/webhook` (prima erano
 erroneamente su `vrsus-website.pages.dev`), poi ridistribuire il codice con
-la diagnostica push. Verificare che le migration `20261002103000`,
+la diagnostica push e la rimozione del blocco per origine. Dopo il deploy,
+leggere nell'avviso della pagina notifiche i valori effettivi di origine
+pagina e APP_BASE_URL; se differiscono, correggere la variabile nel relativo
+ambiente Cloudflare, ma continuare la prova Abilita push. Verificare che le
+migration `20261002103000`,
 `20261002104000` e `20261002105000` siano applicate a Supabase QUALITY e che
 App ID, REST API Key e `NOTIFICATION_WEBHOOK_SECRET` appartengano alla stessa
 configurazione. Procedura in `docs/dev/guideline_implementations.md`.

@@ -317,6 +317,9 @@ Per questo ambiente tutti i riferimenti devono usare l'origine
    apparire la riga `importScripts(...)`, senza login o pagina HTML. Poi
    aggiornare la PWA e riprovare Abilita push. In caso di errore, leggere il
    messaggio specifico della nuova versione e la console del browser.
+   Se la pagina mostra un avviso con origine pagina e APP_BASE_URL diversi,
+   usare quei valori per individuare l'ambiente Cloudflare ancora errato.
+   L'avviso non blocca piu l'attivazione delle push.
 
 - [ ] Site URL OneSignal corretto e App ID corrispondente.
 - [ ] APP_BASE_URL corretto e nuovo deploy Cloudflare completato.
