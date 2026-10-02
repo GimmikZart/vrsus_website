@@ -7,15 +7,127 @@ export type NotificationPreferences =
 
 export function useMyNotifications() {
   const client = useSupabaseClient<Database>()
-  return useAsyncData('my-notifications', async () => {
-    const { data, error } = await client
-      .from('notifications')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50)
-    if (error) throw error
-    return data ?? []
-  })
+  const user = useSupabaseUser()
+  return useAsyncData(
+    () => `my-notifications-${user.value?.sub ?? 'guest'}`,
+    async () => {
+      if (!user.value?.sub) return []
+      const { data, error } = await client
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.value.sub)
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (error) throw error
+      return data ?? []
+    },
+  )
+}
+
+export function useUnreadNotificationCount() {
+  const client = useSupabaseClient<Database>()
+  const user = useSupabaseUser()
+  return useAsyncData(
+    () => `my-unread-notifications-${user.value?.sub ?? 'guest'}`,
+    async () => {
+      if (!user.value?.sub) return 0
+      const { count, error } = await client
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.value.sub)
+        .is('read_at', null)
+      if (error) throw error
+      return count ?? 0
+    },
+    { lazy: true, default: () => 0 },
+  )
+}
+
+export function useNotificationRealtime() {
+  const client = useSupabaseClient<Database>()
+  const user = useSupabaseUser()
+  const { data: unreadCount, refresh: refreshCount } =
+    useUnreadNotificationCount()
+
+  async function refresh() {
+    await Promise.all([
+      refreshNuxtData(`my-notifications-${user.value?.sub ?? 'guest'}`),
+      refreshCount(),
+    ])
+  }
+
+  if (import.meta.client) {
+    let channel: ReturnType<typeof client.channel> | null = null
+    let stopWatching: (() => void) | null = null
+    let connectVersion = 0
+    const connect = async (userId?: string) => {
+      const version = ++connectVersion
+      if (channel) {
+        void client.removeChannel(channel)
+        channel = null
+      }
+      if (!userId) return
+      const { data: sessionData } = await client.auth.getSession()
+      if (
+        !sessionData.session ||
+        sessionData.session.user.id !== userId ||
+        user.value?.sub !== userId ||
+        version !== connectVersion
+      )
+        return
+      await client.realtime.setAuth(sessionData.session.access_token)
+      channel = client
+        .channel(`notifications:${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          () => {
+            void refresh()
+          },
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          () => {
+            void refresh()
+          },
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') void refresh()
+        })
+    }
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refresh()
+    }
+    onMounted(() => {
+      stopWatching = watch(
+        () => user.value?.sub,
+        (userId) => {
+          void connect(userId).catch(() => undefined)
+        },
+        { immediate: true },
+      )
+      document.addEventListener('visibilitychange', onVisible)
+    })
+    onUnmounted(() => {
+      connectVersion += 1
+      stopWatching?.()
+      document.removeEventListener('visibilitychange', onVisible)
+      if (channel) void client.removeChannel(channel)
+    })
+  }
+
+  return { unreadCount, refresh }
 }
 
 export async function markNotificationRead(notificationId: string) {
@@ -39,14 +151,20 @@ export async function markAllNotificationsRead(notificationIds: string[]) {
 
 export function useNotificationPreferences() {
   const client = useSupabaseClient<Database>()
-  return useAsyncData('my-notification-preferences', async () => {
-    const { data, error } = await client
-      .from('notification_preferences')
-      .select('*')
-      .maybeSingle()
-    if (error) throw error
-    return data
-  })
+  const user = useSupabaseUser()
+  return useAsyncData(
+    () => `my-notification-preferences-${user.value?.sub ?? 'guest'}`,
+    async () => {
+      if (!user.value?.sub) return null
+      const { data, error } = await client
+        .from('notification_preferences')
+        .select('*')
+        .eq('user_id', user.value.sub)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+  )
 }
 
 export async function updateNotificationPreferences(

@@ -1,7 +1,7 @@
 import { createError, getRouterParam } from 'h3'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '~/types/database.types'
-import { sendOneSignalPush } from '~~/server/utils/push-provider'
+import { dispatchStoredNotification } from '~~/server/utils/notification-dispatch'
 
 // Avvio dell evento: passaggio in modalita live e avviso agli iscritti.
 //
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
   const title = 'Evento iniziato'
   const message = `${current.title} e appena cominciato. Ti aspettiamo in sede.`
 
-  const { error: notificationsError } = await client
+  const { data: notifications, error: notificationsError } = await client
     .from('notifications')
     .insert(
       userIds.map((userId) => ({
@@ -71,6 +71,7 @@ export default defineEventHandler(async (event) => {
         metadata: { event_id: eventId },
       })),
     )
+    .select('id')
 
   if (notificationsError) {
     // L evento e gia live: l avviso mancato non deve annullare l avvio, ma
@@ -84,12 +85,20 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const push = await sendOneSignalPush(event, userIds, {
-    title,
-    message,
-    actionUrl: '/app',
-    data: { event_id: eventId },
-  })
+  const push = []
+  for (const notification of notifications ?? []) {
+    try {
+      push.push(await dispatchStoredNotification(event, notification.id))
+    } catch {
+      push.push({
+        configured: false,
+        attempted: false,
+        delivered: false,
+        recipientCount: 0,
+        error: 'PUSH_DISPATCH_FAILED',
+      })
+    }
+  }
 
   return { id: eventId, status: 'running', notified: userIds.length, push }
 })

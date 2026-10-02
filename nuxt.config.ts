@@ -38,6 +38,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     oneSignalRestApiKey: process.env.ONESIGNAL_REST_API_KEY,
+    notificationWebhookSecret: process.env.NOTIFICATION_WEBHOOK_SECRET,
     public: {
       appEnv: process.env.APP_ENV || 'development',
       appBaseUrl: process.env.APP_BASE_URL || 'http://127.0.0.1:3000',

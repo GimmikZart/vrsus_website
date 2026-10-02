@@ -8,10 +8,26 @@ richiesta dal proprietario (dashboard dinamica, scheda utente, scheda torneo
 condivisa, wizard evento, tema scuro dei componenti: DEC-031, DEC-032,
 DEC-033, DEC-035), all'uscita dalla console con le voci di secondo piano in
 colonna (DEC-040), alla tessera ARCI (DEC-041), alla riorganizzazione dell'app
-del cliente (DEC-042) e al dominio ranking (DEC-043). Non restano attivita
-implementative bloccanti.
+del cliente (DEC-042) e al dominio ranking (DEC-043). La logica notifiche e
+pronta in DEV, ma l'attivazione del provider e il test QUALITY richiedono
+intervento sugli account esterni.
 
 ## Prossima attivita prioritaria
+
+**USER ACTION REQUIRED — attivare e provare le notifiche in QUALITY.**
+Creare/configurare OneSignal Web Push per l'origine della PWA di test;
+applicare le migration `20261002103000` e `20261002104000` a Supabase QUALITY;
+impostare App ID, REST API Key, `NOTIFICATION_WEBHOOK_SECRET` e `APP_BASE_URL`
+su Cloudflare; configurare il Database Webhook `INSERT` su
+`public.notifications`. Procedura dettagliata in
+`docs/dev/guideline_implementations.md`. Poi eseguire la checklist A/B in
+`docs/dev/guideline_test_features.md`: push sul dispositivo, badge e inbox
+senza refresh, isolamento dell'utente, segna come letto su due browser e
+disattivazione. Criterio di completamento: ricezione verificata su device
+reale e log webhook/OneSignal coerenti. Le verifiche automatiche DEV sono
+PASS (pgTAP 301/301, unit 23/23, lint, typecheck, build `node-server`).
+
+## Verifiche UI precedenti ancora pendenti
 
 Provare nel browser locale, a viewport mobile e con account cliente e admin,
 la nuova shell a quattro sezioni e il percorso torneo → prenotazione evento
@@ -117,17 +133,16 @@ e build.
 3. Prove manuali multiutente secondo `docs/dev/guideline_test_features.md`,
    in particolare le sezioni sulla console dinamica, le schede condivise e il
    wizard evento.
-4. Configurazione OneSignal e separazione QUALITY/PRODUCTION, secondo
-   `docs/dev/guideline_implementations.md`.
+4. Configurazione OneSignal e separazione QUALITY/PRODUCTION, incluso il
+   Database Webhook notifiche, secondo `docs/dev/guideline_implementations.md`.
 
 ## Progettazione aperta
 
-- **Notifiche della serata.** Durante l'evento la pagina Live dice quando tocca
-  a te, ma bisogna aggiornarla a mano. Il proprietario ha chiesto un sistema di
-  notifiche dedicato: va deciso cosa notificare (chiamata alla partita, una
-  partita prima, apertura del check-in del torneo), su quale canale (inbox
-  interna, push OneSignal) e con quale frequenza. Il calcolo di "quante partite
-  mancano" e gia isolato in `shared/utils/live-day.ts` e riutilizzabile.
+- **Promemoria preventivi della serata.** La chiamata alla partita genera ora
+  inbox Realtime e push (quando OneSignal e configurato). Restano da decidere
+  eventuali avvisi "una partita prima" e apertura check-in, con frequenza e
+  regole anti-duplicato. Il calcolo di "quante partite mancano" e gia in
+  `shared/utils/live-day.ts`.
 
 ## Piccoli interventi individuati e non ancora fatti
 

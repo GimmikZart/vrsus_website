@@ -1,5 +1,21 @@
 # Current Project State
 
+## Notifiche — aggiornamento 2026-10-02
+
+L'inbox e collegata alla toolbar con badge non lette per utente e refresh via
+Supabase Realtime, senza ricarica pagina. Publication, RLS e guardia contro
+la riassociazione di una sottoscrizione push attiva a un altro account sono
+applicate nel database DEV locale. Il worker OneSignal separato e l'endpoint
+protetto per il Database Webhook sono implementati. Gli invii espliciti usano
+la stessa chiave di idempotenza del webhook. Le credenziali OneSignal non sono
+presenti in `.env`: **push reali e prova su dispositivo non ancora
+verificati**. USER ACTION REQUIRED: configurare OneSignal QUALITY e DEV,
+variabili e webhook Supabase secondo `docs/dev/guideline_implementations.md`;
+applicare le migration sul Supabase QUALITY prima del test. Verifiche locali:
+pgTAP 301/301, Realtime live con due account, unit 23/23, lint, typecheck e
+build `node-server`/Cloudflare Pages PASS.
+Avanzamento stimato progetto: 90%.
+
 ## Stato sintetico
 
 La riorganizzazione V2 descritta in `docs/technical/VRSUS_APP_SPEC_V2.md` e
@@ -196,7 +212,8 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
 - L'ambiente locale e stato ricostruito su PostgreSQL 17: i sedici utenti
   dimostrativi e i dati creati a mano non ci sono piu. Backup del vecchio
   database in `supabase/.temp/`.
-- Configurazione OneSignal e separazione QUALITY/PRODUCTION.
+- Configurazione OneSignal e Database Webhook in QUALITY/PRODUCTION; test push
+  e Realtime su due account e dispositivo fisico ancora pendente.
 - Il pannello ARCI del check-in non e stato provato a schermo: serve un QR
   reale. La RPC `check_in_booking` che lo alimenta e coperta dai test pgTAP.
 - Non esiste ancora una registrazione sul posto per chi arriva senza
@@ -228,8 +245,9 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
 
 - I Punti VRSUS oggi arrivano solo dai tornei: la parte "punti fedelta"
   (partecipazione, passaparola) e da progettare.
-- Le notifiche sul proprio turno durante la serata non ci sono: la pagina Live
-  va aggiornata a mano con il comando in alto.
+- La chiamata giocatori genera gia una notifica personale e ora arriva in
+  Realtime nell'inbox. I promemoria preventivi ("una partita prima") non sono
+  ancora implementati; la pagina Live va aggiornata a mano per altri stati.
 
 ## Ultimo aggiornamento
 

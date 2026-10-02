@@ -209,6 +209,81 @@ inventare credenziali di progetti remoti, provider push, DNS o secret manager.
 - [ ] 7. Eseguire la suite manuale QUALITY, inclusi installazione PWA,
       fotocamera/QR, test multiutente e verifica privacy.
 
+### Attivazione completa delle notifiche (2026-10-02)
+
+L'inbox funziona senza OneSignal. Per ricevere **ogni** nuova riga di
+`public.notifications` anche come push occorrono l'app OneSignal, le variabili
+Cloudflare e un Database Webhook Supabase. Le notifiche di prenotazione e
+iscrizione sono create da trigger SQL: senza il webhook arrivano nell'inbox ma
+non possono avviare da sole una chiamata HTTP a OneSignal. Il codice del sito
+e la migration sono gia preparati; i valori seguenti appartengono ai rispettivi
+account esterni e devono essere inseriti dal proprietario.
+
+1. In OneSignal creare un'app **Web Push QUALITY** con Site URL uguale
+   all'origine HTTPS esatta della PWA di test (per esempio
+   `https://vrsus-website.pages.dev`, senza percorso). In **Settings → Keys & IDs**
+   copiare App ID e REST API Key. Usare app separate per QUALITY e PRODUCTION,
+   cosi un test non raggiunge dispositivi reali. Per DEV locale creare una terza
+   app riferita all'origine locale effettivamente aperta nel browser.
+2. Applicare sul Supabase QUALITY le migration ancora pendenti, comprese
+   `20261002103000_notifications_realtime.sql` e
+   `20261002104000_push_subscription_owner_guard.sql`, usando il normale
+   workflow `supabase db push` verso il progetto esplicitamente collegato.
+   Non usare `db reset` sul progetto remoto. Controllare in **Database →
+   Publications → supabase_realtime** che `public.notifications` sia presente.
+3. In Cloudflare Pages, impostare per l'ambiente di test e ridistribuire:
+   `NUXT_PUBLIC_ONESIGNAL_APP_ID` = App ID (**PUBLIC**),
+   `ONESIGNAL_REST_API_KEY` = REST API Key (**SERVER-ONLY / SECRET**),
+   `NOTIFICATION_WEBHOOK_SECRET` = stringa casuale lunga almeno 32 caratteri
+   (**SECRET**), `APP_BASE_URL` = origine HTTPS della PWA (**PUBLIC**).
+   Inserire i secret nelle variabili protette, mai nel repository. Verificare
+   che `https://<origine>/onesignal/OneSignalSDKWorker.js` restituisca
+   JavaScript; il worker ha uno scope separato da quello offline della PWA.
+4. In **Supabase QUALITY → Database → Webhooks**, creare un solo webhook
+   `notifications_push`: tabella `public.notifications`, evento **INSERT**,
+   metodo **POST**, URL
+   `https://<origine>/api/notifications/webhook`, header
+   `Content-Type: application/json` e header
+   `x-vrsus-webhook-secret` con lo stesso secret di Cloudflare. Il payload
+   standard di Supabase include `record.id`; il server rilegge la riga dal DB
+   e non si fida di titolo, destinatario o testo nel payload. Limitare
+   l'accesso amministrativo al webhook, perche il suo header contiene un
+   secret. In locale l'URL del webhook e
+   `http://host.docker.internal:3000/api/notifications/webhook` (il database
+   e in Docker, quindi `localhost` indicherebbe il container).
+5. Con due account cliente distinti, aprire la PWA QUALITY sul dispositivo A,
+   entrare in `/app/notifiche`, premere **Abilita push** e accettare il
+   permesso. Su iPhone/iPad aprire la PWA installata dalla schermata Home
+   (iOS/iPadOS 16.4 o successivo): la scheda Safari non riceve web push come
+   una PWA installata. Verificare in OneSignal **Audience → Subscriptions** che il
+   dispositivo sia `Subscribed`. Nel Supabase QUALITY verificare che
+   `push_subscriptions.user_id` sia l'ID dell'account A e
+   `notification_preferences.push_enabled = true`. Non copiare qui gli ID.
+6. Da una console con ruolo `tournament_admin`/`admin`, chiamare una partita
+   che includa A e non B, oppure creare un evento di prova che produca una
+   notifica. Lasciare la PWA aperta per vedere il badge e la inbox aggiornarsi
+   senza refresh; poi metterla in background per verificare la push. B non
+   deve ricevere nulla. Controllare **Database → Webhooks → Logs** in Supabase
+   e **Delivery → Sent Messages** in OneSignal se la push non arriva. Una
+   risposta `configured: false` indica credenziali mancanti sul server;
+   `recipientCount: 0` indica preferenza/dispositivo non attivo.
+7. Premere **Segna tutte come lette** e verificare che il badge sparisca anche
+   su un secondo dispositivo collegato allo stesso utente. Poi provare
+   **Disabilita push** e **Esci**: il device non deve ricevere nuove push.
+
+Per DEV locale usare le stesse tre variabili in `.env` non committato,
+aggiungendo `NOTIFICATION_WEBHOOK_SECRET`; riavviare Nuxt dopo la modifica.
+L'origine OneSignal deve coincidere con quella usata dal browser. La push su
+un dispositivo remoto richiede la PWA HTTPS di QUALITY; `127.0.0.1` non e
+raggiungibile dal telefono. La URL del worker e
+`/onesignal/OneSignalSDKWorker.js` in tutti gli ambienti.
+
+- [ ] OneSignal QUALITY creato con origine corretta; App ID e API Key recuperati.
+- [ ] Migration applicate su Supabase QUALITY e publication verificata.
+- [ ] Variabili Cloudflare impostate, deploy terminato e worker raggiungibile.
+- [ ] Webhook INSERT protetto configurato e chiamate riuscite visibili nei log.
+- [ ] Test A/B su push, badge Realtime, inbox e lettura completato.
+
 ### Verifica
 
 La configurazione è completa solo quando i checklist di deploy e test QUALITY

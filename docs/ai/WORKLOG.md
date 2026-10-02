@@ -1554,3 +1554,38 @@ sessione, gestisce errori e timeout, e il gesto vive alla radice Nuxt per tutte
 le rotte (DEC-057). Test mobile simulato su login: gesto visibile, errore di
 rete recuperabile e accesso positivo con richiesta alla rotta protetta.
 Resta da riprovare sul dispositivo Apple reale.
+
+## 2026-10-02 — Notifiche per utente, Realtime e integrazione push
+
+### Lavoro svolto
+
+- Collegati inbox e badge toolbar alla stessa fonte per utente; Supabase
+  Realtime aggiorna i dati senza refresh e riallinea dopo riconnessione.
+- Aggiunti worker OneSignal separato, endpoint webhook autenticato, invio
+  idempotente per notifica e rispetto delle preferenze push.
+- Protette le subscription attive da riassociazione a un altro account;
+  gestita la revoca del dispositivo al logout.
+- Documentata l'attivazione esterna necessaria in QUALITY e DEV.
+
+### File principali modificati
+
+- `app/composables/useNotifications.ts`, `usePushNotifications.ts`
+- `app/components/ui/VrsusAppToolbar.vue`, `app/pages/app/notifiche.vue`
+- `server/utils/push-provider.ts`, `notification-dispatch.ts`
+- `server/api/notifications/webhook.post.ts`, `dispatch.post.ts`
+- `supabase/migrations/20261002103000_notifications_realtime.sql`
+- `supabase/migrations/20261002104000_push_subscription_owner_guard.sql`
+
+### Verifiche
+
+- Migration DEV locale e pgTAP 301/301 → PASS.
+- Vitest 23/23, lint, typecheck e build `node-server` → PASS.
+- Test Realtime live con due account usa e getta → PASS (INSERT, UPDATE,
+  isolamento utente).
+- Build Cloudflare Pages e presenza del worker OneSignal nel bundle → PASS.
+- OneSignal, webhook e prova dispositivo → pendenti per configurazione account.
+
+### Stato finale della sessione
+
+Implementazione locale pronta; l'attivazione esterna e la prova QUALITY sono
+la prossima attivita.

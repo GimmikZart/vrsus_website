@@ -63,6 +63,13 @@ export function useVrsusAuth() {
   }
 
   async function signOut() {
+    // A shared device must stop receiving this account's push before the
+    // Supabase session is removed and the subscription can no longer be edited.
+    try {
+      await usePushNotifications().revokeCurrentDevice()
+    } catch {
+      // A provider outage must not lock the user into their account.
+    }
     const { error } = await client.auth.signOut()
 
     if (error) {

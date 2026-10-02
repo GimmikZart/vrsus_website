@@ -1697,3 +1697,33 @@ gesto non esisteva. Inoltre la navigazione SPA partiva subito dopo il login,
 mentre il modulo Supabase aggiorna `useSupabaseUser` in modo asincrono tramite
 `getClaims`; la guardia della pagina protetta poteva ancora vedere l'utente
 come anonimo. Il proprietario ha riscontrato entrambi i problemi su iPhone.
+
+## DEC-058 — Notifiche per utente con Realtime e webhook push
+
+**Status:** Accepted
+
+### Decisione
+
+`notifications` resta la fonte persistente, protetta da RLS per utente e
+pubblicata su Supabase Realtime. Toolbar e inbox aggiornano conteggio e lista
+agli eventi INSERT/UPDATE, con riallineamento alla riconnessione e al ritorno
+in primo piano. La push parte da un Database Webhook Supabase su INSERT verso
+un endpoint Nitro protetto da secret; l'endpoint rilegge la notifica dal DB e
+usa l'adapter OneSignal di DEC-013. Gli invii espliciti usano lo stesso
+adapter. L'ID della notifica e la chiave di idempotenza presso OneSignal,
+cosi webhook e invio esplicito non producono due push. Il worker OneSignal
+usa `/onesignal/` come scope separato dal worker offline della PWA.
+
+### Motivazione
+
+Le notifiche di prenotazione e iscrizione nascono in trigger SQL e non
+attraversano sempre una route server. Il webhook copre tutte le nuove righe
+senza spostare la logica business. Un errore push non elimina la riga inbox.
+RLS, filtro per `user_id` e guardia sulle sottoscrizioni separano gli account.
+
+### Conseguenze
+
+Ogni ambiente richiede una propria app OneSignal, App ID, REST API Key,
+webhook secret e Database Webhook. Senza configurazione, inbox e badge
+Realtime funzionano ma la push resta disabilitata. La prova su dispositivi
+reali resta un test QUALITY.

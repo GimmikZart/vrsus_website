@@ -1,5 +1,6 @@
 <script setup lang="ts">
 defineProps<{ title: string; home: string }>()
+const { unreadCount } = useNotificationRealtime()
 </script>
 
 <template>
@@ -30,11 +31,21 @@ defineProps<{ title: string; home: string }>()
       </p>
       <NuxtLink
         to="/app/notifiche"
-        class="grid size-10 place-items-center justify-self-end rounded-xl text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-        aria-label="Apri notifiche"
+        class="relative grid size-10 place-items-center justify-self-end rounded-xl text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+        :aria-label="
+          unreadCount
+            ? `Apri notifiche, ${unreadCount} non lette`
+            : 'Apri notifiche'
+        "
         :aria-current="title === 'Notifiche' ? 'page' : undefined"
       >
         <UIcon name="i-lucide-bell" class="size-5" />
+        <span
+          v-if="unreadCount"
+          class="bg-brand-red-500 absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-bold text-white"
+          aria-hidden="true"
+          >{{ unreadCount > 99 ? '99+' : unreadCount }}</span
+        >
       </NuxtLink>
     </div>
   </header>

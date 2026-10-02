@@ -2,6 +2,25 @@
 
 Ultimo aggiornamento: 2026-10-02
 
+## Verifica 2026-10-02 — notifiche Realtime e predisposizione push
+
+- Migration `20261002103000` e `20261002104000` applicate al database DEV
+  locale con `supabase migration up --local`: PASS.
+- `supabase test db --local`: PASS, 301/301 pgTAP su 14 file, compresi
+  publication Realtime, isolamento inbox per utente, aggiornamento consentito
+  solo su `read_at` e divieto di riassociare un device push attivo.
+- ESLint sui file applicativi modificati: PASS. `nuxt typecheck`: PASS con il
+  warning noto Volar/vue-router. Vitest: PASS, 23/23. Build `node-server`:
+  PASS alla ripetizione con accesso al symlink `C:\Users\User`; prima
+  esecuzione bloccata dal sandbox (`EPERM readlink`).
+- Push reale, webhook esterno e aggiornamento UI su due browser: **NON
+  ESEGUITI**, credenziali OneSignal e configurazione QUALITY assenti.
+- Integrazione Realtime locale con due account usa e getta: INSERT e UPDATE
+  arrivati in tempo reale solo all'account destinatario, lettura cross-user
+  negata; `node tests/integration/notification-realtime.mjs` → PASS.
+- Build `cloudflare_pages` → PASS; il bundle include
+  `/onesignal/OneSignalSDKWorker.js` e la route webhook.
+
 ## Verifica 2026-10-02 — shell e azioni contestuali
 
 - Toolbar, contenuto scrollabile, float menu e navbar implementati nei due

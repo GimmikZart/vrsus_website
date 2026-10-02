@@ -201,7 +201,7 @@ body {
   top: calc(3.5rem + env(safe-area-inset-top, 0px));
   margin-inline: -1rem;
   padding: 0.5rem 1rem;
-  background: rgb(8 9 13 / 92%);
+  background: none;
   backdrop-filter: blur(12px);
 }
 

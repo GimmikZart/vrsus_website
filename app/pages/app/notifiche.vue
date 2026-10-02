@@ -10,14 +10,18 @@ const {
   error,
   refresh,
 } = await useMyNotifications()
-const { data: preferences, refresh: refreshPreferences } =
-  await useNotificationPreferences()
 const push = usePushNotifications()
 const pushPending = push.pending
 const pushConfigured = push.configured
+const pushEnabled = push.enabledOnThisDevice
 const pending = ref<string | null>(null)
 const allPending = ref(false)
 const pushMessage = ref('')
+const { refresh: refreshUnreadCount } = useUnreadNotificationCount()
+
+onMounted(() => {
+  void push.refreshDeviceStatus()
+})
 
 const unread = computed(() =>
   (notifications.value ?? []).filter((item) => !item.read_at),
@@ -28,7 +32,7 @@ async function markRead(notification: UserNotification) {
   pending.value = notification.id
   try {
     await markNotificationRead(notification.id)
-    await refresh()
+    await Promise.all([refresh(), refreshUnreadCount()])
   } finally {
     pending.value = null
   }
@@ -38,7 +42,7 @@ async function markAllRead() {
   allPending.value = true
   try {
     await markAllNotificationsRead(unread.value.map((item) => item.id))
-    await refresh()
+    await Promise.all([refresh(), refreshUnreadCount()])
   } finally {
     allPending.value = false
   }
@@ -49,12 +53,13 @@ async function enablePush() {
   try {
     await push.enable()
     pushMessage.value = 'Notifiche push abilitate su questo dispositivo.'
-    await refreshPreferences()
   } catch (caughtError) {
     const code = String((caughtError as { message?: string }).message ?? '')
     pushMessage.value = code.includes('PUSH_NOT_CONFIGURED')
       ? 'Le notifiche push saranno disponibili dopo la configurazione OneSignal.'
-      : 'Non è stato possibile abilitare le notifiche push.'
+      : code.includes('PUSH_PERMISSION_NOT_GRANTED')
+        ? 'Permesso notifiche negato: abilitalo nelle impostazioni del browser o del dispositivo.'
+        : 'Non è stato possibile abilitare le notifiche push.'
   }
 }
 
@@ -62,8 +67,7 @@ async function disablePush() {
   pushMessage.value = ''
   try {
     await push.disable()
-    pushMessage.value = 'Notifiche push disabilitate su questo dispositivo.'
-    await refreshPreferences()
+    pushMessage.value = 'Notifiche push disabilitate per questo account.'
   } catch {
     pushMessage.value = 'Non è stato possibile disabilitare le notifiche push.'
   }
@@ -119,7 +123,7 @@ useSeoMeta({ title: 'Notifiche — VRSUS', robots: 'noindex, nofollow' })
             </p>
           </div>
           <UButton
-            v-if="!preferences?.push_enabled"
+            v-if="!pushEnabled"
             :loading="pushPending"
             :disabled="!pushConfigured"
             color="secondary"

@@ -545,10 +545,14 @@ async function callMatch() {
           )
         : []
       if (notificationIds.length) {
-        await $fetch('/api/notifications/dispatch', {
-          method: 'POST',
-          body: { notificationIds },
-        })
+        try {
+          await $fetch('/api/notifications/dispatch', {
+            method: 'POST',
+            body: { notificationIds },
+          })
+        } catch {
+          // The match is already called and inbox rows are committed.
+        }
       }
     },
     'Giocatori chiamati.',

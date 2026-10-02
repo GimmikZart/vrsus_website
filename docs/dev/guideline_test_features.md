@@ -533,20 +533,22 @@ prenotazioni, check-in e risultati restano esplicitamente online-only.
 
 ## Inbox e notifiche push
 
-**Stato:** READY TO TEST in DEV; push effettive solo dopo configurazione
-OneSignal.
+**Stato:** inbox e badge Realtime verificabili in DEV; push effettive dopo
+configurazione OneSignal e webhook come in `guideline_implementations.md`.
 
 ### Prerequisiti
 
 - Supabase DEV locale attivo e un account utente autenticato.
 - Per il test push, `NUXT_PUBLIC_ONESIGNAL_APP_ID` e
-  `ONESIGNAL_REST_API_KEY` configurati nell'ambiente locale e un browser che
-  supporti le notifiche web.
+  `ONESIGNAL_REST_API_KEY`, `NOTIFICATION_WEBHOOK_SECRET` e il Database
+  Webhook configurati nello stesso ambiente; browser che supporti le notifiche.
+- Due account cliente A e B e una console tournament admin/admin. Per la prova
+  Realtime aprire A anche in un secondo browser/dispositivo.
 
 ### Procedura di test
 
-- [ ] 1. Aprire `/app/notifiche` e verificare la presenza delle notifiche
-      applicative ricevute e del contatore non lette.
+- [ ] 1. Aprire `/app/notifiche` come A e verificare inbox e contatore sopra
+      la campana della toolbar. Annotare: <!-- commenti -->
 - [ ] 2. Abilitare le notifiche push dalle impostazioni, concedere il permesso
       del browser e verificare che la sottoscrizione del dispositivo venga
       salvata senza esporre la REST API key al client.
@@ -555,11 +557,15 @@ OneSignal.
 - [ ] 4. Generare una chiamata giocatori da un torneo e verificare che il record
       inbox venga creato anche quando OneSignal non è configurato o restituisce
       errore.
-- [ ] 5. Verificare che una chiamata indirizzata a due giocatori non compaia
-      nell'inbox degli altri utenti.
-- [ ] 6. Con notifiche non lette, verificare `Segna tutte come lette` nel
+- [ ] 5. Mantenere aperta la PWA di A e generare una nuova notifica per A:
+      badge e nuova riga devono apparire senza refresh. Mettere poi la PWA in
+      background e ripetere per verificare la push. Annotare: <!-- commenti -->
+- [ ] 6. Verificare che la notifica di A non compaia nell'inbox di B e che B
+      non riceva push. Annotare: <!-- commenti -->
+- [ ] 7. Con notifiche non lette, verificare `Segna tutte come lette` nel
       float menu e la card push in alto. Premere il comando: i segni di non
-      letto spariscono e il comando non compare piu.
+      letto spariscono, il badge torna a zero anche nel secondo browser di A
+      e il comando non compare piu. Annotare: <!-- commenti -->
 
 ### Risultato atteso
 
