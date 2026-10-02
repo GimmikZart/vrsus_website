@@ -89,22 +89,30 @@ async function sendNotification() {
   sendError.value = ''
   sendSuccess.value = ''
   try {
-    const result = await $fetch<{ notified: number }>(
-      '/api/admin/manual-notifications',
-      {
-        method: 'POST',
-        body: {
-          scope: scope.value,
-          eventId: scope.value === 'live_event' ? eventId.value : null,
-          message: notificationText.value.trim(),
-          dispatchId: dispatchId.value,
-        },
+    const result = await $fetch<{
+      notified: number
+      push: {
+        attemptedDevices: number
+        acceptedDevices: number
+        errors: string[]
+      }
+    }>('/api/admin/manual-notifications', {
+      method: 'POST',
+      body: {
+        scope: scope.value,
+        eventId: scope.value === 'live_event' ? eventId.value : null,
+        message: notificationText.value.trim(),
+        dispatchId: dispatchId.value,
       },
-    )
-    notificationText.value = ''
-    dispatchId.value = ''
-    await nextTick()
-    sendSuccess.value = `Notifica inviata a ${result.notified} utenti.`
+    })
+    if (result.push.errors.length) {
+      sendError.value = `Notifica creata per ${result.notified} utenti, ma la push non è riuscita (${result.push.errors[0]}). Riprova per ritentare la push senza creare doppioni.`
+    } else {
+      notificationText.value = ''
+      dispatchId.value = ''
+      await nextTick()
+      sendSuccess.value = `Notifica inviata a ${result.notified} utenti. OneSignal ha accettato la push per ${result.push.acceptedDevices} dispositivi.`
+    }
   } catch (error) {
     sendError.value =
       (error as { statusCode?: number })?.statusCode === 409

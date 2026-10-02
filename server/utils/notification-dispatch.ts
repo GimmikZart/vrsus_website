@@ -10,11 +10,13 @@ export async function dispatchStoredNotification(
   const client = serverSupabaseServiceRole<Database>(event)
   const { data: notification, error } = await client
     .from('notifications')
-    .select('id, user_id, title, message, action_url, metadata')
+    .select('id, user_id, type, title, message, action_url, metadata')
     .eq('id', notificationId)
     .maybeSingle()
   if (error) throw error
   if (!notification) return null
+  // Manual sends are dispatched in batches by the authenticated admin route.
+  if (notification.type === 'manual') return null
 
   const result = await sendOneSignalPush(event, [notification.user_id], {
     title: notification.title,

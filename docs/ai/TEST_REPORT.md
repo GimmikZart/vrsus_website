@@ -2,6 +2,19 @@
 
 Ultimo aggiornamento: 2026-10-03
 
+## Verifica 2026-10-03 — invio push manuale diretto
+
+- Segnalazione del proprietario su QUALITY: push di benvenuto ricevuta,
+  sottoscrizione attiva; notifiche admin presenti in inbox e badge, senza push.
+- Corretto l'adapter: HTTP 200 OneSignal senza `id` non e piu considerato
+  successo. La route admin invia ora gruppi di push direttamente dopo la RPC;
+  il webhook ignora le sole notifiche manuali per evitare doppioni.
+- ESLint dei file modificati, typecheck e build Cloudflare Pages: PASS.
+  Parser risposta OneSignal: 3/3 unit test PASS. Typecheck con warning noto
+  Volar/vue-router.
+- Consegna su dispositivo dopo il deploy e log del webhook QUALITY: **NON
+  VERIFICATI**.
+
 ## Verifica 2026-10-03 — controllo origine push
 
 - Riprodotto nel codice l'errore `PUSH_ORIGIN_MISMATCH`: il confronto fra

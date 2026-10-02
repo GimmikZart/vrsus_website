@@ -600,6 +600,13 @@ configurazione OneSignal e webhook come in `guideline_implementations.md`.
       float menu e la card push in alto. Premere il comando: i segni di non
       letto spariscono, il badge torna a zero anche nel secondo browser di A
       e il comando non compare piu. Annotare: <!-- commenti -->
+- [ ] 8. Come admin, inviare da `/admin/altro` una notifica a tutti gli
+      utenti. Verificare che la risposta indichi quanti dispositivi OneSignal
+      ha accettato, che A riceva la push con la PWA in background e che B
+      riceva solo se ha abilitato le push. Annotare: <!-- commenti -->
+- [ ] 9. Se la pagina indica un errore push, premere di nuovo senza modificare
+      il testo: la notifica in app non deve duplicarsi. Annotare l'errore e
+      consultare `guideline_implementations.md` per i log. <!-- commenti -->
 
 ### Risultato atteso
 

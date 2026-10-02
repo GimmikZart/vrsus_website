@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '~/types/database.types'
+import { parseOneSignalCreateResponse } from './onesignal-response'
 
 type PushMessage = {
   title: string
@@ -139,7 +140,7 @@ export async function sendOneSignalPush(
   let transportError = ''
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      response = await fetch('https://api.onesignal.com/notifications?c=push', {
+      response = await fetch('https://api.onesignal.com/notifications', {
         method: 'POST',
         headers: {
           Authorization: `Key ${apiKey}`,
@@ -170,6 +171,17 @@ export async function sendOneSignalPush(
       delivered: false,
       recipientCount: subscriptionIds.length,
       error: `ONESIGNAL_${response?.status ?? 'REQUEST_FAILED'}:${(responseText || transportError).slice(0, 240)}`,
+    }
+  }
+
+  const providerResult = parseOneSignalCreateResponse(responseText)
+  if (!providerResult.accepted) {
+    return {
+      configured: true,
+      attempted: true,
+      delivered: false,
+      recipientCount: subscriptionIds.length,
+      error: providerResult.error,
     }
   }
 

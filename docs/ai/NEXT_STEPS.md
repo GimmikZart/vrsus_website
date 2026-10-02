@@ -14,7 +14,17 @@ intervento sugli account esterni.
 
 ## Prossima attivita prioritaria
 
-**USER ACTION REQUIRED — attivare e provare le notifiche in QUALITY.**
+**USER ACTION REQUIRED — distribuire e provare la correzione push in QUALITY.**
+La sottoscrizione OneSignal e la push di benvenuto funzionano; inbox e badge
+si aggiornano. Dopo il deploy della route admin aggiornata, inviare una nuova
+notifica da `/admin/altro` e leggere il messaggio: deve indicare quanti
+dispositivi OneSignal ha accettato. Se indica errore, non modificare il testo
+e premere di nuovo per ritentare la sola push senza duplicare inbox.
+Provare con PWA in background. Il webhook resta necessario per notifiche
+diverse da quelle manuali; confrontare le risposte in `net._http_response`
+e i messaggi nel dashboard OneSignal.
+
+Configurazione da verificare se il risultato resta negativo:
 Configurare **Settings → Push & In-App → Web** dell'app OneSignal come
 **Custom Code**, con Site URL `https://vrsus-app.pages.dev`; impostare in
 Cloudflare `APP_BASE_URL=https://vrsus-app.pages.dev` e nel webhook Supabase

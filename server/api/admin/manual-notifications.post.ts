@@ -1,4 +1,5 @@
 import { createError, readBody } from 'h3'
+import { dispatchManualNotificationPush } from '../../utils/manual-notification-push'
 
 type Payload = {
   scope?: 'all' | 'live_event'
@@ -48,5 +49,15 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return { notified: data }
+  const push = await dispatchManualNotificationPush(event, body.dispatchId)
+  if (push.errors.length) {
+    // eslint-disable-next-line no-console
+    console.warn('[vrsus] Manual notification push did not complete', {
+      dispatchId: body.dispatchId,
+      errors: push.errors,
+      attemptedDevices: push.attemptedDevices,
+    })
+  }
+
+  return { notified: data, push }
 })

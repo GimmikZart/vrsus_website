@@ -1,5 +1,20 @@
 # Current Project State
 
+## Push manuali QUALITY — correzione 2026-10-03
+
+Il proprietario ha verificato che la sottoscrizione OneSignal e la push di
+benvenuto funzionano; le notifiche inviate da admin arrivano in inbox e sul
+badge, ma non come push. La route admin ora invia direttamente tramite
+OneSignal le push relative alle righe create dalla RPC e restituisce il
+numero di dispositivi accettati o l'errore. Il webhook ignora solo le righe
+`manual` e resta necessario per gli altri tipi. L'adapter verifica che la
+risposta OneSignal contenga un ID messaggio: HTTP 200 da solo non basta.
+ESLint, typecheck, test unitario parser e build Cloudflare Pages PASS.
+**QUALITY con il nuovo codice e consegna effettiva su device ancora da
+verificare**. Il risultato del test admin e i log `net._http_response` di
+Supabase sono stati richiesti al proprietario. Avanzamento stimato progetto:
+92%.
+
 ## Attivazione push — correzione controllo origine 2026-10-03
 
 La versione precedente bloccava Abilita push se `APP_BASE_URL` differiva da
@@ -8,7 +23,8 @@ era troppo rigido: l'attivazione OneSignal usa l'origine della pagina. Ora la
 differenza e mostrata come avviso non bloccante con entrambi i valori, per
 individuare eventuali variabili Cloudflare errate senza impedire il tentativo
 di registrazione. Lint, typecheck e build Cloudflare Pages PASS. Prova su
-dispositivo QUALITY ancora pendente.
+dispositivo QUALITY riuscita per consenso e push di benvenuto; invio
+applicativo ancora da verificare.
 
 ## Push QUALITY — diagnosi 2026-10-02
 
@@ -28,10 +44,10 @@ non e ancora verificato. L'inbox DB gia mostra una notifica di prenotazione.
 utenti con check-in a un evento `running`, testo massimo 300 caratteri,
 anteprima del numero di destinatari e conferma. La RPC crea le notifiche
 personali in una transazione, registra l'audit ed evita duplicati sui retry.
-Migration `20261002105000` applicata solo al DEV locale. Verifiche: pgTAP
-312/312, unit 23/23, lint, typecheck e build `node-server` PASS. Prova UI e
-push QUALITY ancora pendenti. Per usarla su QUALITY occorre applicare la nuova
-migration e distribuire questa versione del codice. Avanzamento stimato: 91%.
+Migration `20261002105000` applicata al DEV locale. Verifiche: pgTAP
+312/312, unit 23/23, lint, typecheck e build `node-server` PASS. La UI e stata
+provata dal proprietario su QUALITY; l'invio push manuale corretto richiede
+ancora il nuovo deploy e la prova sul dispositivo.
 
 ## Notifiche — aggiornamento 2026-10-02
 
@@ -41,8 +57,8 @@ la riassociazione di una sottoscrizione push attiva a un altro account sono
 applicate nel database DEV locale. Il worker OneSignal separato e l'endpoint
 protetto per il Database Webhook sono implementati. Gli invii espliciti usano
 la stessa chiave di idempotenza del webhook. Le credenziali OneSignal non sono
-presenti in `.env`: **push reali e prova su dispositivo non ancora
-verificati**. USER ACTION REQUIRED: configurare OneSignal QUALITY e DEV,
+presenti in `.env` locale: **push applicative su dispositivo non ancora
+verificate**. USER ACTION REQUIRED: verificare webhook e OneSignal QUALITY,
 variabili e webhook Supabase secondo `docs/dev/guideline_implementations.md`;
 applicare le migration sul Supabase QUALITY prima del test. Verifiche locali:
 pgTAP 301/301, Realtime live con due account, unit 23/23, lint, typecheck e

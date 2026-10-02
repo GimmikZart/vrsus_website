@@ -1700,7 +1700,7 @@ come anonimo. Il proprietario ha riscontrato entrambi i problemi su iPhone.
 
 ## DEC-058 — Notifiche per utente con Realtime e webhook push
 
-**Status:** Accepted
+**Status:** Superseded by DEC-060 for manual notifications; otherwise Accepted
 
 ### Decisione
 
@@ -1730,7 +1730,7 @@ reali resta un test QUALITY.
 
 ## DEC-059 — Invio manuale con pubblico calcolato nel database
 
-**Status:** Accepted
+**Status:** Superseded by DEC-060 for push dispatch; otherwise Accepted
 
 ### Decisione
 
@@ -1751,3 +1751,31 @@ server. Il registro impedisce duplicati quando la risposta HTTP si perde.
 
 La migration `20261002105000` deve precedere l'uso della nuova vista in ogni
 ambiente. La push richiede la configurazione esterna gia descritta in DEC-058.
+
+## DEC-060 — Invio push manuale diretto con risultato visibile
+
+**Status:** Accepted
+
+### Decisione
+
+La RPC continua a creare in transazione una notifica personale per ogni
+destinatario. Dopo la RPC, la route admin legge quelle righe tramite il UUID di
+invio e invia la push OneSignal in gruppi paginati. Il Database Webhook ignora
+le righe di tipo `manual`, evitando doppioni; resta attivo per le notifiche
+prodotte dagli altri flussi. Ogni gruppo usa una chiave di idempotenza stabile
+nei retry. La risposta admin distingue notifiche in app create, dispositivi
+accettati da OneSignal ed errori push.
+
+### Motivazione
+
+La prova QUALITY ha confermato inbox e badge ma non la consegna delle push
+manuali. L'invio admin dipendeva interamente da un webhook asincrono e la UI
+segnalava successo appena la RPC terminava, senza sapere se OneSignal avesse
+creato un messaggio. La route diretta rende l'esito osservabile e ritentabile.
+
+### Conseguenze
+
+Il webhook resta necessario per prenotazioni, chiamate giocatori e altre
+notifiche generate fuori dalla route admin. Il successo dell'API OneSignal
+significa messaggio accettato, non consegna confermata sul dispositivo: quella
+richiede prova reale. La REST API key deve essere configurata sul server.

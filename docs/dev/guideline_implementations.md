@@ -326,6 +326,40 @@ Per questo ambiente tutti i riferimenti devono usare l'origine
 - [ ] URL webhook corretto e secret header verificato.
 - [ ] Worker pubblico verificato e dispositivo visibile in OneSignal.
 
+### Diagnosi delle push applicative dopo la registrazione (2026-10-03)
+
+La push di benvenuto di OneSignal prova che il browser e iscritto, ma non
+verifica l'invio dal server VRSUS. Dopo il deploy della correzione, un admin
+puo inviare un messaggio da `/admin/altro`: la pagina indica quante notifiche
+in app sono state create e per quanti dispositivi OneSignal ha accettato la
+push. Se appare un errore, premere di nuovo con lo stesso testo: l'UUID di
+invio evita doppioni nell'inbox e nella chiamata OneSignal.
+
+Per le notifiche create da prenotazioni e tornei resta necessario il Database
+Webhook. In **Supabase QUALITY → SQL Editor** si possono vedere le sue ultime
+risposte senza leggere secret:
+
+```sql
+select created, status_code, error_msg,
+       left(content::text, 250) as response
+from net._http_response
+order by created desc
+limit 10;
+```
+
+`401` indica un header secret errato o assente; `404` indica URL errato;
+`503` indica configurazione server mancante; `200` con
+`result.error = ONESIGNAL_NOT_CONFIGURED` indica App ID o REST API Key assenti.
+Se non compare alcuna risposta dopo un nuovo INSERT, verificare che il
+webhook sia abilitato sulla tabella e che `pg_net` stia lavorando. Controllare
+anche in **OneSignal → Messages → Push** se il messaggio API esiste e quanti
+destinatari riporta. Non copiare secret o chiavi nei report di test.
+
+- [ ] Invio manuale mostra un numero di dispositivi accettati coerente.
+- [ ] La push manuale arriva con la PWA in background.
+- [ ] Una notifica da prenotazione o torneo produce una risposta webhook 200 e
+      una push al solo utente destinatario.
+
 ## BETA — deploy su Cloudflare Pages
 
 **Stato:** USER ACTION REQUIRED.

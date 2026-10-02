@@ -1663,3 +1663,31 @@ salvataggio Supabase e consegna push reale.
 
 La correzione e pronta. Verificare i domini mostrati nell'avviso e ritentare
 Abilita push sul dispositivo dopo il deploy.
+
+## 2026-10-03 — Invio push delle notifiche manuali
+
+### Lavoro svolto
+
+- Confermata dall'utente iscrizione push e welcome OneSignal, con inbox e
+  badge in tempo reale ma senza push per gli invii admin.
+- La route admin ora invia i destinatari creati dalla RPC direttamente a
+  OneSignal in gruppi paginati, mostra l'esito e permette retry con UUID
+  stabile. Il webhook lascia gli invii manuali alla route admin.
+- L'adapter distingue HTTP 200 senza ID messaggio da un invio accettato.
+
+### File principali modificati
+
+- `server/api/admin/manual-notifications.post.ts`
+- `server/utils/manual-notification-push.ts`, `server/utils/push-provider.ts`
+- `server/utils/onesignal-response.ts`, `server/utils/notification-dispatch.ts`
+- `app/pages/admin/altro.vue`
+
+### Verifiche
+
+- ESLint, typecheck, build Cloudflare Pages e unit test parser 3/3 PASS.
+- Test effettivo su QUALITY e risposte del webhook: pendenti.
+
+### Stato finale della sessione
+
+Correzione pronta nel repository. Pubblicare e verificare il risultato
+dell'invio admin sul dispositivo e nel pannello OneSignal.
