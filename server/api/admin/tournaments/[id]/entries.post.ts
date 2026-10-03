@@ -9,11 +9,7 @@ import type { Database } from '~/types/database.types'
 // iscrizione fatta dallo staff passa da qui, dove il ruolo viene verificato
 // prima di usare il ruolo di servizio.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, [
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const tournamentId = requireUuid(
     getRouterParam(event, 'id'),

@@ -3,7 +3,7 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '~/types/database.types'
 
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin', 'super_admin'])
+  await requireServerAnyRole(event, ['admin'])
 
   const feedbackId = requireUuid(
     getRouterParam(event, 'id'),

@@ -25,7 +25,7 @@ values
   ('00000000-0000-0000-0000-0000000000aa', 'authenticated', 'authenticated', 'tournament-admin@example.test', 'not-a-real-password', timezone('utc', now()));
 
 insert into public.user_roles (user_id, role_id)
-select '00000000-0000-0000-0000-0000000000aa', id from public.roles where code = 'tournament_admin';
+select '00000000-0000-0000-0000-0000000000aa', id from public.roles where code = 'staff';
 
 -- Chiude una partita facendo vincere chi occupa il primo posto: serve tante
 -- volte e scriverlo per esteso renderebbe illeggibile il test.
@@ -120,7 +120,7 @@ set status = 'registration_closed'
 where id = (select id from tournament_fixture);
 select lives_ok(
   $$select public.generate_tournament_schedule((select id from tournament_fixture))$$,
-  'tournament admin can create a bracket'
+  'staff can create a bracket'
 );
 set local role postgres;
 select is(

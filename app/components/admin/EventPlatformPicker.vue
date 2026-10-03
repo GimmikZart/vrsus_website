@@ -155,6 +155,11 @@ function toggleGame(platformId: string, gameId: string) {
               :disabled="!isSelected(platform.id)"
               @update:model-value="toggleGame(platform.id, game.id)"
             />
+            <UiVrsusEntityImage
+              :src="game.image_path"
+              :alt="game.name"
+              class="size-9 shrink-0 rounded-lg"
+            />
             <span class="truncate">{{ game.name }}</span>
           </label>
         </div>

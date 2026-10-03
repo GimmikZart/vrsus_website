@@ -148,6 +148,12 @@ function dateLabel(value: string) {
   return day && month && year ? `dal ${day}/${month}/${year}` : value
 }
 
+function gameImage(gameId: string | null) {
+  return (
+    (games.value ?? []).find((game) => game.id === gameId)?.image_path ?? null
+  )
+}
+
 const filterChips = computed(() => {
   const chips: { key: FilterKey; label: string }[] = []
   if (filters.platform) {
@@ -310,7 +316,7 @@ useSeoMeta({ title: 'Tornei — VRSUS', robots: 'noindex, nofollow' })
           v-for="tournament in visibleTournaments"
           :key="tournament.id ?? ''"
           :to="'/app/tornei/' + tournament.id"
-          class="block rounded-2xl border p-4 transition-colors"
+          class="flex overflow-hidden rounded-2xl border transition-colors"
           :class="
             isRegistered(tournament.id)
               ? 'border-green-500/50 bg-green-500/[0.06] shadow-[0_0_24px_rgb(34_197_94/12%)]'
@@ -319,44 +325,52 @@ useSeoMeta({ title: 'Tornei — VRSUS', robots: 'noindex, nofollow' })
                 : 'border-brand-red-500/40 bg-brand-red-500/[0.05] shadow-[0_0_24px_rgb(239_51_64/10%)]'
           "
         >
-          <div class="flex flex-wrap items-center gap-2">
-            <span
-              v-if="isRegistered(tournament.id)"
-              class="rounded-full bg-green-500/15 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-green-300 uppercase"
-              >Iscritto</span
+          <UiVrsusEntityImage
+            :src="gameImage(tournament.game_id)"
+            :alt="gameName(tournament.game_id)"
+            class="w-24 shrink-0 sm:w-32"
+          />
+          <div class="min-w-0 flex-1 p-4">
+            <div class="flex flex-wrap items-center gap-2">
+              <span
+                v-if="isRegistered(tournament.id)"
+                class="rounded-full bg-green-500/15 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-green-300 uppercase"
+                >Iscritto</span
+              >
+              <span
+                v-else
+                class="bg-brand-red-500/15 text-brand-red-300 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase"
+                >{{ tournamentStatusLabel(String(tournament.status)) }}</span
+              >
+              <span
+                class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/70"
+                >{{ platformCode(tournament.platform_id) }}</span
+              >
+            </div>
+            <h2 class="font-display mt-3 text-base font-semibold text-white">
+              {{ tournament.name }}
+            </h2>
+            <p class="mt-1 text-sm text-white/50">
+              {{ gameName(tournament.game_id) }}
+            </p>
+            <div
+              class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/45"
             >
-            <span
-              v-else
-              class="bg-brand-red-500/15 text-brand-red-300 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase"
-              >{{ tournamentStatusLabel(String(tournament.status)) }}</span
-            >
-            <span
-              class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/70"
-              >{{ platformCode(tournament.platform_id) }}</span
-            >
-          </div>
-          <h2 class="font-display mt-3 text-base font-semibold text-white">
-            {{ tournament.name }}
-          </h2>
-          <p class="mt-1 text-sm text-white/50">
-            {{ gameName(tournament.game_id) }}
-          </p>
-          <div
-            class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/45"
-          >
-            <span>{{ formatTournamentDate(tournament.starts_at) }}</span>
-            <span
-              >{{ entriesByTournament[String(tournament.id)] ?? 0 }} /
-              {{ tournament.max_entries ?? '∞' }} partecipanti</span
-            >
-            <span
-              v-if="
-                activeTab === 'storico' &&
-                winnersByTournament[String(tournament.id)]
-              "
-              class="text-white/70"
-              >Vincitore: {{ winnersByTournament[String(tournament.id)] }}</span
-            >
+              <span>{{ formatTournamentDate(tournament.starts_at) }}</span>
+              <span
+                >{{ entriesByTournament[String(tournament.id)] ?? 0 }} /
+                {{ tournament.max_entries ?? '∞' }} partecipanti</span
+              >
+              <span
+                v-if="
+                  activeTab === 'storico' &&
+                  winnersByTournament[String(tournament.id)]
+                "
+                class="text-white/70"
+                >Vincitore:
+                {{ winnersByTournament[String(tournament.id)] }}</span
+              >
+            </div>
           </div>
         </NuxtLink>
       </div>

@@ -12,23 +12,47 @@ const { data: liveEvent } = usePublicLiveEvent()
 const actions = providePageActions()
 const pageTitle = useShellPageTitle('app')
 
-const tabs = computed<TabItem[]>(() => [
-  ...(liveEvent.value
+const tabs = computed<TabItem[]>(() =>
+  liveEvent.value
     ? [
+        {
+          to: '/app',
+          label: 'Bacheca',
+          icon: 'i-lucide-newspaper',
+          exact: true,
+        },
+        { to: '/app/ranking', label: 'Ranking', icon: 'i-lucide-trophy' },
         {
           to: '/app/live',
           label: 'Live',
           icon: 'i-lucide-radio',
           live: true,
+          featured: true,
+        },
+        { to: '/app/tornei', label: 'Tornei', icon: 'i-lucide-swords' },
+        {
+          to: '/app/impostazioni',
+          label: 'Impostazioni',
+          icon: 'i-lucide-settings',
         },
       ]
-    : []),
-  { to: '/app', label: 'Bacheca', icon: 'i-lucide-newspaper', exact: true },
-  { to: '/app/eventi', label: 'Eventi', icon: 'i-lucide-calendar-days' },
-  { to: '/app/ranking', label: 'Ranking', icon: 'i-lucide-trophy' },
-  { to: '/app/tornei', label: 'Tornei', icon: 'i-lucide-swords' },
-  { to: '/app/impostazioni', label: 'Impostazioni', icon: 'i-lucide-settings' },
-])
+    : [
+        {
+          to: '/app',
+          label: 'Bacheca',
+          icon: 'i-lucide-newspaper',
+          exact: true,
+        },
+        { to: '/app/eventi', label: 'Eventi', icon: 'i-lucide-calendar-days' },
+        { to: '/app/ranking', label: 'Ranking', icon: 'i-lucide-trophy' },
+        { to: '/app/tornei', label: 'Tornei', icon: 'i-lucide-swords' },
+        {
+          to: '/app/impostazioni',
+          label: 'Impostazioni',
+          icon: 'i-lucide-settings',
+        },
+      ],
+)
 
 const { loadRoles } = useVrsusAuth()
 

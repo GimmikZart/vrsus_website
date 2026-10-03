@@ -11,7 +11,7 @@ import {
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['staff', 'admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['staff', 'admin'] satisfies VrsusRole[],
 })
 
 // Una sfida aperta: la classifica di adesso e il modulo per registrare il

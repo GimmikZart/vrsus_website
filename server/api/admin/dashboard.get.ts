@@ -12,7 +12,7 @@ import type {
 // lo compone `buildEventOverview`, lo stesso usato dalla scheda di un evento.
 export default defineEventHandler(
   async (event): Promise<EventOverviewPayload> => {
-    await requireServerAnyRole(event, ['admin', 'super_admin'])
+    await requireServerAnyRole(event, ['admin'])
 
     const client = serverSupabaseServiceRole<Database>(event)
     const now = Date.now()

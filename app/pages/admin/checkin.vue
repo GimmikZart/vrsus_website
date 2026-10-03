@@ -6,7 +6,7 @@ import { getBookingErrorCode } from '~/composables/useBookings'
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['staff', 'admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['staff', 'admin'] satisfies VrsusRole[],
 })
 
 const client = useSupabaseClient<Database>()

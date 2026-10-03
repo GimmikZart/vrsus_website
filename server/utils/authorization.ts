@@ -3,7 +3,7 @@ import { createError } from 'h3'
 import { serverSupabaseClient, serverSupabaseUser } from '#supabase/server'
 import type { Database } from '~/types/database.types'
 
-type RoleCode = 'user' | 'staff' | 'tournament_admin' | 'admin' | 'super_admin'
+type RoleCode = 'user' | 'staff' | 'admin'
 
 export async function requireServerRole(
   event: H3Event,

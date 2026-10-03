@@ -475,22 +475,32 @@ useSeoMeta({
         <li
           v-for="platform in detail.platforms"
           :key="String(platform.id)"
-          class="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+          class="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
         >
-          <div class="flex items-center gap-2">
-            <span
-              v-if="platform.code"
-              class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-white/70"
-              >{{ platform.code }}</span
+          <UiVrsusEntityImage
+            :src="platform.image_path"
+            :alt="platform.name ?? 'Postazione'"
+            kind="platform"
+            class="aspect-[16/9] w-full"
+          />
+          <div class="p-4">
+            <div class="flex items-center gap-2">
+              <span
+                v-if="platform.code"
+                class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-white/70"
+                >{{ platform.code }}</span
+              >
+              <p class="truncate font-medium text-white">
+                {{ platform.name }}
+              </p>
+            </div>
+            <p
+              v-if="platform.id && gamesByPlatform[String(platform.id)]?.length"
+              class="mt-2 text-sm text-white/45"
             >
-            <p class="truncate font-medium text-white">{{ platform.name }}</p>
+              {{ gamesByPlatform[String(platform.id)]?.join(' · ') }}
+            </p>
           </div>
-          <p
-            v-if="platform.id && gamesByPlatform[String(platform.id)]?.length"
-            class="mt-2 text-sm text-white/45"
-          >
-            {{ gamesByPlatform[String(platform.id)]?.join(' · ') }}
-          </p>
         </li>
       </ul>
     </section>

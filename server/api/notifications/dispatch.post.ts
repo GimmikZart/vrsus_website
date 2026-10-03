@@ -4,11 +4,7 @@ import { dispatchStoredNotification } from '../../utils/notification-dispatch'
 type DispatchBody = { notificationIds?: unknown }
 
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, [
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const body = await readBody<DispatchBody>(event)
   const notificationIds = Array.isArray(body?.notificationIds)

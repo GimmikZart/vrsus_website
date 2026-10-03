@@ -6,7 +6,7 @@ import { slugify } from '~/utils/slugify'
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['admin'] satisfies VrsusRole[],
 })
 
 type PlatformPayload = {

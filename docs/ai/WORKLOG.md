@@ -1691,3 +1691,38 @@ Abilita push sul dispositivo dopo il deploy.
 
 Correzione pronta nel repository. Pubblicare e verificare il risultato
 dell'invio admin sul dispositivo e nel pannello OneSignal.
+
+## 2026-10-03 — Ruoli, navbar adattiva, Scrivici, Inbox e immagini
+
+### Lavoro svolto
+
+- Ridotti i ruoli applicativi a User, Staff e Admin con gerarchia cumulativa,
+  migration dei valori storici e selettore del ruolo attivo.
+- Adattate le navbar User e Staff; Live e centrale ed evidenziato e, per User,
+  compare soltanto durante la serata a cui partecipa sostituendo Eventi.
+- Spostato Scrivici nel float menu della Bacheca, creata la vista dedicata con
+  Problemi riscontrati e aggiunta Inbox Admin con tab e non letti per tipo.
+- Resa uniforme la presenza di immagine o fallback nelle card di giochi e
+  piattaforme toccate dalla revisione.
+
+### File principali modificati
+
+- `app/layouts/app.vue`, `app/layouts/admin.vue`,
+  `app/components/ui/VrsusTabBar.vue`, `app/composables/useRoleMode.ts`
+- `app/pages/app/scrivici.vue`, `app/pages/admin/inbox.vue`,
+  `app/pages/admin/profilo.vue`, `server/api/admin/inbox.get.ts`
+- `app/components/ui/VrsusEntityImage.vue` e viste catalogo/tornei
+- `supabase/migrations/20261003100000_simplify_roles_and_feedback.sql`
+
+### Verifiche
+
+- Migration DEV e pgTAP 315/315 → PASS.
+- Vitest 26/26, ESLint, typecheck e build `node-server` → PASS.
+- Card pubbliche e fallback su viewport 375 × 667 px → PASS.
+- Flussi autenticati a tre ruoli e QUALITY → pendenti.
+
+### Stato finale della sessione
+
+Implementazione locale pronta e verificata automaticamente. Applicare la
+migration in QUALITY prima del deploy e completare la checklist autenticata in
+`docs/dev/guideline_test_features.md`.

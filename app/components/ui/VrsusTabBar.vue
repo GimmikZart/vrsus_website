@@ -10,6 +10,8 @@ export type TabItem = {
    * la voce Live della console quando una serata e in corso.
    */
   live?: boolean
+  /** Evidenzia l'azione primaria al centro della barra mobile. */
+  featured?: boolean
   /**
    * Se true la voce sparisce da lg in su: si usa per la pagina "Altro", che su
    * schermo largo viene sostituita dalle sue stesse voci in colonna.
@@ -73,6 +75,9 @@ const linkClass =
           :aria-current="isActive(item) ? 'page' : undefined"
           :class="[
             linkClass,
+            item.featured
+              ? 'border-brand-red-500/45 -mt-3 min-h-16 rounded-2xl border bg-[#171920] shadow-[0_0_24px_rgba(239,68,68,0.22)] lg:mt-0 lg:min-h-12 lg:rounded-xl lg:border-0 lg:shadow-none'
+              : '',
             isActive(item)
               ? 'text-white lg:bg-white/10'
               : 'text-white/50 hover:text-white/80',
@@ -81,10 +86,16 @@ const linkClass =
           <span
             v-if="item.live"
             class="grid size-5 shrink-0 place-items-center"
+            :class="item.featured ? 'scale-125' : ''"
           >
             <UiVrsusLiveDot size="0.6rem" />
           </span>
-          <UIcon v-else :name="item.icon" class="size-5 shrink-0" />
+          <UIcon
+            v-else
+            :name="item.icon"
+            class="size-5 shrink-0"
+            :class="item.featured ? 'text-brand-red-300 scale-125' : ''"
+          />
           <span class="leading-none">{{ item.label }}</span>
         </NuxtLink>
       </li>

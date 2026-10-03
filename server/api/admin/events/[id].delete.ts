@@ -9,7 +9,7 @@ import type { Database } from '~/types/database.types'
 // non una preferenza: prima i figli che bloccano, poi l'evento. Le postazioni
 // dell'evento e i loro giochi cadono in cascata con la riga dell'evento.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin', 'super_admin'])
+  await requireServerAnyRole(event, ['admin'])
 
   const eventId = requireUuid(getRouterParam(event, 'id'), 'Invalid event id')
   const client = serverSupabaseServiceRole<Database>(event)

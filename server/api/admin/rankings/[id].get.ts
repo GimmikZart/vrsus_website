@@ -9,7 +9,7 @@ import type { Database } from '~/types/database.types'
 // soli nickname: allo staff che registra un record serve il nome vero, quindi
 // la lettura passa da qui con il ruolo di servizio.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['staff', 'admin', 'super_admin'])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const rankingId = requireUuid(
     getRouterParam(event, 'id'),

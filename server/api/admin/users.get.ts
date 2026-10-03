@@ -2,7 +2,7 @@ import type { Database } from '~/types/database.types'
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  await requireServerRole(event, 'super_admin')
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const serviceClient = serverSupabaseServiceRole<Database>(event)
   const [

@@ -7,11 +7,7 @@ import type { Database } from '~/types/database.types'
 // Se la entry compare gia in un incontro non viene cancellata ma ritirata:
 // cancellarla lascerebbe un tabellone con caselle vuote e risultati orfani.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, [
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const tournamentId = requireUuid(
     getRouterParam(event, 'id'),

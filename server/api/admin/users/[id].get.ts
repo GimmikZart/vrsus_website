@@ -18,7 +18,7 @@ import {
 // Tutto passa dal ruolo di servizio perche profiles, bookings ed events non
 // hanno grant per il browser (DEC-005, DEC-018).
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['staff', 'admin', 'super_admin'])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const userId = requireUuid(getRouterParam(event, 'id'), 'Invalid user id')
   const client = serverSupabaseServiceRole<Database>(event)

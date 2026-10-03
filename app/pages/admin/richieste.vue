@@ -21,7 +21,7 @@ type ServiceInquiry = {
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['admin'] satisfies VrsusRole[],
 })
 
 const {

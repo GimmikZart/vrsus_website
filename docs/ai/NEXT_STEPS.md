@@ -34,18 +34,27 @@ la diagnostica push e la rimozione del blocco per origine. Dopo il deploy,
 leggere nell'avviso della pagina notifiche i valori effettivi di origine
 pagina e APP_BASE_URL; se differiscono, correggere la variabile nel relativo
 ambiente Cloudflare, ma continuare la prova Abilita push. Verificare che le
-migration `20261002103000`,
-`20261002104000` e `20261002105000` siano applicate a Supabase QUALITY e che
+   migration `20261002103000`, `20261002104000`, `20261002105000` e
+   `20261003100000` siano applicate a Supabase QUALITY e che
 App ID, REST API Key e `NOTIFICATION_WEBHOOK_SECRET` appartengano alla stessa
 configurazione. Procedura in `docs/dev/guideline_implementations.md`.
 Poi eseguire la checklist A/B in `docs/dev/guideline_test_features.md`:
 registrazione dispositivo, push, badge e inbox senza refresh, isolamento
 utente, invio manuale ai due pubblici e lettura. Criterio di completamento:
 ricezione verificata su device reale e log webhook/OneSignal coerenti. Le
-verifiche automatiche DEV sono PASS (pgTAP 312/312, unit 23/23, lint,
+   verifiche automatiche DEV sono PASS (pgTAP 315/315, unit 26/26, lint,
 typecheck, build `node-server`).
 
 ## Verifiche UI precedenti ancora pendenti
+
+Provare con tre account User, Staff e Admin la nuova gerarchia e il selettore
+di ruolo. Per User verificare entrambe le navbar, inclusa Live soltanto con una
+prenotazione alla serata in corso; per Staff verificare le cinque voci esatte e
+la pagina Impostazioni ridotta; per Admin verificare Inbox, tab, conteggi non
+letti e cambio stato. Inviare da `Scrivici` tutti e quattro i tipi, incluso
+Problemi riscontrati. La checklist completa e in
+`docs/dev/guideline_test_features.md`. Prima della prova remota applicare
+`20261003100000_simplify_roles_and_feedback.sql`.
 
 Provare nel browser locale, a viewport mobile e con account cliente e admin,
 la nuova shell a quattro sezioni e il percorso torneo → prenotazione evento
@@ -173,9 +182,6 @@ e build.
 - `archive_event` non e piu usata da nessuna vista (DEC-033). Se
   l'archiviazione non serve piu davvero, va ritirata con una migration
   dedicata invece di restare come funzione orfana.
-- `/admin/live` non e piu raggiungibile dal menu (DEC-036): resta valida per
-  URL diretto. Se la plancia Live copre davvero tutto, la pagina va ritirata;
-  se serve ancora, va deciso da dove aprirla.
 - Le sfide non hanno una pagina pubblica in vetrina: si vedono solo dall'app,
   a cliente collegato. Se servira mostrarle a chi non ha un account, la view
   `public_game_rankings` e gia leggibile da `anon`.
@@ -184,9 +190,6 @@ e build.
   passato il QR, quindi l'ospite deve prenotare dall'app prima del check-in.
   Se serve davvero, va progettata una RPC che crei prenotazione e check-in in
   un gesto solo, con i dati minimi dell'ospite.
-- Un account con il solo ruolo `staff` oggi non arriva al check-in dal menu,
-  perche la plancia richiede `admin` o `super_admin`. Se servira uno staff che
-  fa solo check-in, si abbassano i ruoli richiesti dalla plancia.
 
 ## Fuori scope deliberato
 

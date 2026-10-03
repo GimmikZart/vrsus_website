@@ -539,31 +539,41 @@ useSeoMeta({ title: 'Live — VRSUS', robots: 'noindex, nofollow' })
           <li
             v-for="platform in day.platforms"
             :key="String(platform.id)"
-            class="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+            class="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
           >
-            <div class="flex items-center gap-2">
-              <span
-                v-if="platform.code"
-                class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-white/70"
-                >{{ platform.code }}</span
+            <UiVrsusEntityImage
+              :src="platform.image_path"
+              :alt="platform.name ?? 'Postazione'"
+              kind="platform"
+              class="aspect-[16/9] w-full"
+            />
+            <div class="p-4">
+              <div class="flex items-center gap-2">
+                <span
+                  v-if="platform.code"
+                  class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-white/70"
+                  >{{ platform.code }}</span
+                >
+                <p class="truncate font-medium text-white">
+                  {{ platform.name }}
+                </p>
+              </div>
+              <ul
+                v-if="gamesByPlatform[String(platform.id)]?.length"
+                class="mt-3 flex flex-wrap gap-1.5"
               >
-              <p class="truncate font-medium text-white">{{ platform.name }}</p>
+                <li
+                  v-for="game in gamesByPlatform[String(platform.id)]"
+                  :key="game"
+                  class="rounded-md bg-white/[0.06] px-2 py-1 text-xs text-white/75"
+                >
+                  {{ game }}
+                </li>
+              </ul>
+              <p v-else class="mt-3 text-xs text-white/35">
+                Nessun gioco assegnato a questa postazione.
+              </p>
             </div>
-            <ul
-              v-if="gamesByPlatform[String(platform.id)]?.length"
-              class="mt-3 flex flex-wrap gap-1.5"
-            >
-              <li
-                v-for="game in gamesByPlatform[String(platform.id)]"
-                :key="game"
-                class="rounded-md bg-white/[0.06] px-2 py-1 text-xs text-white/75"
-              >
-                {{ game }}
-              </li>
-            </ul>
-            <p v-else class="mt-3 text-xs text-white/35">
-              Nessun gioco assegnato a questa postazione.
-            </p>
           </li>
         </ul>
       </section>

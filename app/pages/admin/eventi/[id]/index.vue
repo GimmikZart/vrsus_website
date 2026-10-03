@@ -6,7 +6,7 @@ import type { EventOverviewPayload } from '~~/shared/types/event-overview'
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['staff', 'admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['staff', 'admin'] satisfies VrsusRole[],
 })
 
 const route = useRoute()

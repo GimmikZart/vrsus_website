@@ -4,7 +4,7 @@ import type { Database } from '~/types/database.types'
 import type { EventWriteBody } from '~~/server/utils/event-admin'
 
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin', 'super_admin'])
+  await requireServerAnyRole(event, ['admin'])
 
   const body = await readBody<EventWriteBody>(event)
   const payload = normalizeEventPayload(body)

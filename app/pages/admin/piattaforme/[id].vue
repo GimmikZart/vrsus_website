@@ -6,7 +6,7 @@ import { slugify } from '~/utils/slugify'
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['admin'] satisfies VrsusRole[],
 })
 
 type Payload = {
@@ -369,15 +369,22 @@ useSeoMeta({
             v-for="game in data.games"
             :key="game.id"
             :to="`/admin/giochi/${game.id}`"
-            class="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-white/25"
+            class="overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
           >
-            <p class="font-medium text-white">{{ game.name }}</p>
-            <p class="mt-1 text-xs text-white/40">
-              {{ game.genre ?? 'Genere non indicato' }}
-            </p>
-            <p v-if="!game.active" class="mt-2 text-xs text-white/40">
-              Disattivato
-            </p>
+            <UiVrsusEntityImage
+              :src="game.image_path"
+              :alt="game.name"
+              class="aspect-[16/9] w-full"
+            />
+            <div class="p-4">
+              <p class="font-medium text-white">{{ game.name }}</p>
+              <p class="mt-1 text-xs text-white/40">
+                {{ game.genre ?? 'Genere non indicato' }}
+              </p>
+              <p v-if="!game.active" class="mt-2 text-xs text-white/40">
+                Disattivato
+              </p>
+            </div>
           </NuxtLink>
         </div>
       </section>

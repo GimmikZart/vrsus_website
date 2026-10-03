@@ -9,11 +9,7 @@ import {
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: [
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ] satisfies VrsusRole[],
+  requiredRoles: ['staff', 'admin'] satisfies VrsusRole[],
 })
 
 type Configuration = {

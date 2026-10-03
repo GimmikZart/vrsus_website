@@ -8,11 +8,7 @@ import type { Database } from '~/types/database.types'
 // qui, dove si controlla il ruolo, che la sfida sia ancora aperta e che il
 // numero sia un numero. Chi registra resta scritto nella riga.
 export default defineEventHandler(async (event) => {
-  const { user } = await requireServerAnyRole(event, [
-    'staff',
-    'admin',
-    'super_admin',
-  ])
+  const { user } = await requireServerAnyRole(event, ['staff', 'admin'])
 
   const rankingId = requireUuid(
     getRouterParam(event, 'id'),

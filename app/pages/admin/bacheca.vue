@@ -6,14 +6,13 @@ import { slugify } from '~/utils/slugify'
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['admin'] satisfies VrsusRole[],
 })
 
 type BoardPayload = {
   posts: (Database['public']['Tables']['board_posts']['Row'] & {
     options: { id: string; label: string; votes: number }[]
   })[]
-  feedback: Database['public']['Tables']['user_feedback']['Row'][]
 }
 
 const { data, refresh, status } =
@@ -99,20 +98,6 @@ async function setStatus(postId: string, newStatus: string) {
   await $fetch(`/api/admin/board/${postId}`, {
     method: 'PATCH',
     body: { status: newStatus },
-  })
-  await refresh()
-}
-
-const feedbackLabels: Record<string, string> = {
-  message: 'Messaggio',
-  suggestion: 'Consiglio',
-  review: 'Recensione',
-}
-
-async function markFeedbackReviewed(feedbackId: string) {
-  await $fetch(`/api/admin/board/feedback/${feedbackId}`, {
-    method: 'PATCH',
-    body: { status: 'reviewed' },
   })
   await refresh()
 }
@@ -348,49 +333,6 @@ useSeoMeta({ title: 'Bacheca — Admin VRSUS', robots: 'noindex, nofollow' })
                 @click="setStatus(post.id, 'archived')"
               />
             </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="mt-10">
-        <h2 class="font-display text-xl font-semibold text-white">
-          Messaggi dagli utenti
-        </h2>
-        <p class="mt-1 text-sm text-white/45">
-          Materiale interno: non compare in nessuna pagina pubblica.
-        </p>
-
-        <p v-if="!data?.feedback.length" class="mt-3 text-sm text-white/45">
-          Nessun messaggio ricevuto.
-        </p>
-
-        <div class="mt-4 space-y-3">
-          <article
-            v-for="item in data?.feedback ?? []"
-            :key="item.id"
-            class="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-          >
-            <div class="flex flex-wrap items-center gap-2 text-xs">
-              <span class="rounded-full bg-white/10 px-2 py-0.5 text-white/60">
-                {{ feedbackLabels[item.kind] ?? item.kind }}
-              </span>
-              <span v-if="item.rating" class="text-brand-red-400"
-                >{{ item.rating }}/5</span
-              >
-              <span class="text-white/35">{{ item.status }}</span>
-            </div>
-            <p class="mt-2 text-sm whitespace-pre-line text-white/70">
-              {{ item.body }}
-            </p>
-            <UButton
-              v-if="item.status === 'new'"
-              class="mt-3"
-              color="neutral"
-              variant="ghost"
-              size="xs"
-              label="Segna come letto"
-              @click="markFeedbackReviewed(item.id)"
-            />
           </article>
         </div>
       </section>

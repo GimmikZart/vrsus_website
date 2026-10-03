@@ -52,6 +52,13 @@ export function useAdminMenu() {
             icon: 'i-lucide-inbox',
             visible: isAdmin.value,
           },
+          {
+            to: '/admin/inbox',
+            label: 'Inbox',
+            description: 'Messaggi, consigli, recensioni e problemi segnalati.',
+            icon: 'i-lucide-mail',
+            visible: isAdmin.value,
+          },
         ],
       },
       {
@@ -69,7 +76,7 @@ export function useAdminMenu() {
             label: 'Utenti e ruoli',
             description: 'Assegnazione dei ruoli agli account.',
             icon: 'i-lucide-users',
-            visible: hasAnyRole(['super_admin']),
+            visible: hasAnyRole(['admin']),
           },
           {
             to: '/admin/impostazioni',

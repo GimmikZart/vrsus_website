@@ -1,12 +1,6 @@
 import type { Database } from '~/types/database.types'
 
-const roleNames = [
-  'user',
-  'staff',
-  'tournament_admin',
-  'admin',
-  'super_admin',
-] as const
+const roleNames = ['user', 'staff', 'admin'] as const
 
 export type VrsusRole = (typeof roleNames)[number]
 
@@ -20,8 +14,8 @@ export function useVrsusAuth() {
   )
 
   const isAuthenticated = computed(() => Boolean(user.value))
-  const isStaff = computed(() => hasAnyRole(['staff', 'admin', 'super_admin']))
-  const isAdmin = computed(() => hasAnyRole(['admin', 'super_admin']))
+  const isStaff = computed(() => hasAnyRole(['staff', 'admin']))
+  const isAdmin = computed(() => hasAnyRole(['admin']))
 
   function hasRole(role: VrsusRole) {
     return roles.value.includes(role)

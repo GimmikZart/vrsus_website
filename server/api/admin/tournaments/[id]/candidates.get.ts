@@ -6,11 +6,7 @@ import type { Database } from '~/types/database.types'
 // attivi. Serve al selettore dell iscrizione manuale, quindi restituisce solo
 // quel che la lista deve mostrare.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, [
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const tournamentId = requireUuid(
     getRouterParam(event, 'id'),

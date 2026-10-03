@@ -10,20 +10,32 @@ import type { TabItem } from '~/components/ui/VrsusTabBar.vue'
 // cosi si distingue a colpo d occhio da una console ferma.
 const { data: liveState } = useAdminLiveEvent()
 const { groups } = useAdminMenu()
-const { isAdmin, hasAnyRole } = useVrsusAuth()
+const { operationalMode } = useRoleMode()
 const actions = providePageActions()
 const pageTitle = useShellPageTitle('admin')
-const homeRoute = computed(() =>
-  isAdmin.value
-    ? '/admin'
-    : hasAnyRole(['staff'])
-      ? '/admin/checkin'
-      : '/admin/tornei',
-)
+const staffMode = computed(() => operationalMode.value === 'staff')
+const homeRoute = computed(() => (staffMode.value ? '/admin/live' : '/admin'))
 
-const tabs = computed<TabItem[]>(() => [
-  ...(isAdmin.value
+const tabs = computed<TabItem[]>(() =>
+  staffMode.value
     ? [
+        { to: '/admin/ranking', label: 'Ranking', icon: 'i-lucide-trophy' },
+        { to: '/admin/tornei', label: 'Tornei', icon: 'i-lucide-swords' },
+        {
+          to: '/admin/live',
+          label: 'Live',
+          icon: 'i-lucide-radio',
+          live: liveState.value?.live ?? false,
+          featured: true,
+        },
+        { to: '/admin/utenti', label: 'Utenti', icon: 'i-lucide-users' },
+        {
+          to: '/admin/profilo',
+          label: 'Impostazioni',
+          icon: 'i-lucide-settings',
+        },
+      ]
+    : [
         {
           to: '/admin',
           label: 'Live',
@@ -36,30 +48,21 @@ const tabs = computed<TabItem[]>(() => [
           label: 'Eventi',
           icon: 'i-lucide-calendar-days',
         },
-      ]
-    : hasAnyRole(['staff'])
-      ? [{ to: '/admin/checkin', label: 'Check-in', icon: 'i-lucide-qr-code' }]
-      : []),
-  ...(hasAnyRole(['tournament_admin', 'admin', 'super_admin'])
-    ? [{ to: '/admin/tornei', label: 'Tornei', icon: 'i-lucide-swords' }]
-    : []),
-  ...(isAdmin.value
-    ? [
+        { to: '/admin/tornei', label: 'Tornei', icon: 'i-lucide-swords' },
         {
           to: '/admin/piattaforme',
           label: 'Postazioni',
           icon: 'i-lucide-monitor',
         },
         { to: '/admin/giochi', label: 'Giochi', icon: 'i-lucide-gamepad-2' },
-      ]
-    : []),
-  {
-    to: '/admin/altro',
-    label: 'Altro',
-    icon: 'i-lucide-ellipsis',
-    mobileOnly: true,
-  },
-])
+        {
+          to: '/admin/altro',
+          label: 'Altro',
+          icon: 'i-lucide-ellipsis',
+          mobileOnly: true,
+        },
+      ],
+)
 </script>
 
 <template>
@@ -77,7 +80,7 @@ const tabs = computed<TabItem[]>(() => [
 
     <UiVrsusFloatMenu :actions="actions" />
 
-    <UiVrsusTabBar :items="tabs" :groups="groups">
+    <UiVrsusTabBar :items="tabs" :groups="staffMode ? [] : groups">
       <template #footer>
         <UiVrsusSessionCard compact />
       </template>

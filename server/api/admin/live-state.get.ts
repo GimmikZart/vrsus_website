@@ -7,12 +7,7 @@ import type { Database } from '~/types/database.types'
 // della tab bar. Volutamente minimo: la dashboard carica gia il riepilogo
 // completo, qui serve solo una risposta leggera da ogni pagina della console.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, [
-    'staff',
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const client = serverSupabaseServiceRole<Database>(event)
 

@@ -5,7 +5,7 @@ import type { VrsusRole } from '~/composables/useVrsusAuth'
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['admin'] satisfies VrsusRole[],
 })
 
 type PlatformPayload = {

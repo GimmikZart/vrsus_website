@@ -1,6 +1,6 @@
 begin;
 
-select plan(61);
+select plan(64);
 
 select has_table('public', 'profiles', 'profiles table exists');
 select has_table('public', 'events', 'events table exists');
@@ -12,7 +12,7 @@ select has_table('public', 'audit_logs', 'audit log table exists');
 
 select results_eq(
   $$select code from public.roles order by code$$,
-  $$values ('admin'::text), ('staff'::text), ('super_admin'::text), ('tournament_admin'::text), ('user'::text)$$,
+  $$values ('admin'::text), ('staff'::text), ('user'::text)$$,
   'required RBAC roles are seeded'
 );
 
@@ -98,7 +98,7 @@ select has_function(
   'public',
   'set_user_role',
   array['uuid', 'text', 'boolean']::text[],
-  'super-admin role management function exists'
+  'admin role management function exists'
 );
 select has_function('public', 'is_minor', array['date']::text[], 'minor age helper exists');
 
@@ -224,12 +224,18 @@ insert into auth.users (id, aud, role, email, encrypted_password, email_confirme
 values
   ('00000000-0000-0000-0000-0000000000a1', 'authenticated', 'authenticated', 'rls-user-a@example.test', 'not-a-real-password', timezone('utc', now())),
   ('00000000-0000-0000-0000-0000000000b1', 'authenticated', 'authenticated', 'rls-user-b@example.test', 'not-a-real-password', timezone('utc', now())),
-  ('00000000-0000-0000-0000-0000000000ad', 'authenticated', 'authenticated', 'rls-super-admin@example.test', 'not-a-real-password', timezone('utc', now()));
+  ('00000000-0000-0000-0000-0000000000ad', 'authenticated', 'authenticated', 'rls-admin@example.test', 'not-a-real-password', timezone('utc', now()));
 
 insert into public.user_roles (user_id, role_id)
 select '00000000-0000-0000-0000-0000000000ad', id
 from public.roles
-where code = 'super_admin';
+where code = 'admin';
+
+select is(
+  (select count(*)::integer from public.user_roles where user_id = '00000000-0000-0000-0000-0000000000ad'),
+  3,
+  'an admin assignment includes user and staff roles'
+);
 
 insert into public.notifications (user_id, type, title, message)
 values
@@ -265,23 +271,37 @@ select is(
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000ad', true);
 select lives_ok(
   $$select public.set_user_role('00000000-0000-0000-0000-0000000000a1'::uuid, 'staff', true)$$,
-  'super-admin can assign a role'
+  'admin can assign a role'
 );
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000b1', true);
 select throws_ok(
   $$select public.set_user_role('00000000-0000-0000-0000-0000000000a1'::uuid, 'admin', true)$$,
   '42501',
-  'super_admin role required',
+  'admin role required',
   'normal users cannot assign roles'
 );
 
 set local role postgres;
 select is(
   (select count(*)::integer from public.user_roles where user_id = '00000000-0000-0000-0000-0000000000a1'),
-  1,
-  'super-admin role assignment is persisted'
+  2,
+  'admin role assignment is persisted'
 );
+
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000a1', true);
+set local role authenticated;
+select lives_ok(
+  $$insert into public.user_feedback (user_id, kind, body)
+    values ('00000000-0000-0000-0000-0000000000a1', 'problem', 'Problema di prova')$$,
+  'users can submit the problem feedback type'
+);
+select is(
+  (select kind from public.user_feedback where user_id = '00000000-0000-0000-0000-0000000000a1' limit 1),
+  'problem',
+  'problem feedback is stored with its own kind'
+);
+set local role postgres;
 
 -- Il nickname e unico a livello di database, non solo di interfaccia.
 select throws_ok(

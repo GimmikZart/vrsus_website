@@ -36,6 +36,18 @@ export function usePublicLiveEvent() {
 
       if (!data?.id) return null
 
+      const { data: booking } = await client
+        .from('bookings')
+        .select('id')
+        .eq('event_id', data.id)
+        .eq('status', 'confirmed')
+        .limit(1)
+        .maybeSingle()
+
+      // La voce Live appartiene alla serata di chi ha un posto confermato, non
+      // a chi e ancora in attesa o apre l'app durante un evento altrui.
+      if (!booking?.id) return null
+
       return {
         id: String(data.id),
         title: data.title ?? 'Serata in corso',

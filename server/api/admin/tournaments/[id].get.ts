@@ -3,12 +3,7 @@ import { createError, getRouterParam } from 'h3'
 // Scheda torneo per la console: stessa struttura della pagina utente, con in
 // piu i dati anagrafici degli iscritti che le view pubbliche non espongono.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, [
-    'staff',
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const tournamentId = requireUuid(
     getRouterParam(event, 'id'),

@@ -9,7 +9,7 @@ type RankingUser = {
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['staff', 'admin'] satisfies VrsusRole[],
 })
 
 const client = useSupabaseClient()

@@ -1006,3 +1006,23 @@ terzo simula la risposta di Supabase e verifica la navigazione completa; non
 dimostra ancora la lettura della sessione reale dal server remoto. Il primo
 tentativo E2E era fallito perche il browser Playwright bundled non era
 installato; i test sono stati eseguiti con il Chrome presente nel sistema.
+
+## 2026-10-03 — Ruoli, navbar adattiva, Scrivici, Inbox e immagini
+
+| Verifica | Esito |
+| --- | --- |
+| Migration DEV `20261003100000_simplify_roles_and_feedback.sql` | PASS |
+| pgTAP completo | PASS — 315/315 |
+| Vitest | PASS — 26/26 in 6 file |
+| ESLint `app` e `server` | PASS |
+| `nuxt typecheck` | PASS, warning noto Volar/vue-router |
+| Build Nuxt `node-server` | PASS con permessi di lettura; primo tentativo sandbox bloccato su `EPERM readlink C:\Users\User` |
+| Controllo visuale pubblico card/fallback a 375 × 667 px | PASS |
+| Prova autenticata User/Staff/Admin, Inbox e navbar Live | PENDENTE |
+| Applicazione migration e prova in QUALITY | PENDENTE — USER ACTION REQUIRED |
+
+I test database coprono la riduzione ai tre ruoli, la gerarchia cumulativa e
+il nuovo feedback `problem`. Lint, typecheck e build coprono le nuove route e
+shell. Il controllo browser ha verificato la resa delle card pubbliche con
+fallback, ma non prova i flussi autenticati: la relativa checklist e in
+`docs/dev/guideline_test_features.md`.

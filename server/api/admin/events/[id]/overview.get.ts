@@ -10,7 +10,7 @@ import type {
 // un evento scelto invece che su quello del momento.
 export default defineEventHandler(
   async (event): Promise<EventOverviewPayload> => {
-    await requireServerAnyRole(event, ['staff', 'admin', 'super_admin'])
+    await requireServerAnyRole(event, ['staff', 'admin'])
 
     const eventId = requireUuid(getRouterParam(event, 'id'), 'Invalid event id')
     const client = serverSupabaseServiceRole<Database>(event)

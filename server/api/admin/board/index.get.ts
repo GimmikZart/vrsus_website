@@ -3,11 +3,11 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '~/types/database.types'
 
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin', 'super_admin'])
+  await requireServerAnyRole(event, ['admin'])
 
   const client = serverSupabaseServiceRole<Database>(event)
 
-  const [posts, options, votes, feedback] = await Promise.all([
+  const [posts, options, votes] = await Promise.all([
     client
       .from('board_posts')
       .select('*')
@@ -15,14 +15,9 @@ export default defineEventHandler(async (event) => {
       .order('created_at', { ascending: false }),
     client.from('board_poll_options').select('*').order('sort_order'),
     client.from('board_poll_votes').select('option_id'),
-    client
-      .from('user_feedback')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50),
   ])
 
-  if (posts.error || options.error || feedback.error) {
+  if (posts.error || options.error) {
     throw createError({
       statusCode: 500,
       statusMessage: 'Unable to load board',
@@ -48,6 +43,5 @@ export default defineEventHandler(async (event) => {
           votes: voteCounts[option.id] ?? 0,
         })),
     })),
-    feedback: feedback.data ?? [],
   }
 })

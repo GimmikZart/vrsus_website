@@ -16,7 +16,7 @@ insert into auth.users (id, aud, role, email, encrypted_password, email_confirme
 values ('00000000-0000-0000-0000-0000000000e8', 'authenticated', 'authenticated', 'eight-admin@example.test', 'not-a-real-password', timezone('utc', now()));
 
 insert into public.user_roles (user_id, role_id)
-select '00000000-0000-0000-0000-0000000000e8', id from public.roles where code = 'tournament_admin';
+select '00000000-0000-0000-0000-0000000000e8', id from public.roles where code = 'staff';
 
 -- Chiude una partita facendo vincere chi occupa il primo posto.
 create function pg_temp.win_first_slot(p_match_id uuid)

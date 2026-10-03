@@ -4,7 +4,7 @@ import type { Database } from '~/types/database.types'
 import type { PlatformWriteBody } from '~~/server/utils/platform-admin'
 
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin', 'super_admin'])
+  await requireServerAnyRole(event, ['admin'])
 
   const platformId = requireUuid(
     getRouterParam(event, 'id'),

@@ -4,12 +4,7 @@ import type { VrsusRole } from '~/composables/useVrsusAuth'
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: [
-    'staff',
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ] satisfies VrsusRole[],
+  requiredRoles: ['staff', 'admin'] satisfies VrsusRole[],
 })
 
 // Le voci sono le stesse della colonna di sinistra: su schermo largo si

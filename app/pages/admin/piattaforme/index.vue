@@ -5,7 +5,7 @@ import type { VrsusRole } from '~/composables/useVrsusAuth'
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['admin'] satisfies VrsusRole[],
 })
 
 type PlatformRow = Database['public']['Tables']['platforms']['Row'] & {
@@ -243,42 +243,50 @@ useSeoMeta({ title: 'Postazioni — Admin VRSUS', robots: 'noindex, nofollow' })
         v-for="platform in data?.platforms ?? []"
         :key="platform.id"
         :to="`/admin/piattaforme/${platform.id}`"
-        class="rounded-2xl border border-white/10 bg-white/[0.03] p-3.5 transition-colors hover:border-white/25 sm:p-5"
+        class="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
       >
-        <div class="flex items-start justify-between gap-3">
-          <span
-            class="rounded-lg bg-white/10 px-2 py-1 text-[11px] font-semibold tracking-wider text-white/70"
-          >
-            {{ platform.code }}
-          </span>
-          <div class="flex flex-col items-end gap-1">
+        <UiVrsusEntityImage
+          :src="platform.image_path"
+          :alt="platform.name"
+          kind="platform"
+          class="aspect-[16/9] w-full"
+        />
+        <div class="p-3.5 sm:p-5">
+          <div class="flex items-start justify-between gap-3">
             <span
-              v-if="platform.internal"
-              class="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] text-amber-300"
-              >Interna</span
+              class="rounded-lg bg-white/10 px-2 py-1 text-[11px] font-semibold tracking-wider text-white/70"
             >
-            <span
-              v-if="!platform.active"
-              class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-white/50"
-              >Disattivata</span
-            >
+              {{ platform.code }}
+            </span>
+            <div class="flex flex-col items-end gap-1">
+              <span
+                v-if="platform.internal"
+                class="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] text-amber-300"
+                >Interna</span
+              >
+              <span
+                v-if="!platform.active"
+                class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-white/50"
+                >Disattivata</span
+              >
+            </div>
           </div>
-        </div>
 
-        <h2
-          class="font-display mt-3 text-base leading-tight font-semibold text-white sm:mt-4 sm:text-lg"
-        >
-          {{ platform.name }}
-        </h2>
-        <p
-          v-if="platform.description"
-          class="mt-2 line-clamp-2 text-[13px] text-white/50 sm:text-sm"
-        >
-          {{ platform.description }}
-        </p>
-        <p class="mt-3 text-xs text-white/40">
-          {{ platform.games_count }} giochi
-        </p>
+          <h2
+            class="font-display mt-3 text-base leading-tight font-semibold text-white sm:mt-4 sm:text-lg"
+          >
+            {{ platform.name }}
+          </h2>
+          <p
+            v-if="platform.description"
+            class="mt-2 line-clamp-2 text-[13px] text-white/50 sm:text-sm"
+          >
+            {{ platform.description }}
+          </p>
+          <p class="mt-3 text-xs text-white/40">
+            {{ platform.games_count }} giochi
+          </p>
+        </div>
       </NuxtLink>
     </div>
   </div>

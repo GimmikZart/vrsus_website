@@ -248,28 +248,36 @@ useHead(() => ({
               <li
                 v-for="platform in platforms"
                 :key="platform.id || platform.name || 'platform'"
-                class="border-t border-white/10 pt-4 first:border-0 first:pt-0"
+                class="flex gap-3 border-t border-white/10 pt-4 first:border-0 first:pt-0"
               >
-                <div class="flex items-center gap-2">
-                  <span
-                    v-if="platform.code"
-                    class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-white/70"
-                    >{{ platform.code }}</span
+                <UiVrsusEntityImage
+                  :src="platform.image_path"
+                  :alt="platform.name ?? 'Postazione'"
+                  kind="platform"
+                  class="size-16 shrink-0 rounded-xl"
+                />
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <span
+                      v-if="platform.code"
+                      class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-white/70"
+                      >{{ platform.code }}</span
+                    >
+                    <p class="font-medium text-white/85">{{ platform.name }}</p>
+                  </div>
+                  <p
+                    v-if="platform.description"
+                    class="mt-1 text-sm leading-6 text-white/50"
                   >
-                  <p class="font-medium text-white/85">{{ platform.name }}</p>
+                    {{ platform.description }}
+                  </p>
+                  <p
+                    v-if="platform.id && gamesByPlatform[platform.id]?.length"
+                    class="mt-2 text-sm text-white/45"
+                  >
+                    {{ gamesByPlatform[platform.id]?.join(' · ') }}
+                  </p>
                 </div>
-                <p
-                  v-if="platform.description"
-                  class="mt-1 text-sm leading-6 text-white/50"
-                >
-                  {{ platform.description }}
-                </p>
-                <p
-                  v-if="platform.id && gamesByPlatform[platform.id]?.length"
-                  class="mt-2 text-sm text-white/45"
-                >
-                  {{ gamesByPlatform[platform.id]?.join(' · ') }}
-                </p>
               </li>
             </ul>
           </section>

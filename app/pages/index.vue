@@ -246,21 +246,29 @@ useSeoMeta({
             v-for="platform in previewPlatforms"
             :key="String(platform.id ?? platform.slug)"
             :to="`/postazioni/${platform.slug}`"
-            class="group rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-white/25"
+            class="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
           >
-            <span
-              class="inline-flex rounded-lg bg-white/10 px-2 py-1 text-[11px] font-semibold tracking-wider text-white/70"
-              >{{ platform.code }}</span
-            >
-            <h3 class="font-display mt-3 text-base font-semibold text-white">
-              {{ platform.name }}
-            </h3>
-            <p
-              v-if="platform.description"
-              class="mt-2 line-clamp-2 text-sm text-white/50"
-            >
-              {{ platform.description }}
-            </p>
+            <UiVrsusEntityImage
+              :src="platform.image_path"
+              :alt="platform.name ?? 'Postazione'"
+              kind="platform"
+              class="aspect-[16/9] w-full"
+            />
+            <div class="p-5">
+              <span
+                class="inline-flex rounded-lg bg-white/10 px-2 py-1 text-[11px] font-semibold tracking-wider text-white/70"
+                >{{ platform.code }}</span
+              >
+              <h3 class="font-display mt-3 text-base font-semibold text-white">
+                {{ platform.name }}
+              </h3>
+              <p
+                v-if="platform.description"
+                class="mt-2 line-clamp-2 text-sm text-white/50"
+              >
+                {{ platform.description }}
+              </p>
+            </div>
           </NuxtLink>
         </div>
       </div>

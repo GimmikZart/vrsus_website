@@ -1,5 +1,29 @@
 # Current Project State
 
+## Ruoli, navigazione, Inbox e immagini — revisione 2026-10-03
+
+L'app usa ora soltanto i ruoli cumulativi `user`, `staff` e `admin`. Ogni
+profilo e User; Staff aggiunge l'area operativa; Admin comprende tutti e tre i
+livelli. Il selettore mostra esclusivamente i ruoli assegnati e apre la shell
+corrispondente. Staff ha Ranking, Tornei, Live, Utenti e Impostazioni; la sua
+pagina Impostazioni contiene solo nickname, selettore del ruolo e logout.
+
+La navbar User normale contiene Bacheca, Eventi, Ranking, Tornei e
+Impostazioni. Se l'utente ha una prenotazione confermata per un evento
+`running`, Eventi viene sostituito dal comando Live centrale,
+rialzato, piu grande e lampeggiante. `Scrivici` e nel float menu della Bacheca
+e apre una vista dedicata che include il nuovo tipo Problemi riscontrati.
+L'Admin legge i quattro tipi di feedback da Inbox, con tab e conteggio non
+letti per tipo. Le card toccate di giochi e piattaforme mostrano immagine o
+fallback nella posizione coerente con il loro orientamento.
+
+La migration locale `20261003100000_simplify_roles_and_feedback.sql` ha
+normalizzato i ruoli storici e aggiunto il nuovo tipo feedback. Verifiche:
+pgTAP 315/315, Vitest 26/26, ESLint, typecheck e build `node-server` PASS;
+controllo visuale pubblico delle card a 375 × 667 px PASS. Restano pendenti la
+prova autenticata dei tre ruoli e l'applicazione della migration in QUALITY.
+Avanzamento stimato progetto: 94%.
+
 ## Push manuali QUALITY — correzione 2026-10-03
 
 Il proprietario ha verificato che la sottoscrizione OneSignal e la push di
@@ -151,17 +175,20 @@ servizi. Registrazione con nickname unico e sezione di consenso che compare
 solo per i minorenni.
 
 **App utente.** La home e la bacheca, con in cima l'invito compatto alla
-prossima data quando ce n'e una (DEC-042). La barra porta Bacheca, Eventi,
-Ranking, Tornei, Impostazioni, e davanti a tutto `Live` con il pallino rosso
-mentre una serata e in corso. `Eventi` elenca in sola lettura le giornate in
+prossima data quando ce n'e una (DEC-042/061). La barra porta Bacheca, Eventi,
+Ranking, Tornei e Impostazioni; per un partecipante a una serata in corso
+Eventi viene sostituito dal comando centrale `Live`, piu grande e con il
+pallino rosso lampeggiante. `Eventi` elenca in sola lettura le giornate in
 corso, in programma e passate; la scheda di una giornata e l'unico posto dove
 si prenota, con finestra di conferma. `Live` mostra il biglietto con il QR
 finche non si passa la porta, poi lo sostituisce con "I tuoi tornei" (prossima
 partita, avversario, quante partite mancano) e tiene sotto le schede Tornei e
-Piattaforme. Restano ranking, tornei con filtri e stati, bacheca con sondaggi e
-feedback interno, impostazioni con nickname e consenso.
+Piattaforme. Restano ranking, tornei con filtri e stati, bacheca con sondaggi,
+`Scrivici` nel float menu e impostazioni con nickname e consenso.
 
-**Console admin.** Da `lg` in su la colonna di sinistra porta anche le voci di
+**Console operativa.** La shell Staff espone Ranking, Tornei, Live, Utenti e
+Impostazioni; la shell Admin mantiene la navigazione completa. Da `lg` in su
+la colonna di sinistra Admin porta anche le voci di
 secondo piano (bacheca, servizi, richieste, rettifiche, utenti, impostazioni) e
 in fondo l'account collegato con il comando `Esci`; su telefono quelle voci
 restano nella pagina `Altro`, che ospita la stessa uscita (DEC-040). La prima
@@ -181,9 +208,10 @@ la tessera ARCI di ogni prenotato quando la giornata la richiede. Lo stesso riep
 elenco, senza comandi. Eventi gestiti da un wizard a tre passi (info,
 piattaforme, tornei) con duplicazione ed eliminazione definitiva; lista tornei
 divisa in In corso, In programma e Storico; postazioni, giochi, bacheca e la
-voce "Altro", che raccoglie le console assorbite ma non le operazioni della
-serata: quelle vivono sulla plancia Live. La shell della console non ha piu il
-passaggio all'area personale.
+voce "Altro", che comprende anche Inbox con tab e non letti per tipo, e
+raccoglie le console assorbite ma non le operazioni della
+serata: quelle vivono sulla plancia Live. Il selettore di ruolo permette di
+tornare in ogni momento all'area User o passare fra Staff e Admin.
 
 **Tessera ARCI.** Il circolo e affiliato ARCI: lo stato del socio sta sul
 profilo, il requisito sulla giornata (`events.arci_required`, default si). Una
@@ -300,7 +328,7 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
 
 ## Ultimo aggiornamento
 
-2026-10-02
+2026-10-03
 
 ## Revisione float menu admin del 2026-10-02
 

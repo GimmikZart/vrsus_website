@@ -126,51 +126,13 @@ async function vote(postId: string, optionId: string) {
   }
 }
 
-// Il feedback resta a uso interno: lo si dichiara in chiaro nel modulo.
-const feedbackOpen = ref(false)
-const feedback = reactive({
-  kind: 'suggestion' as 'message' | 'suggestion' | 'review',
-  rating: 0,
-  body: '',
-})
-const feedbackPending = ref(false)
-const feedbackMessage = ref('')
-
-const kindOptions = [
-  { value: 'message', label: 'Messaggio' },
-  { value: 'suggestion', label: 'Consiglio' },
-  { value: 'review', label: 'Recensione' },
-]
-
-async function sendFeedback() {
-  if (feedback.body.trim().length < 3) {
-    feedbackMessage.value = 'Scrivi almeno qualche parola.'
-    return
-  }
-  feedbackPending.value = true
-  feedbackMessage.value = ''
-
-  const user = useSupabaseUser()
-  const { error } = await client.from('user_feedback').insert({
-    user_id: String(user.value?.sub),
-    kind: feedback.kind,
-    rating:
-      feedback.kind === 'review' && feedback.rating ? feedback.rating : null,
-    body: feedback.body.trim(),
-  })
-
-  feedbackPending.value = false
-
-  if (error) {
-    feedbackMessage.value = 'Invio non riuscito. Riprova fra poco.'
-    return
-  }
-
-  feedback.body = ''
-  feedback.rating = 0
-  feedbackMessage.value = 'Grazie, l’abbiamo ricevuto.'
-  feedbackOpen.value = false
-}
+usePageActions([
+  {
+    label: 'Scrivici',
+    icon: 'i-lucide-message-square-plus',
+    to: '/app/scrivici',
+  },
+])
 
 useSeoMeta({ title: 'Bacheca — VRSUS', robots: 'noindex, nofollow' })
 </script>
@@ -229,7 +191,7 @@ useSeoMeta({ title: 'Bacheca — VRSUS', robots: 'noindex, nofollow' })
       </div>
     </section>
 
-    <header class="flex items-start justify-between gap-4">
+    <header>
       <div>
         <p
           class="text-brand-red-400 text-xs font-semibold tracking-[0.24em] uppercase"
@@ -242,100 +204,7 @@ useSeoMeta({ title: 'Bacheca — VRSUS', robots: 'noindex, nofollow' })
           Bacheca
         </h1>
       </div>
-      <UButton
-        color="neutral"
-        variant="outline"
-        size="sm"
-        icon="i-lucide-message-square-plus"
-        label="Scrivici"
-        @click="feedbackOpen = !feedbackOpen"
-      />
     </header>
-
-    <section
-      v-if="feedbackOpen"
-      class="rounded-2xl border border-white/15 bg-white/[0.04] p-5"
-    >
-      <h2 class="font-display text-base font-semibold text-white">
-        Lasciaci un messaggio
-      </h2>
-      <p class="mt-2 text-sm text-white/50">
-        Quello che scrivi qui resta a uso interno: lo leggiamo per migliorare il
-        servizio e non viene pubblicato.
-      </p>
-
-      <div class="mt-4 space-y-4">
-        <label class="block">
-          <span
-            class="mb-1.5 block text-xs tracking-wide text-white/45 uppercase"
-            >Tipo</span
-          >
-          <select v-model="feedback.kind" class="vrsus-select">
-            <option
-              v-for="option in kindOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-        </label>
-
-        <label v-if="feedback.kind === 'review'" class="block">
-          <span
-            class="mb-1.5 block text-xs tracking-wide text-white/45 uppercase"
-            >Voto</span
-          >
-          <div class="flex gap-2">
-            <button
-              v-for="score in 5"
-              :key="score"
-              type="button"
-              class="grid size-11 place-items-center rounded-xl border transition-colors"
-              :class="
-                feedback.rating >= score
-                  ? 'border-brand-red-500/60 bg-brand-red-500/15 text-brand-red-300'
-                  : 'border-white/15 text-white/40'
-              "
-              @click="feedback.rating = score"
-            >
-              <UIcon name="i-lucide-star" class="size-5" />
-            </button>
-          </div>
-        </label>
-
-        <label class="block">
-          <span
-            class="mb-1.5 block text-xs tracking-wide text-white/45 uppercase"
-            >Messaggio</span
-          >
-          <textarea
-            v-model="feedback.body"
-            rows="4"
-            class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white"
-          />
-        </label>
-
-        <UAlert
-          v-if="feedbackMessage"
-          color="info"
-          variant="subtle"
-          :description="feedbackMessage"
-        />
-
-        <UButton
-          color="primary"
-          block
-          :loading="feedbackPending"
-          label="Invia"
-          @click="sendFeedback"
-        />
-      </div>
-    </section>
-
-    <p v-if="feedbackMessage && !feedbackOpen" class="text-sm text-green-400">
-      {{ feedbackMessage }}
-    </p>
 
     <div
       v-if="!bundle?.posts.length"

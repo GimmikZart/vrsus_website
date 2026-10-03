@@ -11,8 +11,10 @@ type AdminUser = {
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['staff', 'admin'] satisfies VrsusRole[],
 })
+
+const { isAdmin } = useVrsusAuth()
 
 const { data: users, refresh } = await useFetch<AdminUser[]>(
   '/api/admin/users',
@@ -23,13 +25,7 @@ const { data: users, refresh } = await useFetch<AdminUser[]>(
 const selectedRoles = reactive<Record<string, VrsusRole>>({})
 const pendingUserId = ref<string | null>(null)
 const errorMessage = ref('')
-const roleOptions: VrsusRole[] = [
-  'user',
-  'staff',
-  'tournament_admin',
-  'admin',
-  'super_admin',
-]
+const roleOptions: VrsusRole[] = ['user', 'staff', 'admin']
 
 useSeoMeta({
   title: 'Gestione utenti — VRSUS',
@@ -60,14 +56,14 @@ async function changeRole(userId: string, assign: boolean) {
       <p
         class="text-brand-red-400 text-xs font-semibold tracking-[0.24em] uppercase"
       >
-        Super admin
+        Utenti
       </p>
       <h1 class="font-display mt-3 text-4xl font-semibold text-white">
         Gestione utenti
       </h1>
       <p class="mt-4 max-w-2xl text-white/55">
-        Assegna o rimuovi ruoli. Ogni modifica passa da una RPC protetta e
-        genera un audit log.
+        Cerca e consulta gli account. Gli Admin possono anche assegnare o
+        rimuovere i ruoli, con una modifica auditata.
       </p>
     </div>
 
@@ -119,25 +115,27 @@ async function changeRole(userId: string, assign: boolean) {
               icon="i-lucide-id-card"
               label="Scheda"
             />
-            <USelect
-              v-model="selectedRoles[account.id]"
-              :items="roleOptions"
-              class="min-w-44"
-            />
-            <UButton
-              color="secondary"
-              variant="soft"
-              :loading="pendingUserId === account.id"
-              label="Assegna"
-              @click="changeRole(account.id, true)"
-            />
-            <UButton
-              color="neutral"
-              variant="outline"
-              :loading="pendingUserId === account.id"
-              label="Rimuovi"
-              @click="changeRole(account.id, false)"
-            />
+            <template v-if="isAdmin">
+              <USelect
+                v-model="selectedRoles[account.id]"
+                :items="roleOptions"
+                class="min-w-44"
+              />
+              <UButton
+                color="secondary"
+                variant="soft"
+                :loading="pendingUserId === account.id"
+                label="Assegna"
+                @click="changeRole(account.id, true)"
+              />
+              <UButton
+                color="neutral"
+                variant="outline"
+                :loading="pendingUserId === account.id"
+                label="Rimuovi"
+                @click="changeRole(account.id, false)"
+              />
+            </template>
           </div>
         </div>
       </UCard>

@@ -685,13 +685,18 @@ function bookingStatusLabel(value: string) {
             </div>
           </div>
 
-          <ul v-if="platform.games.length" class="mt-3 flex flex-wrap gap-1.5">
+          <ul v-if="platform.games.length" class="mt-3 grid grid-cols-2 gap-2">
             <li
               v-for="game in platform.games"
               :key="game.id"
-              class="rounded-md bg-white/[0.06] px-2 py-1 text-xs text-white/75"
+              class="flex items-center gap-2 overflow-hidden rounded-lg bg-white/[0.06] pr-2 text-xs text-white/75"
             >
-              {{ game.name }}
+              <UiVrsusEntityImage
+                :src="game.imagePath"
+                :alt="game.name"
+                class="size-10 shrink-0"
+              />
+              <span class="truncate">{{ game.name }}</span>
             </li>
           </ul>
           <p v-else class="mt-3 text-xs text-white/35">

@@ -6,11 +6,7 @@ import type { Database } from '~/types/database.types'
 // visibile delle piattaforme attive di un evento, mai capienza o metadati
 // interni.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, [
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const eventId = requireUuid(getRouterParam(event, 'id'), 'Invalid event id')
   const client = serverSupabaseServiceRole<Database>(event)

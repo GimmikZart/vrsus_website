@@ -41,6 +41,47 @@ tastiera e non mostrano dati inventati come date, prezzi o numeri di capienza.
 
 <!-- Inserire qui eventuali osservazioni -->
 
+## Navbar per ruolo, Scrivici, Inbox e immagini
+
+**Prerequisiti.** Migration `20261003100000` applicata; un account User, uno
+Staff e uno Admin; un evento `running`; il primo User con prenotazione
+confermata all'evento e un secondo User senza prenotazione. Servono almeno un
+gioco e una piattaforma con immagine e uno senza immagine. Usare anche una
+viewport mobile, per esempio 375 × 667 px.
+
+- [ ] 1. Con il User non partecipante verificare le cinque voci Bacheca,
+      Eventi, Ranking, Tornei e Impostazioni; Live non compare.
+- [ ] 2. Con il User partecipante verificare Bacheca, Ranking, Live, Tornei e
+      Impostazioni. Eventi non compare; Live e centrale, piu grande, rialzato e
+      mantiene il lampeggio.
+- [ ] 3. In Bacheca aprire il float menu, scegliere Scrivici e verificare che
+      si apra la vista dedicata, non un modulo dentro la Bacheca.
+- [ ] 4. Inviare un elemento per tipo: Messaggio, Consiglio, Recensione e
+      Problemi riscontrati. Per la recensione verificare anche il voto.
+- [ ] 5. Come Admin aprire Altro -> Inbox: ogni tipo ha una tab, il badge e il
+      numero dei soli messaggi non letti di quella tab. Aprire un messaggio e
+      verificare che il relativo conteggio diminuisca.
+- [ ] 6. Verificare che il selettore Admin mostri User, Staff e Admin; passare
+      fra i tre e controllare che l'app si adatti senza logout.
+- [ ] 7. Come Staff verificare la navbar esatta Ranking, Tornei, Live, Utenti
+      e Impostazioni. In Impostazioni devono esserci soltanto nickname,
+      selettore del ruolo e logout.
+- [ ] 8. In Utenti verificare che Staff possa consultare elenco e schede ma
+      non modificare i ruoli; Admin puo assegnare soltanto User, Staff, Admin.
+- [ ] 9. Passare in rassegna card verticali e orizzontali di giochi e
+      piattaforme: l'immagine e in alto nelle prime e a sinistra nelle seconde;
+      senza asset compare sempre il fallback, senza spazio vuoto o card rotte.
+
+### Esito manuale
+
+- [ ] PASS
+- [ ] FAIL
+- [ ] DA RITESTARE
+
+### Commenti utente
+
+<!-- Inserire qui eventuali osservazioni -->
+
 ## Float menu admin su telefono
 
 **Prerequisiti.** Ambiente locale con almeno un evento e un torneo; account
@@ -169,7 +210,7 @@ consentiti e le route protette non sono accessibili anonimamente.
 ### Prerequisiti
 
 - Docker Desktop e Supabase DEV attivi.
-- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+- Un utente locale autenticato con ruolo `admin`.
 
 ### Procedura di test
 
@@ -208,7 +249,7 @@ ruolo e RLS e non tratta segreti infrastrutturali.
 ### Prerequisiti
 
 - Docker Desktop e Supabase DEV attivi.
-- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+- Un utente locale autenticato con ruolo `admin`.
 - Applicazione avviata con `pnpm dev`.
 
 ### Procedura di test
@@ -418,7 +459,7 @@ volta e il pagamento sul posto non blocca la lettura.
 
 ### Prerequisiti
 
-- Un account utente DEV e un account `tournament_admin` o `admin`.
+- Un account utente DEV e un account `staff` o `admin`.
 - Un torneo creato da `/admin/tornei`, con stato `registration_open` e otto
   partecipanti fittizi.
 - Almeno una postazione attiva configurata per l'evento.
@@ -468,7 +509,7 @@ il ranking è derivato dal ledger auditabile.
 ### Prerequisiti
 
 - Supabase DEV attivo.
-- Un account autenticato con ruolo `admin` o `super_admin`.
+- Un account autenticato con ruolo `admin`.
 - Almeno un profilo e un'attività attiva nel catalogo.
 
 ### Procedura di test
@@ -539,7 +580,7 @@ configurazione OneSignal e del Database Webhook.
 ### Prerequisiti
 
 - Migration `20261002105000_manual_notifications.sql` applicata nell'ambiente.
-- Account `admin` o `super_admin`; due account cliente A e B. Per il pubblico
+- Account `admin`; due account cliente A e B. Per il pubblico
   live, evento in stato `running` con A gia registrato tramite check-in e B
   senza check-in.
 
@@ -631,7 +672,7 @@ non rimuove la notifica dall'inbox.
 ### Prerequisiti
 
 - Docker Desktop e Supabase DEV attivi con migration applicate.
-- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+- Un utente locale autenticato con ruolo `admin`.
 - Un file immagine di test JPEG, PNG, WebP, AVIF o SVG sotto i 5 MB.
 - Applicazione avviata con `pnpm dev`.
 
@@ -675,7 +716,7 @@ possono caricare, modificare o cancellare oggetti.
 ### Prerequisiti
 
 - Docker Desktop e Supabase DEV attivi.
-- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+- Un utente locale autenticato con ruolo `admin`.
 
 ### Procedura di test
 
@@ -720,7 +761,7 @@ auditabile e disabilita pubblicazione e booking.
 ### Prerequisiti
 
 - Docker Desktop e Supabase DEV attivi.
-- Un utente locale autenticato con ruolo `staff`, `admin` o `super_admin`.
+- Un utente locale autenticato con ruolo `staff` o `admin`.
 - Un evento terminato o in corso con almeno una prenotazione confermata non
   ancora registrata al check-in.
 
@@ -758,7 +799,7 @@ rispetto ai dati e non espone note interne al client.
 ### Prerequisiti
 
 - Docker Desktop e Supabase DEV attivi.
-- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+- Un utente locale autenticato con ruolo `admin`.
 
 ### Procedura di test
 
@@ -797,7 +838,7 @@ non vengono pubblicate nelle view pubbliche.
 ### Prerequisiti
 
 - Docker Desktop e Supabase DEV attivi.
-- Un utente locale autenticato con ruolo `admin` o `super_admin`.
+- Un utente locale autenticato con ruolo `admin`.
 - Almeno un evento, una postazione e un’attività attivi nel catalogo.
 
 ### Procedura di test
@@ -884,7 +925,7 @@ endpoint `/api/admin/events` (DEC-018) e che l'autorizzazione resti chiusa.
 ### Prerequisiti
 
 - stack locale avviato e fixture applicate (`pnpm db:start`, `pnpm db:reset`);
-- un account con ruolo `super_admin` o `admin`;
+- un account con ruolo `admin`;
 - un secondo account con il solo ruolo `user`;
 - creazione degli account descritta in `guideline_implementations.md`.
 
@@ -1153,7 +1194,7 @@ Copre le modifiche descritte in DEC-033 e DEC-034.
 ### Prerequisiti
 
 - stack locale avviato e fixture applicate (`pnpm db:start`, `pnpm db:reset`);
-- account admin o super_admin;
+- account `admin`;
 - almeno una postazione con qualche gioco a catalogo.
 
 ### Dashboard
@@ -1290,7 +1331,7 @@ promettono; su telefono il contenuto respira senza sprecare spazio.
 
 - stack locale avviato e dati dimostrativi caricati
   (`supabase/dev/demo_showcase.sql`);
-- account con ruolo `admin` o `super_admin`;
+- account con ruolo `admin`;
 - almeno un evento in stato `running` per le prove sul pallino, piu un evento
   `scheduled` per il confronto.
 
@@ -1415,7 +1456,7 @@ promettono; su telefono il contenuto respira senza sprecare spazio.
 
 ## Uscita dalla console, schede prenotati/partecipanti e tessera ARCI
 
-**Prerequisiti.** Ambiente locale avviato, account `super_admin` (o `admin`) e
+**Prerequisiti.** Ambiente locale avviato, account `admin` e
 un account utente normale. Utile la giornata dimostrativa
 (`supabase/dev/demo_showcase.sql`) e almeno un evento gia concluso.
 
@@ -1573,7 +1614,7 @@ in corso e una data programmata. In locale aiutano
 ## Installazione dell'app, passaggio di area, slug automatici
 
 **Prerequisiti:** sito pubblicato in HTTPS (`vrsus-app.pages.dev`), un
-account con ruolo `admin` o `super_admin`, un telefono Android e/o un iPhone.
+account con ruolo `admin`, un telefono Android e/o un iPhone.
 
 ### 1. Invito a installare l'app (telefono)
 
@@ -1601,21 +1642,19 @@ Commenti:
 
 Commenti:
 
-### 3. Passaggio fra area cliente e console
+### 3. Passaggio fra User, Staff e Admin
 
-- [ ] 1. Da computer, accedi con un account admin: in fondo alla colonna di
-      sinistra, sopra l'indirizzo email e il tasto Esci, c'e un interruttore a
-      due posizioni **Cliente / Console**.
-- [ ] 2. Tocca `Console`: si apre la console e la posizione attiva si sposta.
-- [ ] 3. Dalla console tocca `Cliente`: si torna alla bacheca.
-- [ ] 4. Da telefono, nell'app: `Impostazioni` -> sezione `Sessione`, sopra il
-      tasto Esci, stesso interruttore.
-- [ ] 5. Da telefono, nella console: `Altro` -> sezione `Sessione`, stesso
-      interruttore.
-- [ ] 6. Con un account che ha il solo ruolo `staff` la seconda posizione si
-      chiama `Staff` e porta al check-in, non alla console.
-- [ ] 7. Con un account senza ruoli speciali l'interruttore non compare per
-      niente.
+- [ ] 1. Accedere con un account User: il selettore mostra soltanto **User** e
+      l'app resta nella bacheca.
+- [ ] 2. Accedere con un account Staff: il selettore mostra **User / Staff**.
+      Staff porta a `/admin/live`; User torna a `/app`.
+- [ ] 3. Accedere con un account Admin: il selettore mostra **User / Staff /
+      Admin**. Ogni voce apre la shell corrispondente e resta selezionata dopo
+      una ricarica.
+- [ ] 4. Da telefono verificare lo stesso selettore nelle Impostazioni User,
+      nelle Impostazioni Staff e nella sezione Sessione di Altro per Admin.
+- [ ] 5. Verificare che non compaiano mai le etichette Cliente o Console e che
+      nessun ruolo diverso dai tre previsti sia assegnabile da Utenti.
 
 Commenti:
 

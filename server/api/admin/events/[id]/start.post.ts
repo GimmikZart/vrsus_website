@@ -9,7 +9,7 @@ import { dispatchStoredNotification } from '~~/server/utils/notification-dispatc
 // qui si verifica prima lo stato per restituire un 409 leggibile invece di
 // lasciar affiorare l errore del trigger.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin', 'super_admin'])
+  await requireServerAnyRole(event, ['admin'])
 
   const eventId = requireUuid(getRouterParam(event, 'id'), 'Invalid event id')
   const client = serverSupabaseServiceRole<Database>(event)

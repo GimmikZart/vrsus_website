@@ -5,7 +5,7 @@ import type { Database } from '~/types/database.types'
 // Riepilogo della console: aggrega dati che il browser non puo leggere
 // direttamente (capienza, prenotazioni, feedback interni).
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin', 'super_admin'])
+  await requireServerAnyRole(event, ['admin'])
 
   const client = serverSupabaseServiceRole<Database>(event)
 

@@ -25,7 +25,7 @@ values ('00000000-0000-0000-0000-0000000002ff', 'authenticated', 'authenticated'
   'engine-admin@example.test', 'not-a-real-password', timezone('utc', now()));
 
 insert into public.user_roles (user_id, role_id)
-select '00000000-0000-0000-0000-0000000002ff', id from public.roles where code = 'tournament_admin';
+select '00000000-0000-0000-0000-0000000002ff', id from public.roles where code = 'staff';
 
 -- Fixture: un torneo con la configurazione data e N iscritti gia pronti.
 create function pg_temp.make_tournament(

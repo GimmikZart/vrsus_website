@@ -123,8 +123,8 @@ Content-Type: application/json
 
 - [ ] 2. Il trigger `on_auth_user_created` crea automaticamente il profilo.
 - [ ] 3. Assegnare il ruolo inserendo la coppia in `public.user_roles`; il
-      primo `super_admin` va creato via SQL perche `set_user_role()` richiede
-      gia un super-admin autenticato:
+      primo `admin` va creato via SQL perche `set_user_role()` richiede gia un
+      Admin autenticato:
 
 ```sql
 insert into public.user_roles (user_id, role_id)
@@ -136,10 +136,10 @@ on conflict do nothing;
 ```
 
 - [ ] 4. I ruoli successivi possono essere gestiti da `/admin/utenti` con
-      l'account super-admin.
+      l'account Admin.
 
-Codici ruolo disponibili: `user`, `staff`, `tournament_admin`, `admin`,
-`super_admin`.
+Codici ruolo disponibili: `user`, `staff`, `admin`. La gerarchia e cumulativa:
+ogni profilo ha User, Staff include User e Admin include Staff e User.
 
 I metadati utente accettati dal trigger di registrazione sono `nickname`,
 `first_name`, `last_name` e `birth_date` (formato `YYYY-MM-DD`). Il nickname e
@@ -154,6 +154,21 @@ con una data di nascita da minorenne.
 Il login da `/login` deve portare a `/app` mostrando il ruolo corretto; un
 account senza ruolo admin non deve poter aprire `/admin`.
 
+Prima di distribuire la navigazione a tre ruoli su QUALITY o PRODUCTION,
+applicare `20261003100000_simplify_roles_and_feedback.sql` con il workflow di
+migration approvato, senza usare `db reset`. La migration converte
+`tournament_admin` in Staff e `super_admin` in Admin, assegna User a tutti i
+profili e aggiunge il tipo feedback `problem`. Verificare quindi nel Table
+Editor che `public.roles.code` contenga soltanto `user`, `staff`, `admin` e che
+un account Admin abbia tutte e tre le righe in `public.user_roles`.
+
+Checklist ambiente remoto:
+
+- [ ] migration `20261003100000` applicata senza errori
+- [ ] tabella `roles` limitata a User, Staff e Admin
+- [ ] account Admin con i tre ruoli cumulativi
+- [ ] prova del selettore User/Staff/Admin senza inserire ID o credenziali qui
+
 ### Note utente
 
 Password e chiavi reali non vanno mai scritte in questo documento: usare
@@ -167,7 +182,7 @@ PRODUCTION.
 La migration `20260829230000_storage_assets.sql` crea il bucket pubblico
 `vrsus-assets` con limite di 5 MB e MIME type immagine consentiti. La lettura è
 pubblica per gli asset pubblicati; upload, modifica e cancellazione richiedono
-un ruolo `admin` o `super_admin`. Le console CMS memorizzano nel database solo
+un ruolo `admin`. Le console CMS memorizzano nel database solo
 il path dell'oggetto, mai una credenziale o un URL segreto.
 
 ### Operazioni per QUALITY/PROD
@@ -177,7 +192,7 @@ il path dell'oggetto, mai una credenziale o un URL segreto.
 - [ ] 2. Verificare nel dashboard Storage il bucket `vrsus-assets`, la lettura
       pubblica e il limite di 5 MB.
 - [ ] 3. Verificare che le policy di insert/update/delete restino limitate ai
-      ruoli admin e super-admin.
+      ruolo Admin.
 - [ ] 4. Configurare nell'app solo le variabili del progetto remoto indicato
       dall'ambiente; le chiavi restano nel secret manager o nel provider di
       deploy e non vanno inserite nei documenti.
@@ -261,7 +276,7 @@ account esterni e devono essere inseriti dal proprietario.
    dispositivo sia `Subscribed`. Nel Supabase QUALITY verificare che
    `push_subscriptions.user_id` sia l'ID dell'account A e
    `notification_preferences.push_enabled = true`. Non copiare qui gli ID.
-6. Da una console con ruolo `tournament_admin`/`admin`, chiamare una partita
+6. Da una console con ruolo `staff` o `admin`, chiamare una partita
    che includa A e non B, oppure creare un evento di prova che produca una
    notifica. Lasciare la PWA aperta per vedere il badge e la inbox aggiornarsi
    senza refresh; poi metterla in background per verificare la push. B non
@@ -572,7 +587,7 @@ registrato chi era socio la stagione prima.
 
 ### 3. Chi spunta le tessere
 
-Chiunque abbia ruolo `staff`, `admin` o `super_admin`, in due punti:
+Chiunque abbia ruolo `staff` o `admin`, in due punti:
 
 - scheda utente (`Console -> Utenti e ruoli -> Scheda`), comando
   `Registra tessera ARCI` / `Revoca tessera`;

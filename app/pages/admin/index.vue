@@ -5,7 +5,7 @@ import type { EventOverviewPayload } from '~~/shared/types/event-overview'
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['admin'] satisfies VrsusRole[],
 })
 
 const { data, status, refresh } = await useFetch<EventOverviewPayload>(

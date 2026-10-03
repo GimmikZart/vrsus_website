@@ -9,11 +9,7 @@ import type { Database } from '~/types/database.types'
 // chiama, quindi questa strada passa dal ruolo di servizio dopo aver
 // verificato il ruolo di chi la usa.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, [
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const tournamentId = requireUuid(
     getRouterParam(event, 'id'),

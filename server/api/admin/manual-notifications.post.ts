@@ -9,7 +9,7 @@ type Payload = {
 }
 
 export default defineEventHandler(async (event) => {
-  const { client } = await requireServerAnyRole(event, ['admin', 'super_admin'])
+  const { client } = await requireServerAnyRole(event, ['admin'])
   const body = await readBody<Payload>(event)
   const message = body?.message?.trim()
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

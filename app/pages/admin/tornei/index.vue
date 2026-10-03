@@ -14,11 +14,7 @@ import {
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: [
-    'tournament_admin',
-    'admin',
-    'super_admin',
-  ] satisfies VrsusRole[],
+  requiredRoles: ['staff', 'admin'] satisfies VrsusRole[],
 })
 
 type PlatformPayload = {
@@ -51,7 +47,7 @@ const { data: games } = await useAsyncData(
   async () => {
     const { data } = await client
       .from('games')
-      .select('id,name,platform_id')
+      .select('id,name,platform_id,image_path')
       .order('name')
     return data ?? []
   },
@@ -112,6 +108,12 @@ const gamesForPlatform = computed(() => {
   if (!form.platformId) return list
   return list.filter((game) => game.platform_id === form.platformId)
 })
+
+function gameImage(gameId: string | null) {
+  return (
+    (games.value ?? []).find((game) => game.id === gameId)?.image_path ?? null
+  )
+}
 
 watch(
   () => form.platformId,
@@ -467,38 +469,48 @@ useSeoMeta({ title: 'Tornei — Admin VRSUS', robots: 'noindex, nofollow' })
           v-for="tournament in visibleTournaments"
           :key="tournament.id"
           :to="`/admin/tornei/${tournament.id}`"
-          class="rounded-2xl border p-4 transition-colors"
+          class="flex overflow-hidden rounded-2xl border transition-colors"
           :class="
             tournament.status === 'running'
               ? 'border-brand-red-500/40 bg-brand-red-500/[0.06] hover:border-brand-red-500/60'
               : 'border-white/10 bg-white/[0.03] hover:border-white/25'
           "
         >
-          <div class="flex flex-wrap items-center gap-2">
-            <span
-              class="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] tracking-wide text-white/70 uppercase"
-            >
-              {{ tournamentStatusLabel(tournament.status) }}
-            </span>
-            <span
-              class="rounded bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white/70"
-            >
-              {{ platformCode(tournament.platform_id) }}
-            </span>
-            <span v-if="!tournament.event_id" class="text-[11px] text-white/40">
-              Indipendente
-            </span>
+          <UiVrsusEntityImage
+            :src="gameImage(tournament.game_id)"
+            :alt="gameName(tournament.game_id)"
+            class="w-24 shrink-0 sm:w-28"
+          />
+          <div class="min-w-0 flex-1 p-4">
+            <div class="flex flex-wrap items-center gap-2">
+              <span
+                class="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] tracking-wide text-white/70 uppercase"
+              >
+                {{ tournamentStatusLabel(tournament.status) }}
+              </span>
+              <span
+                class="rounded bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white/70"
+              >
+                {{ platformCode(tournament.platform_id) }}
+              </span>
+              <span
+                v-if="!tournament.event_id"
+                class="text-[11px] text-white/40"
+              >
+                Indipendente
+              </span>
+            </div>
+            <p class="font-display mt-3 font-semibold text-white">
+              {{ tournament.name }}
+            </p>
+            <p class="mt-1 text-sm text-white/50">
+              {{ gameName(tournament.game_id) }}
+            </p>
+            <p class="mt-2 text-xs text-white/40">
+              {{ tournamentFormatLabel(tournament.format) }} ·
+              {{ formatTournamentDate(tournament.starts_at) }}
+            </p>
           </div>
-          <p class="font-display mt-3 font-semibold text-white">
-            {{ tournament.name }}
-          </p>
-          <p class="mt-1 text-sm text-white/50">
-            {{ gameName(tournament.game_id) }}
-          </p>
-          <p class="mt-2 text-xs text-white/40">
-            {{ tournamentFormatLabel(tournament.format) }} ·
-            {{ formatTournamentDate(tournament.starts_at) }}
-          </p>
         </NuxtLink>
       </div>
     </template>

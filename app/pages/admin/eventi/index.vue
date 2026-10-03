@@ -8,7 +8,7 @@ type EventRow = Database['public']['Tables']['events']['Row']
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role'],
-  requiredRoles: ['admin', 'super_admin'] satisfies VrsusRole[],
+  requiredRoles: ['admin'] satisfies VrsusRole[],
 })
 
 // Il dominio evento non ha grant per il browser (DEC-005): la lista arriva da

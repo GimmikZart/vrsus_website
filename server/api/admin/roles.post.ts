@@ -1,15 +1,9 @@
-type RoleCode = 'user' | 'staff' | 'tournament_admin' | 'admin' | 'super_admin'
+type RoleCode = 'user' | 'staff' | 'admin'
 
-const roleCodes = [
-  'user',
-  'staff',
-  'tournament_admin',
-  'admin',
-  'super_admin',
-] as const
+const roleCodes = ['user', 'staff', 'admin'] as const
 
 export default defineEventHandler(async (event) => {
-  const { client } = await requireServerRole(event, 'super_admin')
+  const { client } = await requireServerRole(event, 'admin')
   const body = await readBody<{
     userId?: string
     roleCode?: RoleCode

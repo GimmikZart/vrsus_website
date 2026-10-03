@@ -565,7 +565,7 @@ proprietario prima di aprire le registrazioni in QUALITY.
 
 ## DEC-025 - Tre shell separate e navigazione per gruppo di rotte
 
-**Status:** Accepted
+**Status:** Accepted; navigazione per ruolo integrata da DEC-061
 
 ### Decisione
 
@@ -933,7 +933,7 @@ sparse davano cinque varianti diverse dello stesso controllo.
 
 ## DEC-036 - La prima voce della console e la plancia Live
 
-**Status:** Accepted
+**Status:** Superseded in parte da DEC-061
 
 ### Decisione
 
@@ -1168,7 +1168,7 @@ dicono prima dell'arrivo se la tessera serve.
 
 ## DEC-042 - L'app del cliente ruota attorno alla bacheca e alla serata
 
-**Status:** Accepted, integra DEC-025
+**Status:** Superseded in parte da DEC-061, integra DEC-025
 
 ### Decisione
 
@@ -1308,7 +1308,7 @@ rimosso, che ora resta comunque fuori dal versionamento.
 
 ## DEC-045 - Un ruolo speciale non toglie l'area cliente
 
-**Status:** Accepted
+**Status:** Superseded in parte da DEC-061
 
 ### Decisione
 
@@ -1779,3 +1779,56 @@ Il webhook resta necessario per prenotazioni, chiamate giocatori e altre
 notifiche generate fuori dalla route admin. Il successo dell'API OneSignal
 significa messaggio accettato, non consegna confermata sul dispositivo: quella
 richiede prova reale. La REST API key deve essere configurata sul server.
+
+## DEC-061 — Tre ruoli cumulativi e navigazione adattiva
+
+**Status:** Accepted
+
+### Decisione
+
+I soli ruoli applicativi sono `user`, `staff` e `admin`, con gerarchia
+cumulativa: ogni profilo ha `user`, `staff` implica anche `user` e `admin`
+implica tutti e tre. I valori storici `tournament_admin` e `super_admin`
+vengono migrati rispettivamente a `staff` e `admin`; le funzioni SQL di
+autorizzazione accettano ancora questi due alias soltanto per non invalidare
+le policy create dalle migration precedenti. La UI e le nuove scritture non li
+espongono piu.
+
+`UiVrsusWorkspaceSwitch` mostra i ruoli realmente assegnati e conserva il
+ruolo attivo. User apre `/app`, Staff `/admin/live`, Admin `/admin`; il cambio
+e sempre reversibile. La shell Staff contiene esattamente Ranking, Tornei,
+Live, Utenti e Impostazioni, e le sue impostazioni contengono soltanto
+nickname, selettore del ruolo e logout.
+
+Nell'app User la barra normale contiene Bacheca, Eventi, Ranking, Tornei e
+Impostazioni. Durante un evento `running`, `Live` compare soltanto per utenti
+con prenotazione confermata e sostituisce Eventi: e il
+comando centrale, rialzato e piu grande, mantenendo il lampeggio. La stessa
+evidenza centrale si applica alla voce Live dello Staff.
+
+I messaggi `Scrivici` hanno una vista cliente dedicata, raggiunta dal float
+menu della Bacheca, e quattro tipi: messaggio, consiglio, recensione e problema
+riscontrato. L'Admin li legge in Inbox, nella sezione Altro, con tab e conteggi
+non letti separati per tipo. Le card di giochi e piattaforme mostrano sempre
+l'immagine disponibile o un fallback: a sinistra nelle card orizzontali e in
+alto nelle card verticali.
+
+### Motivazione
+
+Cinque ruoli sovrapposti rendevano ambiguo chi potesse usare le funzioni
+operative e costringevano a porte diverse per la stessa persona. La gerarchia
+cumulativa rappresenta il fatto che Staff e Admin restano anche clienti e
+permette alla shell di adattarsi a un unico ruolo attivo. Live deve sostituire
+la navigazione di scoperta soltanto per chi partecipa davvero alla serata.
+Inbox separa il dialogo con i clienti dagli strumenti editoriali della
+Bacheca, mentre immagini e fallback rendono riconoscibili giochi e piattaforme
+in ogni orientamento di card.
+
+### Conseguenze
+
+La migration `20261003100000_simplify_roles_and_feedback.sql` deve essere
+applicata prima del deploy della nuova UI. Il ruolo base `user` non puo essere
+rimosso; togliere `staff` a un Admin richiede prima togliere `admin`. Le
+verifiche manuali devono coprire un account per ciascun livello, il passaggio
+fra ruoli e i due stati della navbar User. L'alias SQL legacy potra essere
+rimosso solo dopo avere sostituito le policy storiche che lo nominano.

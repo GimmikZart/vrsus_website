@@ -16,7 +16,7 @@ type BoardBody = {
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 export default defineEventHandler(async (event) => {
-  const { user } = await requireServerAnyRole(event, ['admin', 'super_admin'])
+  const { user } = await requireServerAnyRole(event, ['admin'])
 
   const body = await readBody<BoardBody>(event)
   const title = body?.title?.trim() ?? ''

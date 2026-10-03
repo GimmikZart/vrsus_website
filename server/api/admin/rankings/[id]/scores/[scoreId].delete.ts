@@ -6,7 +6,7 @@ import type { Database } from '~/types/database.types'
 // si sceglie il giocatore sopra quello giusto. La riga si elimina solo se
 // appartiene davvero alla sfida indicata.
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['staff', 'admin', 'super_admin'])
+  await requireServerAnyRole(event, ['staff', 'admin'])
 
   const rankingId = requireUuid(
     getRouterParam(event, 'id'),

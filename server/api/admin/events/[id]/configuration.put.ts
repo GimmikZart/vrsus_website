@@ -20,7 +20,7 @@ function uniqueUuids(value: unknown, label: string) {
 }
 
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin', 'super_admin'])
+  await requireServerAnyRole(event, ['admin'])
 
   const eventId = requireUuid(getRouterParam(event, 'id'), 'Invalid event id')
   const body = await readBody<ConfigurationBody>(event)
