@@ -1903,3 +1903,71 @@ vincolato e verificato nella transazione database.
 La migration `20261006160000_single_user_manual_notifications.sql` deve essere
 applicata prima di distribuire la nuova pagina. Retry con lo stesso dispatch
 non duplicano le notifiche; la card Altro non contiene piu il form inline.
+
+## DEC-064 — Motion locale alle viste e logo unico
+
+**Status:** Accepted
+
+### Decisione
+
+Il marchio fornito dal proprietario in
+`app/assets/css/img/logo/logo-vrsus.png` e la fonte unica della UI e delle
+icone installabili. `UiVrsusBrandMark` lo importa per toolbar, sidebar,
+vetrina e invito PWA. Le icone derivate si rigenerano con
+`node scripts/generate-brand-icons.mjs`, riusando Sharp di Nuxt Image.
+
+Gli ingressi usano la direttiva `v-vrsus-motion`, registrata anche in SSR
+senza nascondere contenuti. I preset `cards`, `rows`, `hero` e `reveal`
+vivono in `app/utils/motion.ts`; GSAP e importato solo nel browser e in un
+chunk condiviso. La direttiva anima i figli diretti (oppure il solo elemento
+per `reveal`), osserva soltanto i gruppi esplicitamente scelti e limita il
+ritardo complessivo delle sequenze a 210–320 ms. Una chiave stabile permette
+di ripetere l'ingresso dopo un cambio filtro/tab; un normale refresh anima
+solo i nuovi elementi, senza nascondere di nuovo i risultati gia letti.
+
+### Motivazione
+
+Il proprietario richiede movimento curato e leggero nell'app esistente.
+L'animazione delle righe e delle card non deve rallentare una classifica
+lunga o compromettere la navigazione async documentata in DEC-029.
+La direttiva ha un nome specifico per evitare collisioni con direttive
+motion di altre librerie o con l'auto-import dei composable.
+
+### Conseguenze
+
+Non riattivare `pageTransition`. Non animare gli antenati di toolbar,
+contenuti sticky o QR. Contenuti SSR, fuori schermo e senza JS restano
+leggibili; contesti GSAP, observer e listener sono ripuliti all'uscita.
+La preferenza di movimento ridotto e letta prima del caricamento GSAP e
+seguita anche se cambia a pagina aperta. Il focus tastiera termina subito
+gli ingressi decorativi del gruppo. Le micro-interazioni, i pannelli e le
+espansioni usano CSS/Vue; `UiVrsusCollapse` conserva i contenuti e rende
+inerti quelli chiusi. Nessuna nuova dipendenza o migration.
+
+## DEC-065 — Ritmo motion morbido e gerarchico
+
+**Status:** Accepted
+
+### Decisione
+
+Il timing iniziale di DEC-064 viene sostituito con ingressi piu distesi:
+righe circa 560 ms, card 680 ms, hero 900 ms e reveal 580 ms. Lo stagger e
+piu percepibile ma resta limitato nelle liste lunghe; gli spostamenti verticali
+si riducono a 8–18 px e la curva GSAP passa a `power2.out`. Accordion, tab,
+dialog e pannelli usano durate coordinate fra 280 e 480 ms. I feedback diretti
+di pressione e hover restano piu rapidi delle animazioni narrative.
+
+### Motivazione
+
+Il primo passaggio risultava troppo rapido sul dispositivo del proprietario:
+la dissolvenza si risolveva prima di poter essere letta e veniva percepita
+come un glitch. Durata, distanza e curva devono concorrere allo stesso ritmo,
+senza rallentare i comandi funzionali.
+
+### Conseguenze
+
+I limiti numerici di ritardo 210–320 ms indicati in DEC-064 sono sostituiti
+da 360–500 ms; tutte le altre garanzie di DEC-064 restano valide. Nuovi preset
+devono mantenere la stessa gerarchia: righe piu rapide delle card, hero piu
+ampio, uscita dei pannelli piu breve dell'ingresso e movimento ridotto senza
+animazioni decorative.

@@ -216,36 +216,37 @@ useSeoMeta({ title: 'Notifiche — VRSUS', robots: 'noindex, nofollow' })
       >
         Non hai ancora notifiche.
       </div>
-      <NuxtLink
-        v-for="notification in notifications"
-        v-else
-        :key="notification.id"
-        :to="notification.action_url ?? '/app'"
-        class="block rounded-2xl border p-5 transition-colors hover:border-white/25"
-        :class="
-          notification.read_at
-            ? 'border-white/10 bg-white/[0.02]'
-            : 'border-brand-blue-400/40 bg-brand-blue-400/10'
-        "
-        @click="markRead(notification)"
-      >
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="font-medium text-white">{{ notification.title }}</p>
-            <p class="mt-2 text-sm leading-6 text-white/60">
-              {{ notification.message }}
-            </p>
+      <div v-else v-vrsus-motion="'rows'" class="space-y-3">
+        <NuxtLink
+          v-for="notification in notifications"
+          :key="notification.id"
+          :to="notification.action_url ?? '/app'"
+          class="block rounded-2xl border p-5 transition-colors hover:border-white/25"
+          :class="
+            notification.read_at
+              ? 'border-white/10 bg-white/[0.02]'
+              : 'border-brand-blue-400/40 bg-brand-blue-400/10'
+          "
+          @click="markRead(notification)"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="font-medium text-white">{{ notification.title }}</p>
+              <p class="mt-2 text-sm leading-6 text-white/60">
+                {{ notification.message }}
+              </p>
+            </div>
+            <span
+              v-if="!notification.read_at"
+              class="bg-brand-blue-400 mt-1 size-2 shrink-0 rounded-full"
+              aria-label="Non letta"
+            />
           </div>
-          <span
-            v-if="!notification.read_at"
-            class="bg-brand-blue-400 mt-1 size-2 shrink-0 rounded-full"
-            aria-label="Non letta"
-          />
-        </div>
-        <p class="mt-3 text-xs text-white/35">
-          {{ formatPublicContentDate(notification.created_at) }}
-        </p>
-      </NuxtLink>
+          <p class="mt-3 text-xs text-white/35">
+            {{ formatPublicContentDate(notification.created_at) }}
+          </p>
+        </NuxtLink>
+      </div>
     </div>
   </div>
 </template>

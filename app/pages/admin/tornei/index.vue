@@ -464,7 +464,11 @@ useSeoMeta({ title: 'Tornei — Admin VRSUS', robots: 'noindex, nofollow' })
         {{ emptyLabel }}
       </p>
 
-      <div v-else class="mt-4 grid gap-3 sm:grid-cols-2">
+      <div
+        v-else
+        v-vrsus-motion="{ preset: 'cards', key: activeTab }"
+        class="mt-4 grid gap-3 sm:grid-cols-2"
+      >
         <NuxtLink
           v-for="tournament in visibleTournaments"
           :key="tournament.id"

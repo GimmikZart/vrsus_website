@@ -311,7 +311,11 @@ useSeoMeta({ title: 'Tornei — VRSUS', robots: 'noindex, nofollow' })
         con questi filtri.
       </p>
 
-      <div v-else class="space-y-3">
+      <div
+        v-else
+        v-vrsus-motion="{ preset: 'cards', key: activeTab }"
+        class="space-y-3"
+      >
         <NuxtLink
           v-for="tournament in visibleTournaments"
           :key="tournament.id ?? ''"

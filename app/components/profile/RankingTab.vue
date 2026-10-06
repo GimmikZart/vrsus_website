@@ -87,7 +87,7 @@ function formatDate(value: string) {
       Nessun punteggio registrato con questi filtri.
     </p>
 
-    <ul v-else class="mt-5 space-y-2">
+    <ul v-else v-vrsus-motion="'rows'" class="mt-5 space-y-2">
       <li
         v-for="row in rows"
         :key="row.kind + row.id"

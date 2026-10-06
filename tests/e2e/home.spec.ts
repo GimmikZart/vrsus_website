@@ -147,7 +147,7 @@ test('le sottoaree utente e admin restano protette', async ({ page }) => {
   for (const path of [
     '/app/ranking',
     '/app/tornei',
-    '/app/bacheca',
+    '/app/scrivici',
     '/app/impostazioni',
     '/admin/piattaforme',
     '/admin/giochi',

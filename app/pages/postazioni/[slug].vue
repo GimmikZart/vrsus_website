@@ -81,7 +81,11 @@ useSeoMeta({
           Nessun gioco pubblicato per questa postazione.
         </p>
 
-        <div v-else class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          v-else
+          v-vrsus-motion="'cards'"
+          class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        >
           <article
             v-for="game in data.games"
             :key="String(game.id ?? game.slug)"

@@ -118,75 +118,76 @@ const statusColor = computed(() => {
       />
     </button>
 
-    <dl
-      v-show="expanded"
-      class="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4"
-    >
-      <div class="flex justify-between gap-3 sm:block">
-        <dt class="text-white/45">Piattaforma</dt>
-        <dd class="text-white/85 sm:mt-1">
-          {{ tournament.platformName ?? '—' }}
-        </dd>
-      </div>
-      <div class="flex justify-between gap-3 sm:block">
-        <dt class="text-white/45">Gioco</dt>
-        <dd class="text-white/85 sm:mt-1">{{ tournament.gameName ?? '—' }}</dd>
-      </div>
-      <div class="flex justify-between gap-3 sm:block">
-        <dt class="text-white/45">Tipo di torneo</dt>
-        <dd class="text-white/85 sm:mt-1">
-          {{ tournamentStructureLabel(tournament) }}
-        </dd>
-      </div>
-      <div class="flex justify-between gap-3 sm:block">
-        <dt class="text-white/45">Composizione</dt>
-        <dd class="text-white/85 sm:mt-1">
-          {{ tournamentEntryLabel(tournament.entrySize) }}
-        </dd>
-      </div>
-      <div class="flex justify-between gap-3 sm:block">
-        <dt class="text-white/45">Come si vince</dt>
-        <dd class="text-white/85 sm:mt-1">
-          {{ tournamentResultLabel(tournament) }}
-        </dd>
-      </div>
-      <div class="flex justify-between gap-3 sm:block">
-        <dt class="text-white/45">Data e ora</dt>
-        <dd class="text-white/85 sm:mt-1">
-          {{ formatTournamentDate(tournament.startsAt) }}
-        </dd>
-      </div>
-      <div class="flex justify-between gap-3 sm:block">
-        <dt class="text-white/45">Iscritti</dt>
-        <dd class="text-white/85 sm:mt-1">
-          {{ tournament.entriesCount }} / {{ tournament.maxEntries ?? '∞' }}
-        </dd>
-      </div>
-      <div class="flex justify-between gap-3 sm:block">
-        <dt class="text-white/45">Partite giocate</dt>
-        <dd class="text-white/85 sm:mt-1">
-          {{ tournament.matchesPlayed }} / {{ tournament.matchesTotal }}
-        </dd>
-      </div>
-      <div
-        v-if="tournament.eventTitle"
-        class="flex justify-between gap-3 sm:block"
-      >
-        <dt class="text-white/45">Evento</dt>
-        <dd class="truncate text-white/85 sm:mt-1">
-          {{ tournament.eventTitle }}
-        </dd>
-      </div>
-      <div
-        v-if="tournament.pointSchemeName"
-        class="flex justify-between gap-3 sm:block"
-      >
-        <dt class="text-white/45">Punti VRSUS</dt>
-        <dd class="truncate text-white/85 sm:mt-1">
-          {{ tournament.pointSchemeName }}
-        </dd>
-      </div>
-    </dl>
+    <UiVrsusCollapse :open="expanded">
+      <dl class="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div class="flex justify-between gap-3 sm:block">
+          <dt class="text-white/45">Piattaforma</dt>
+          <dd class="text-white/85 sm:mt-1">
+            {{ tournament.platformName ?? '—' }}
+          </dd>
+        </div>
+        <div class="flex justify-between gap-3 sm:block">
+          <dt class="text-white/45">Gioco</dt>
+          <dd class="text-white/85 sm:mt-1">
+            {{ tournament.gameName ?? '—' }}
+          </dd>
+        </div>
+        <div class="flex justify-between gap-3 sm:block">
+          <dt class="text-white/45">Tipo di torneo</dt>
+          <dd class="text-white/85 sm:mt-1">
+            {{ tournamentStructureLabel(tournament) }}
+          </dd>
+        </div>
+        <div class="flex justify-between gap-3 sm:block">
+          <dt class="text-white/45">Composizione</dt>
+          <dd class="text-white/85 sm:mt-1">
+            {{ tournamentEntryLabel(tournament.entrySize) }}
+          </dd>
+        </div>
+        <div class="flex justify-between gap-3 sm:block">
+          <dt class="text-white/45">Come si vince</dt>
+          <dd class="text-white/85 sm:mt-1">
+            {{ tournamentResultLabel(tournament) }}
+          </dd>
+        </div>
+        <div class="flex justify-between gap-3 sm:block">
+          <dt class="text-white/45">Data e ora</dt>
+          <dd class="text-white/85 sm:mt-1">
+            {{ formatTournamentDate(tournament.startsAt) }}
+          </dd>
+        </div>
+        <div class="flex justify-between gap-3 sm:block">
+          <dt class="text-white/45">Iscritti</dt>
+          <dd class="text-white/85 sm:mt-1">
+            {{ tournament.entriesCount }} / {{ tournament.maxEntries ?? '∞' }}
+          </dd>
+        </div>
+        <div class="flex justify-between gap-3 sm:block">
+          <dt class="text-white/45">Partite giocate</dt>
+          <dd class="text-white/85 sm:mt-1">
+            {{ tournament.matchesPlayed }} / {{ tournament.matchesTotal }}
+          </dd>
+        </div>
+        <div
+          v-if="tournament.eventTitle"
+          class="flex justify-between gap-3 sm:block"
+        >
+          <dt class="text-white/45">Evento</dt>
+          <dd class="truncate text-white/85 sm:mt-1">
+            {{ tournament.eventTitle }}
+          </dd>
+        </div>
+        <div
+          v-if="tournament.pointSchemeName"
+          class="flex justify-between gap-3 sm:block"
+        >
+          <dt class="text-white/45">Punti VRSUS</dt>
+          <dd class="truncate text-white/85 sm:mt-1">
+            {{ tournament.pointSchemeName }}
+          </dd>
+        </div>
+      </dl>
+    </UiVrsusCollapse>
 
     <div class="mt-5 empty:mt-0">
       <slot name="actions" />

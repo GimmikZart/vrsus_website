@@ -238,7 +238,11 @@ useSeoMeta({ title: 'Postazioni — Admin VRSUS', robots: 'noindex, nofollow' })
       />
     </div>
 
-    <div v-else class="mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+    <div
+      v-else
+      v-vrsus-motion="'cards'"
+      class="mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3"
+    >
       <NuxtLink
         v-for="platform in data?.platforms ?? []"
         :key="platform.id"

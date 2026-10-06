@@ -82,10 +82,12 @@ useSeoMeta({
 
     <div
       v-else-if="visibleUsers.length"
+      v-vrsus-motion="'rows'"
       class="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]"
     >
       <div
         class="hidden grid-cols-[minmax(0,1fr)_10rem_3.5rem] items-center gap-4 border-b border-white/10 px-4 py-3 text-xs tracking-wide text-white/40 uppercase sm:grid"
+        data-motion-skip
       >
         <span>Nome utente</span>
         <span>Ruolo</span>

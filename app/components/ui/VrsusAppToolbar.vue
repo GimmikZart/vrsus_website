@@ -15,14 +15,7 @@ const { unreadCount } = useNotificationRealtime()
         class="inline-flex min-w-0 items-center gap-1.5"
         aria-label="VRSUS, pagina iniziale"
       >
-        <span
-          class="bg-brand-red-500 font-display grid size-8 place-items-center rounded-lg text-sm font-bold text-white"
-          >V</span
-        >
-        <span
-          class="font-display truncate text-xs font-bold tracking-[0.08em] text-white sm:text-sm sm:tracking-[0.14em]"
-          >VRSUS</span
-        >
+        <UiVrsusBrandMark compact />
       </NuxtLink>
       <p
         class="font-display truncate text-center text-sm font-semibold text-white sm:text-base"
@@ -40,12 +33,15 @@ const { unreadCount } = useNotificationRealtime()
         :aria-current="title === 'Notifiche' ? 'page' : undefined"
       >
         <UIcon name="i-lucide-bell" class="size-5" />
-        <span
-          v-if="unreadCount"
-          class="bg-brand-red-500 absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-bold text-white"
-          aria-hidden="true"
-          >{{ unreadCount > 99 ? '99+' : unreadCount }}</span
-        >
+        <Transition name="badge" mode="out-in">
+          <span
+            v-if="unreadCount"
+            :key="unreadCount"
+            class="bg-brand-red-500 absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-bold text-white"
+            aria-hidden="true"
+            >{{ unreadCount > 99 ? '99+' : unreadCount }}</span
+          >
+        </Transition>
       </NuxtLink>
     </div>
   </header>

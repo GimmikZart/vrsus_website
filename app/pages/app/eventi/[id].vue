@@ -441,7 +441,7 @@ useSeoMeta({
       <h2 class="font-display text-lg font-semibold text-white">
         Tornei della giornata
       </h2>
-      <ul class="mt-3 space-y-2">
+      <ul v-vrsus-motion="'cards'" class="mt-3 space-y-2">
         <li
           v-for="tournament in detail.tournaments"
           :key="String(tournament.id)"
@@ -471,7 +471,7 @@ useSeoMeta({
       <h2 class="font-display text-lg font-semibold text-white">
         Postazioni e giochi
       </h2>
-      <ul class="mt-3 grid gap-3 sm:grid-cols-2">
+      <ul v-vrsus-motion="'cards'" class="mt-3 grid gap-3 sm:grid-cols-2">
         <li
           v-for="platform in detail.platforms"
           :key="String(platform.id)"

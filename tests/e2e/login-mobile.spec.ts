@@ -13,6 +13,7 @@ test('la pagina di login mostra il gesto di aggiornamento nella PWA Apple', asyn
     Object.defineProperty(navigator, 'standalone', { value: true })
   })
   await page.goto('/login')
+  await page.waitForLoadState('networkidle')
   await page.waitForFunction(() =>
     Boolean(document.getElementById('__nuxt')?.__vue_app__),
   )
@@ -58,6 +59,7 @@ test('un errore di rete al login termina il caricamento e mostra un messaggio', 
     route.abort('failed'),
   )
   await page.goto('/login')
+  await page.waitForLoadState('networkidle')
   await page.waitForFunction(() =>
     Boolean(document.getElementById('__nuxt')?.__vue_app__),
   )
@@ -113,6 +115,7 @@ test('dopo un accesso valido carica la pagina protetta con una nuova richiesta',
   )
 
   await page.goto('/login')
+  await page.waitForLoadState('networkidle')
   await page.waitForFunction(() =>
     Boolean(document.getElementById('__nuxt')?.__vue_app__),
   )

@@ -41,6 +41,50 @@ tastiera e non mostrano dati inventati come date, prezzi o numeri di capienza.
 
 <!-- Inserire qui eventuali osservazioni -->
 
+## Logo e motion (2026-10-06)
+
+**Ambiente:** DEV per browser desktop/mobile; QUALITY per PWA su telefono.
+**Prerequisiti:** frontend aggiornato e almeno una sfida con piu risultati.
+**Account:** User per app, Staff/Admin per console; nessun account richiesto
+per la vetrina. La prova automatica usa fixture temporanee esclusivamente DEV.
+
+1. Aprire `/`, Postazioni e Servizi. Controllare il logo, l'ingresso della
+   testata e delle card durante la prima lettura; tornare indietro e avanti.
+   Atteso: contenuti e CTA subito accessibili, nessun salto di layout o vuoto.
+2. Accedere e aprire Bacheca, Eventi, Tornei e Ranking. Scorrere normalmente,
+   cambiare tab e applicare un filtro. Atteso: sequenze morbide e ben
+   percepibili, senza scatti o lampeggi; nessun
+   blocco dello scroll e nessuna animazione ripetuta dei dati gia letti dopo
+   un semplice aggiornamento. In Bacheca votare un sondaggio e osservare la
+   comparsa dei risultati, senza ritardare il feedback del voto.
+3. Aprire una sfida con piu giocatori. Atteso: righe in ordine dal basso con
+   dissolvenza graduale, senza effetto glitch ne lunghe attese per le ultime
+   posizioni. Aprire e chiudere
+   Regole: altezza fluida, testo leggibile, niente spazio vuoto alla chiusura.
+4. In console aprire un profilo, usare Info e cambiare Eventi/Tornei/Ranking.
+   Aprire Assegna punti nel dettaglio di una sfida e chiudere il pannello.
+   Nel wizard evento espandere i giochi di una postazione. Atteso: indicatore
+   delle tab allineato, pannelli reattivi, contenuti richiusi fuori dal focus.
+5. Attivare "Riduci movimento" nelle impostazioni di sistema/browser e
+   ripetere i percorsi. Cambiare la preferenza anche a pagina aperta.
+   Atteso: niente ingressi decorativi; contenuti sempre visibili e comandi
+   immediatamente utilizzabili. Da tastiera raggiungere una card/riga durante
+   l'ingresso: il focus resta visibile senza aspettare l'animazione.
+6. In QUALITY riaprire la PWA dopo l'aggiornamento. Controllare toolbar e
+   icona installata: le nuove icone provengono dallo stesso logo. Alcuni
+   sistemi aggiornano l'icona con ritardo; confrontare anche favicon nel
+   browser e l'icona durante una nuova installazione di prova.
+
+- [ ] Logo leggibile in toolbar, sidebar, vetrina e invito installazione.
+- [ ] Card e classifiche: ritmo morbido, leggibile e nessun replay fastidioso.
+- [ ] Tab, accordion e pannelli funzionanti su telefono e desktop.
+- [ ] Scroll, focus, tastiera e movimento ridotto verificati.
+- [ ] Favicon e icone PWA/Apple verificate in QUALITY.
+
+**Commenti utente:**
+
+<!-- Logo e motion: annotare qui osservazioni senza rimuovere note precedenti. -->
+
 ## Navbar per ruolo, Scrivici, Inbox e immagini
 
 **Prerequisiti.** Migration `20261003100000` applicata; un account User, uno

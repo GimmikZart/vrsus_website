@@ -10,9 +10,40 @@ export type VrsusTabItem = {
   icon?: string
 }
 
-defineProps<{ items: VrsusTabItem[] }>()
+const props = defineProps<{ items: VrsusTabItem[] }>()
 
 const model = defineModel<string>({ required: true })
+const tabList = ref<HTMLElement | null>(null)
+const marker = ref<{ width: string; transform: string } | null>(null)
+let resizeObserver: ResizeObserver | undefined
+
+function updateMarker() {
+  const active = tabList.value?.querySelector<HTMLElement>(
+    '[aria-selected="true"]',
+  )
+  marker.value = active
+    ? {
+        width: `${active.offsetWidth}px`,
+        transform: `translateX(${active.offsetLeft}px)`,
+      }
+    : null
+}
+
+watch(
+  [model, () => props.items],
+  async () => {
+    await nextTick()
+    updateMarker()
+  },
+  { deep: true, flush: 'post' },
+)
+
+onMounted(() => {
+  updateMarker()
+  resizeObserver = new ResizeObserver(updateMarker)
+  if (tabList.value) resizeObserver.observe(tabList.value)
+})
+onBeforeUnmount(() => resizeObserver?.disconnect())
 </script>
 
 <template>
@@ -23,9 +54,16 @@ const model = defineModel<string>({ required: true })
   -->
   <div class="-mx-1 overflow-x-auto px-1">
     <div
+      ref="tabList"
       role="tablist"
-      class="inline-flex min-w-full gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-1"
+      class="relative isolate inline-flex min-w-full gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-1"
     >
+      <span
+        v-if="marker"
+        aria-hidden="true"
+        class="vrsus-tab-marker pointer-events-none absolute inset-y-1 left-0 -z-10 rounded-xl bg-white/10"
+        :style="marker"
+      />
       <button
         v-for="item in items"
         :key="item.value"
@@ -35,7 +73,9 @@ const model = defineModel<string>({ required: true })
         class="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium whitespace-nowrap transition-colors"
         :class="
           model === item.value
-            ? 'bg-white/10 text-white'
+            ? marker
+              ? 'text-white'
+              : 'bg-white/10 text-white'
             : 'text-white/50 hover:text-white/80'
         "
         @click="model = item.value"
@@ -51,3 +91,11 @@ const model = defineModel<string>({ required: true })
     </div>
   </div>
 </template>
+
+<style scoped>
+.vrsus-tab-marker {
+  transition:
+    transform 420ms var(--ease-vrsus),
+    width 420ms var(--ease-vrsus);
+}
+</style>

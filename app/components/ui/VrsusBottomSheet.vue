@@ -97,17 +97,20 @@ onBeforeUnmount(() => {
 <style scoped>
 .sheet-enter-active,
 .sheet-leave-active {
-  transition: opacity 220ms ease;
+  transition: opacity 300ms ease;
 }
 .sheet-enter-from,
 .sheet-leave-to {
   opacity: 0;
 }
 .sheet-panel {
-  transition: transform 220ms ease;
+  transition: transform 480ms var(--ease-vrsus);
+}
+.sheet-leave-active .sheet-panel {
+  transition-duration: 280ms;
 }
 .sheet-enter-from .sheet-panel,
 .sheet-leave-to .sheet-panel {
-  transform: translateY(100%);
+  transform: translateY(2rem);
 }
 </style>

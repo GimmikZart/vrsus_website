@@ -1,10 +1,23 @@
+<script setup lang="ts">
+import logo from '~/assets/css/img/logo/logo-vrsus.png'
+
+withDefaults(defineProps<{ compact?: boolean }>(), { compact: false })
+</script>
+
 <template>
-  <span class="inline-flex items-center gap-3" aria-label="VRSUS">
+  <span class="inline-flex shrink-0 items-center gap-3">
+    <img
+      :src="logo"
+      alt="VRSUS"
+      width="384"
+      height="384"
+      class="block shrink-0 object-contain"
+      :class="compact ? 'size-11' : 'size-12'"
+    />
     <span
-      class="bg-brand-red-500 font-display grid size-9 place-items-center rounded-xl text-sm font-bold text-white"
-      >V</span
-    >
-    <span class="font-display text-lg font-bold tracking-[0.18em] text-white"
+      v-if="!compact"
+      aria-hidden="true"
+      class="font-display text-lg font-bold tracking-[0.16em] text-white"
       >VRSUS</span
     >
   </span>

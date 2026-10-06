@@ -1776,3 +1776,68 @@ Admin e aggiornata in `docs/dev/guideline_test_features.md`.
 - Migration DEV e pgTAP 321/321 -> PASS.
 - ESLint mirato, typecheck, Vitest 30/30 e build `node-server` -> PASS.
 - Verifica visuale autenticata -> PENDENTE.
+
+## 2026-10-06 — Logo fornito e sistema motion
+
+### Lavoro svolto
+
+- Integrato il logo originale in un solo componente per tutti i punti brand;
+  generate favicon, Apple icon e icone PWA dallo stesso file.
+- Centralizzati in GSAP gli ingressi selettivi di card e righe, con sequenze
+  brevi, replay esplicito su filtri/tab e cleanup. Aggiunti accordion fluidi,
+  indicatore mobile delle tab, transizioni dei pannelli e feedback dei badge.
+- Coperti vetrina, cataloghi, bacheca/sondaggi, eventi, live, tornei, ranking,
+  profili e principali elenchi operativi. Nessuna dipendenza o migration.
+- Aggiornati i test E2E alla rotta Bacheca attuale e attesa del caricamento
+  per eliminare la perdita di input durante l'idratazione.
+
+### File principali modificati
+
+- `app/utils/motion.ts`, `app/plugins/motion.ts`, `app/types/motion.d.ts`.
+- `app/components/ui/VrsusBrandMark.vue`, `VrsusCollapse.vue`, `VrsusTabs.vue`,
+  toolbar, tab bar, pannelli e `app/assets/css/main.css`.
+- Componenti condivisi e viste con gruppi `v-vrsus-motion`.
+- `nuxt.config.ts`, `public/icons/`, `public/favicon.png`,
+  `scripts/generate-brand-icons.mjs`.
+- `tests/unit/motion.test.ts`, `tests/e2e/motion.spec.ts` e handoff.
+
+### Verifiche
+
+- ESLint, Prettier, typecheck -> PASS; warning Volar noto.
+- Vitest -> PASS, 36/36.
+- Playwright su Chrome locale -> PASS, 13/13.
+- Build Node e Cloudflare Pages -> PASS.
+- Smoke autenticato a 375x812 e 1440x900, screenshot ispezionati -> PASS.
+
+### Problemi emersi e stato finale
+
+Chromium headless assente: usato Chrome tramite override locale ignorato.
+Bundler e Vitest hanno richiesto lettura fuori sandbox. Il logo originale
+preesistente e conservato; fixture temporanee isolate in DEV e rimosse.
+La revisione e implementata e verificata nel browser; ritmo su device fisico,
+Safari e icona della PWA gia installata restano nella checklist. DEC-064;
+avanzamento complessivo stimato 96%, con blocker esterni preesistenti invariati.
+
+## 2026-10-06 — Calibrazione motion smooth
+
+### Lavoro svolto
+
+- Allungati gli ingressi GSAP di righe, card, hero e reveal, riducendo al tempo
+  stesso la distanza verticale e passando a una curva meno aggressiva.
+- Resi coerenti e piu morbidi accordion, indicatore tab, dialog, float menu,
+  badge, menu pubblico e bottom sheet; mantenuti rapidi i feedback dei comandi.
+- Aggiornato il limite testato delle sequenze lunghe e formalizzato il ritmo
+  in DEC-065 dopo il riscontro del proprietario.
+
+### Verifiche
+
+- Vitest completo: PASS, 36/36, inclusi i 6 test motion.
+- Playwright motion autenticato su Chrome mobile/desktop: PASS, 2/2.
+- ESLint mirato, Prettier, typecheck e build `node-server`: PASS; screenshot
+  mobile e desktop ispezionati.
+
+### Stato finale della sessione
+
+La calibrazione e applicata e verificata in browser. Il feeling su dispositivo
+fisico e Safari/iOS resta nella checklist manuale. Avanzamento complessivo
+stimato 96%; blocker esterni preesistenti invariati.

@@ -87,7 +87,7 @@ function toggleGame(platformId: string, gameId: string) {
       Non ci sono postazioni a catalogo. Creale da Postazioni.
     </p>
 
-    <ul v-else class="grid gap-3 sm:grid-cols-2">
+    <ul v-else v-vrsus-motion="'cards'" class="grid gap-3 sm:grid-cols-2">
       <li
         v-for="platform in platforms"
         :key="platform.id"
@@ -141,28 +141,33 @@ function toggleGame(platformId: string, gameId: string) {
           />
         </div>
 
-        <div v-if="expanded.includes(platform.id)" class="mt-3 space-y-1.5">
-          <p v-if="!gamesOf(platform.id).length" class="text-xs text-white/35">
-            Nessun gioco a catalogo per questa postazione.
-          </p>
-          <label
-            v-for="game in gamesOf(platform.id)"
-            :key="game.id"
-            class="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-lg px-1 text-sm text-white/75"
-          >
-            <UCheckbox
-              :model-value="isGameSelected(platform.id, game.id)"
-              :disabled="!isSelected(platform.id)"
-              @update:model-value="toggleGame(platform.id, game.id)"
-            />
-            <UiVrsusEntityImage
-              :src="game.image_path"
-              :alt="game.name"
-              class="size-9 shrink-0 rounded-lg"
-            />
-            <span class="truncate">{{ game.name }}</span>
-          </label>
-        </div>
+        <UiVrsusCollapse :open="expanded.includes(platform.id)">
+          <div class="mt-3 space-y-1.5">
+            <p
+              v-if="!gamesOf(platform.id).length"
+              class="text-xs text-white/35"
+            >
+              Nessun gioco a catalogo per questa postazione.
+            </p>
+            <label
+              v-for="game in gamesOf(platform.id)"
+              :key="game.id"
+              class="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-lg px-1 text-sm text-white/75"
+            >
+              <UCheckbox
+                :model-value="isGameSelected(platform.id, game.id)"
+                :disabled="!isSelected(platform.id)"
+                @update:model-value="toggleGame(platform.id, game.id)"
+              />
+              <UiVrsusEntityImage
+                :src="game.image_path"
+                :alt="game.name"
+                class="size-9 shrink-0 rounded-lg"
+              />
+              <span class="truncate">{{ game.name }}</span>
+            </label>
+          </div>
+        </UiVrsusCollapse>
       </li>
     </ul>
 

@@ -1,6 +1,57 @@
 # Test Report
 
-Ultimo aggiornamento: 2026-10-03
+Ultimo aggiornamento: 2026-10-06
+
+## Verifica 2026-10-06 — calibrazione motion smooth (DEV)
+
+- Preset GSAP ricalibrati: spostamenti ridotti, ingressi da 0,56 a 0,90 s,
+  stagger piu leggibile e curva `power2.out`; il ritardo delle liste lunghe
+  resta limitato a 0,36–0,50 s.
+- Accordion, indicatore tab, dialog, float menu, badge e bottom sheet portati
+  a durate coerenti di 0,28–0,48 s; i feedback funzionali dei pulsanti
+  restano rapidi.
+- Vitest completo: 36/36 PASS, inclusi i 6 test motion. Verifica E2E
+  autenticata motion su
+  Chrome, mobile 375x812 e desktop 1440x900: 2/2 PASS, inclusi ordine righe,
+  cleanup, pannelli, tab, focus e movimento ridotto.
+- ESLint mirato, Prettier, typecheck e build `node-server`: PASS; il typecheck
+  conserva il warning noto Volar/vue-router. Il CSS e ignorato dalla
+  configurazione ESLint come gia previsto. Screenshot mobile/desktop
+  ispezionati. Device fisico e Safari/iOS: PENDENTI.
+
+## Verifica 2026-10-06 — logo e motion (DEV)
+
+- ESLint completo e Prettier su app/test/config/script: PASS, senza errori.
+- `nuxt typecheck`: PASS, con warning gia noto Volar/vue-router.
+- Vitest: 36/36 PASS; sei nuovi test verificano contenuti fuori viewport
+  visibili, aggiornamenti senza replay dei vecchi elementi, cambio filtro,
+  limite del ritardo su 100 righe, preferenza movimento ridotto, focus e
+  cleanup alla rimozione della vista.
+- Build `node-server` e `cloudflare_pages`: PASS. La prima build Node nel
+  sandbox si e fermata su `EPERM readlink C:\Users\User`; la ripetizione con
+  permessi di lettura e riuscita. Anche Vitest ha richiesto tali permessi.
+- Playwright completo: **13/13 PASS**, Chrome installato, due worker.
+  Il Chromium headless scaricato non e presente; utilizzato un override locale
+  ignorato in `node_modules/.cache/vrsus-playwright.config.mjs`, senza
+  installare browser o cambiare il browser predefinito del repository.
+- Smoke autenticato mobile 375x812 e desktop 1440x900: logo toolbar/sidebar,
+  galleria, classifica con quattro righe realmente animate in ordine e
+  ritardo misurato inferiore a 400 ms, ripristino degli stili, regole ranking,
+  apertura/chiusura bottom sheet, Info profilo, posizione dell'indicatore tab
+  e assenza di overflow: PASS. Screenshot ispezionati per classifica mobile
+  e profilo desktop. Movimento ridotto e focus tastiera: PASS.
+- Fixture E2E: quattro account e una sfida temporanei sul solo Supabase
+  loopback DEV, rimossi al termine; nessun account esistente usato o modificato.
+- Prima passata E2E: test obsoleto su `/app/bacheca` (rotta ritirata), attesa
+  insufficiente dell'idratazione e label errata nel nuovo test. Aggiornati i
+  test alla rotta `/app/scrivici`, attesa idratazione e label effettiva. Una
+  misura iniziale osservava la preparazione delle righe, anziche il loro
+  movimento: ora rileva l'inizio effettivo con opacita positiva. Il test login
+  attende la pagina caricata prima di compilare il modulo, evitando che
+  l'idratazione perda il testo inserito. La suite finale e interamente verde.
+- Device fisico, Safari/iOS e aggiornamento delle icone di una PWA gia
+  installata: PENDENTI. Nessuna migration; pgTAP non rieseguito per questa
+  modifica esclusivamente frontend, ultimo esito noto 321/321.
 
 ## Verifica 2026-10-03 — invio push manuale diretto
 

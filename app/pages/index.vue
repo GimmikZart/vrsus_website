@@ -51,7 +51,7 @@ useSeoMeta({
         <div
           class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12"
         >
-          <div>
+          <div v-vrsus-motion="'hero'">
             <p
               class="text-brand-red-400 text-xs font-semibold tracking-[0.24em] uppercase"
             >
@@ -86,6 +86,7 @@ useSeoMeta({
 
           <article
             v-if="nextEvent"
+            v-vrsus-motion="'reveal'"
             class="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30 sm:p-8"
           >
             <div
@@ -203,7 +204,7 @@ useSeoMeta({
           :description="HOME_CONTENT.intro.description"
         />
 
-        <div class="mt-10 grid gap-4 sm:grid-cols-3">
+        <div v-vrsus-motion="'cards'" class="mt-10 grid gap-4 sm:grid-cols-3">
           <div
             v-for="(step, index) in HOME_CONTENT.steps"
             :key="step.title"
@@ -241,7 +242,10 @@ useSeoMeta({
           />
         </div>
 
-        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          v-vrsus-motion="'cards'"
+          class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        >
           <NuxtLink
             v-for="platform in previewPlatforms"
             :key="String(platform.id ?? platform.slug)"
@@ -290,7 +294,10 @@ useSeoMeta({
           />
         </div>
 
-        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          v-vrsus-motion="'cards'"
+          class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        >
           <NuxtLink
             v-for="service in previewServices"
             :key="String(service.id ?? service.slug)"

@@ -53,7 +53,11 @@ useSeoMeta({
       Nessuna postazione pubblicata al momento.
     </div>
 
-    <div v-else class="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+    <div
+      v-else
+      v-vrsus-motion="'cards'"
+      class="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3"
+    >
       <NuxtLink
         v-for="platform in platforms"
         :key="String(platform.id ?? platform.slug)"

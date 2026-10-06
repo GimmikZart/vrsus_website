@@ -181,81 +181,86 @@ const arciVerifiedLabel = computed(() => {
       </div>
     </div>
 
-    <div v-show="infoOpen" class="pt-2">
-      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        <component
-          :is="detail.arci && !profile.arciCardValid ? 'button' : 'div'"
-          v-for="detail in details"
-          :key="detail.label"
-          :type="detail.arci ? 'button' : undefined"
-          :disabled="detail.arci ? arciPending : undefined"
-          class="flex min-w-0 items-center gap-3 rounded-2xl bg-black/10 p-3 text-left"
-          :class="
-            detail.arci
-              ? profile.arciCardValid
-                ? 'bg-emerald-500/10'
-                : 'bg-amber-500/10 transition-colors hover:bg-amber-500/15'
-              : ''
-          "
-          @click="detail.arci && !profile.arciCardValid && emit('requestArci')"
-        >
-          <span
-            class="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[0.05] text-white/65"
+    <UiVrsusCollapse :open="infoOpen">
+      <div class="pt-2">
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <component
+            :is="detail.arci && !profile.arciCardValid ? 'button' : 'div'"
+            v-for="detail in details"
+            :key="detail.label"
+            :type="detail.arci ? 'button' : undefined"
+            :disabled="detail.arci ? arciPending : undefined"
+            class="flex min-w-0 items-center gap-3 rounded-2xl bg-black/10 p-3 text-left"
             :class="
               detail.arci
                 ? profile.arciCardValid
-                  ? 'text-emerald-300'
-                  : 'text-amber-200'
+                  ? 'bg-emerald-500/10'
+                  : 'bg-amber-500/10 transition-colors hover:bg-amber-500/15'
                 : ''
             "
+            @click="
+              detail.arci && !profile.arciCardValid && emit('requestArci')
+            "
           >
-            <UIcon :name="detail.icon" class="size-4.5" />
-          </span>
-          <div class="min-w-0">
-            <p class="text-[10px] tracking-wide text-white/35 uppercase">
-              {{ detail.label }}
-            </p>
-            <p
-              class="mt-0.5 truncate text-sm font-medium"
+            <span
+              class="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[0.05] text-white/65"
               :class="
                 detail.arci
                   ? profile.arciCardValid
-                    ? 'text-emerald-200'
-                    : 'text-amber-100'
-                  : 'text-white/80'
+                    ? 'text-emerald-300'
+                    : 'text-amber-200'
+                  : ''
               "
             >
-              {{ arciPending && detail.arci ? 'Registrazione…' : detail.value }}
-            </p>
-            <p
-              v-if="detail.arci && profile.arciCardValid && arciVerifiedLabel"
-              class="mt-0.5 text-[10px] text-emerald-300/60"
-            >
-              Verificata il {{ arciVerifiedLabel }}
-            </p>
-          </div>
-        </component>
-      </div>
-
-      <dl class="mt-2 grid grid-cols-3 gap-2">
-        <div
-          v-for="stat in stats"
-          :key="stat.label"
-          class="rounded-2xl bg-white/[0.035] px-3 py-3"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <dt class="text-[10px] tracking-wide text-white/40 uppercase">
-              {{ stat.label }}
-            </dt>
-            <UIcon :name="stat.icon" class="size-4 text-white/25" />
-          </div>
-          <dd class="font-display mt-1.5 text-2xl font-semibold text-white">
-            {{ stat.value }}
-          </dd>
+              <UIcon :name="detail.icon" class="size-4.5" />
+            </span>
+            <div class="min-w-0">
+              <p class="text-[10px] tracking-wide text-white/35 uppercase">
+                {{ detail.label }}
+              </p>
+              <p
+                class="mt-0.5 truncate text-sm font-medium"
+                :class="
+                  detail.arci
+                    ? profile.arciCardValid
+                      ? 'text-emerald-200'
+                      : 'text-amber-100'
+                    : 'text-white/80'
+                "
+              >
+                {{
+                  arciPending && detail.arci ? 'Registrazione…' : detail.value
+                }}
+              </p>
+              <p
+                v-if="detail.arci && profile.arciCardValid && arciVerifiedLabel"
+                class="mt-0.5 text-[10px] text-emerald-300/60"
+              >
+                Verificata il {{ arciVerifiedLabel }}
+              </p>
+            </div>
+          </component>
         </div>
-      </dl>
-    </div>
 
+        <dl class="mt-2 grid grid-cols-3 gap-2">
+          <div
+            v-for="stat in stats"
+            :key="stat.label"
+            class="rounded-2xl bg-white/[0.035] px-3 py-3"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <dt class="text-[10px] tracking-wide text-white/40 uppercase">
+                {{ stat.label }}
+              </dt>
+              <UIcon :name="stat.icon" class="size-4 text-white/25" />
+            </div>
+            <dd class="font-display mt-1.5 text-2xl font-semibold text-white">
+              {{ stat.value }}
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </UiVrsusCollapse>
     <button
       type="button"
       class="mx-auto mt-2 flex min-h-9 items-center gap-1.5 px-4 text-xs font-semibold tracking-wide text-white/50 uppercase transition-colors hover:text-white"

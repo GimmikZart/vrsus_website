@@ -148,7 +148,7 @@ useSeoMeta({ title: 'Eventi — VRSUS', robots: 'noindex, nofollow' })
           {{ group.title }}
         </h2>
 
-        <ul class="mt-3 space-y-3">
+        <ul v-vrsus-motion="'cards'" class="mt-3 space-y-3">
           <li v-for="event in group.items" :key="String(event.id)">
             <NuxtLink
               :to="`/app/eventi/${event.id}`"

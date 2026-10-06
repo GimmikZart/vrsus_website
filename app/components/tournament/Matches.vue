@@ -100,6 +100,7 @@ const gridLayout = computed(
       />
 
       <ul
+        v-vrsus-motion="{ preset: 'cards', key: activeRound }"
         class="gap-2"
         :class="gridLayout ? 'grid sm:grid-cols-2' : 'space-y-2'"
       >

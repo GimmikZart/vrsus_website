@@ -322,7 +322,7 @@ function bookingStatusLabel(value: string) {
           <span class="sr-only sm:hidden">Mostra o nascondi i dettagli</span>
           <UIcon
             name="i-lucide-chevron-down"
-            class="size-4 transition-transform duration-200"
+            class="size-4 transition-transform duration-400"
             :class="detailsOpen ? 'rotate-180' : ''"
           />
         </button>
@@ -367,7 +367,7 @@ function bookingStatusLabel(value: string) {
       -->
       <div
         id="event-overview-details"
-        class="grid transition-[grid-template-rows] duration-200 ease-out"
+        class="grid transition-[grid-template-rows] duration-400 ease-out"
         :class="detailsOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
       >
         <div class="overflow-hidden">
@@ -433,7 +433,10 @@ function bookingStatusLabel(value: string) {
 
       <template v-else>
         <!-- Mobile: card per prenotato -->
-        <ul class="space-y-2 lg:hidden">
+        <ul
+          v-vrsus-motion="{ preset: 'rows', key: activeTab }"
+          class="space-y-2 lg:hidden"
+        >
           <li v-for="person in people" :key="person.bookingId">
             <NuxtLink
               :to="`/admin/utenti/${person.userId}`"
@@ -501,7 +504,10 @@ function bookingStatusLabel(value: string) {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-white/[0.06]">
+            <tbody
+              v-vrsus-motion="{ preset: 'rows', key: activeTab }"
+              class="divide-y divide-white/[0.06]"
+            >
               <tr
                 v-for="person in people"
                 :key="person.bookingId"
@@ -572,7 +578,7 @@ function bookingStatusLabel(value: string) {
         Nessun torneo collegato a questo evento.
       </p>
 
-      <ul v-else class="grid gap-3 sm:grid-cols-2">
+      <ul v-else v-vrsus-motion="'cards'" class="grid gap-3 sm:grid-cols-2">
         <li v-for="tournament in orderedTournaments" :key="tournament.id">
           <NuxtLink
             :to="`/admin/tornei/${tournament.id}`"
@@ -654,7 +660,7 @@ function bookingStatusLabel(value: string) {
         Nessuna postazione configurata per questo evento.
       </p>
 
-      <ul v-else class="grid gap-3 sm:grid-cols-2">
+      <ul v-else v-vrsus-motion="'cards'" class="grid gap-3 sm:grid-cols-2">
         <li
           v-for="platform in data.platforms"
           :key="platform.id"

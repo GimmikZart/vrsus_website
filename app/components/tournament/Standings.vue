@@ -165,7 +165,7 @@ function membersLabel(row: TournamentStandingRow) {
       </p>
 
       <!-- Mobile: una card per iscritto. -->
-      <ul class="space-y-2 lg:hidden">
+      <ul v-vrsus-motion="'rows'" class="space-y-2 lg:hidden">
         <li v-for="(row, index) in standings" :key="row.entryId">
           <component
             :is="rowLink(row) ? resolveComponent('NuxtLink') : 'div'"
@@ -243,7 +243,7 @@ function membersLabel(row: TournamentStandingRow) {
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-white/[0.06]">
+          <tbody v-vrsus-motion="'rows'" class="divide-y divide-white/[0.06]">
             <tr
               v-for="(row, index) in standings"
               :key="row.entryId"

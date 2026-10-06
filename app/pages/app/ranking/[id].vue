@@ -164,11 +164,13 @@ useSeoMeta({
           :class="{ 'rotate-180': rulesOpen }"
         />
       </button>
-      <div v-show="rulesOpen" class="pt-1 pb-1">
-        <p class="text-toned text-sm leading-5 whitespace-pre-line">
-          {{ description }}
-        </p>
-      </div>
+      <UiVrsusCollapse :open="rulesOpen">
+        <div class="pt-1 pb-1">
+          <p class="text-toned text-sm leading-5 whitespace-pre-line">
+            {{ description }}
+          </p>
+        </div>
+      </UiVrsusCollapse>
     </section>
 
     <section aria-labelledby="leaderboard-title">
@@ -192,7 +194,7 @@ useSeoMeta({
         Non ci sono ancora punteggi registrati per questo ranking.
       </div>
 
-      <ol v-else class="space-y-2">
+      <ol v-else v-vrsus-motion="'rows'" class="space-y-2">
         <li
           v-for="(entry, index) in leaderboard"
           :key="entry.id"

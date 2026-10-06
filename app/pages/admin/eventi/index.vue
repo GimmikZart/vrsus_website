@@ -66,7 +66,7 @@ useSeoMeta({ title: 'Gestione eventi — VRSUS', robots: 'noindex, nofollow' })
       class="mt-5 h-32 animate-pulse rounded-2xl border border-white/10 bg-white/[0.04]"
     />
 
-    <ul v-else class="mt-5 space-y-3">
+    <ul v-else v-vrsus-motion="'cards'" class="mt-5 space-y-3">
       <li v-for="event in events" :key="event.id">
         <NuxtLink
           :to="`/admin/eventi/${event.id}`"

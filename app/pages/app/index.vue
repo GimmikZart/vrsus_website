@@ -213,95 +213,98 @@ useSeoMeta({ title: 'Bacheca — VRSUS', robots: 'noindex, nofollow' })
       Nessuna comunicazione pubblicata.
     </div>
 
-    <article
-      v-for="post in bundle?.posts ?? []"
-      :key="String(post.id)"
-      class="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
-    >
-      <div class="flex flex-wrap items-center gap-2">
-        <span
-          v-if="post.pinned"
-          class="bg-brand-red-500/15 text-brand-red-300 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase"
-          >In evidenza</span
-        >
-        <span
-          class="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] tracking-wide text-white/60 uppercase"
-        >
-          {{ post.post_type === 'poll' ? 'Sondaggio' : 'Annuncio' }}
-        </span>
-        <span class="text-xs text-white/35">
-          {{ formatPublicContentDate(post.published_at) }}
-        </span>
-      </div>
-
-      <h2 class="font-display mt-3 text-lg font-semibold text-white">
-        {{ post.title }}
-      </h2>
-
-      <NuxtImg
-        v-if="post.image_path"
-        :src="post.image_path"
-        :alt="post.title ?? ''"
-        class="mt-4 w-full rounded-xl object-cover"
-        loading="lazy"
-      />
-
-      <p
-        v-if="post.body"
-        class="mt-3 text-sm leading-6 whitespace-pre-line text-white/60"
+    <div v-vrsus-motion="'cards'" class="space-y-6">
+      <article
+        v-for="post in bundle?.posts ?? []"
+        :key="String(post.id)"
+        class="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
       >
-        {{ post.body }}
-      </p>
-
-      <!-- Prima del voto le opzioni sono pulsanti; dopo, percentuali. -->
-      <div
-        v-if="
-          post.post_type === 'poll' && optionsByPost[String(post.id)]?.length
-        "
-        class="mt-4 space-y-2"
-      >
-        <template v-if="!myVoteByPost[String(post.id)]">
-          <button
-            v-for="option in optionsByPost[String(post.id)]"
-            :key="String(option.id)"
-            type="button"
-            :disabled="votingPost === String(post.id)"
-            class="flex min-h-11 w-full items-center rounded-xl border border-white/15 px-4 text-sm text-white/80 transition-colors hover:border-white/30 hover:bg-white/5 disabled:opacity-50"
-            @click="vote(String(post.id), String(option.id))"
+        <div class="flex flex-wrap items-center gap-2">
+          <span
+            v-if="post.pinned"
+            class="bg-brand-red-500/15 text-brand-red-300 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase"
+            >In evidenza</span
           >
-            {{ option.label }}
-          </button>
-        </template>
-
-        <template v-else>
-          <div
-            v-for="option in optionsByPost[String(post.id)]"
-            :key="String(option.id)"
-            class="relative overflow-hidden rounded-xl border px-4 py-2.5"
-            :class="
-              myVoteByPost[String(post.id)] === String(option.id)
-                ? 'border-brand-red-500/50'
-                : 'border-white/10'
-            "
+          <span
+            class="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] tracking-wide text-white/60 uppercase"
           >
+            {{ post.post_type === 'poll' ? 'Sondaggio' : 'Annuncio' }}
+          </span>
+          <span class="text-xs text-white/35">
+            {{ formatPublicContentDate(post.published_at) }}
+          </span>
+        </div>
+
+        <h2 class="font-display mt-3 text-lg font-semibold text-white">
+          {{ post.title }}
+        </h2>
+
+        <NuxtImg
+          v-if="post.image_path"
+          :src="post.image_path"
+          :alt="post.title ?? ''"
+          class="mt-4 w-full rounded-xl object-cover"
+          loading="lazy"
+        />
+
+        <p
+          v-if="post.body"
+          class="mt-3 text-sm leading-6 whitespace-pre-line text-white/60"
+        >
+          {{ post.body }}
+        </p>
+
+        <!-- Prima del voto le opzioni sono pulsanti; dopo, percentuali. -->
+        <div
+          v-if="
+            post.post_type === 'poll' && optionsByPost[String(post.id)]?.length
+          "
+          class="mt-4 space-y-2"
+        >
+          <template v-if="!myVoteByPost[String(post.id)]">
+            <button
+              v-for="option in optionsByPost[String(post.id)]"
+              :key="String(option.id)"
+              type="button"
+              :disabled="votingPost === String(post.id)"
+              class="flex min-h-11 w-full items-center rounded-xl border border-white/15 px-4 text-sm text-white/80 transition-colors hover:border-white/30 hover:bg-white/5 disabled:opacity-50"
+              @click="vote(String(post.id), String(option.id))"
+            >
+              {{ option.label }}
+            </button>
+          </template>
+
+          <div v-else v-vrsus-motion="'rows'" class="space-y-2">
             <div
-              class="absolute inset-y-0 left-0 bg-white/[0.06]"
-              :style="{
-                width: percentage(String(post.id), option.votes) + '%',
-              }"
-            />
-            <div class="relative flex items-center justify-between text-sm">
-              <span class="text-white/85">{{ option.label }}</span>
-              <span class="text-white/50">
-                {{ percentage(String(post.id), option.votes) }}%
-              </span>
+              v-for="option in optionsByPost[String(post.id)]"
+              :key="String(option.id)"
+              class="relative overflow-hidden rounded-xl border px-4 py-2.5"
+              :class="
+                myVoteByPost[String(post.id)] === String(option.id)
+                  ? 'border-brand-red-500/50'
+                  : 'border-white/10'
+              "
+            >
+              <div
+                class="absolute inset-y-0 left-0 bg-white/[0.06]"
+                :style="{
+                  width: percentage(String(post.id), option.votes) + '%',
+                }"
+              />
+              <div class="relative flex items-center justify-between text-sm">
+                <span class="text-white/85">{{ option.label }}</span>
+                <span class="text-white/50">
+                  {{ percentage(String(post.id), option.votes) }}%
+                </span>
+              </div>
             </div>
+            <p class="text-xs text-white/35">
+              {{ totalVotes(String(post.id)) }} voti · puoi cambiare la tua
+              scelta
+            </p>
           </div>
-          <p class="text-xs text-white/35">
-            {{ totalVotes(String(post.id)) }} voti · puoi cambiare la tua scelta
-          </p>
-        </template>
-      </div>
-    </article>
+        </div>
+      </article>
+    </div>
   </div>
 </template>

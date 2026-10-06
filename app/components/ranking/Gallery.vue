@@ -166,7 +166,13 @@ usePageActions(
       </span>
     </div>
 
-    <div class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+    <div
+      v-vrsus-motion="{
+        preset: 'cards',
+        key: `${platformFilter}:${gameFilter}`,
+      }"
+      class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6"
+    >
       <NuxtLink
         :to="rankingLink('punti-vrsus')"
         class="group relative isolate aspect-[3/4] overflow-hidden rounded-2xl border border-white/15 text-left transition-transform hover:-translate-y-0.5"
@@ -201,7 +207,7 @@ usePageActions(
           v-if="ranking.game_id && imageByGame.get(ranking.game_id)"
           :src="imageByGame.get(ranking.game_id)!"
           :alt="ranking.game_name ?? ''"
-          class="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-105"
+          class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div
           v-else

@@ -112,9 +112,9 @@ export default defineNuxtConfig({
           purpose: 'maskable',
         },
         {
-          src: '/favicon.svg',
-          sizes: 'any',
-          type: 'image/svg+xml',
+          src: '/favicon.png',
+          sizes: '48x48',
+          type: 'image/png',
           purpose: 'any',
         },
       ],
@@ -171,7 +171,10 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#08090d' },
         { name: 'color-scheme', content: 'dark' },
       ],
-      link: [{ rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' }],
+      link: [
+        { rel: 'icon', href: '/favicon.png', type: 'image/png' },
+        { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon.png' },
+      ],
     },
     // La transizione di pagina resta disattivata: con Nuxt 4.5 e Vue 3.5 il
     // <Transition> attorno a <NuxtPage> non scambia il componente quando la

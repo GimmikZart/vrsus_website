@@ -43,14 +43,7 @@ onUnmounted(() => {
           aria-label="VRSUS home"
           class="inline-flex items-center gap-3"
         >
-          <span
-            class="bg-brand-red-500 font-display grid size-9 place-items-center rounded-xl text-sm font-bold text-white shadow-[0_0_28px_rgb(239_51_64/25%)]"
-            >V</span
-          >
-          <span
-            class="font-display text-lg font-bold tracking-[0.18em] text-white"
-            >VRSUS</span
-          >
+          <UiVrsusBrandMark />
         </NuxtLink>
 
         <nav
@@ -105,9 +98,9 @@ onUnmounted(() => {
     </header>
 
     <Transition
-      enter-active-class="transition duration-200 ease-out"
+      enter-active-class="transition duration-350 ease-out"
       enter-from-class="opacity-0"
-      leave-active-class="transition duration-150 ease-in"
+      leave-active-class="transition duration-200 ease-in"
       leave-to-class="opacity-0"
     >
       <div
@@ -163,9 +156,7 @@ onUnmounted(() => {
       <div
         class="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-8 text-sm text-white/45 sm:flex-row sm:items-center sm:justify-between sm:px-8"
       >
-        <span class="font-display font-semibold tracking-[0.16em] text-white/70"
-          >VRSUS</span
-        >
+        <UiVrsusBrandMark />
         <span>Gioco, eventi e socialità.</span>
       </div>
     </footer>

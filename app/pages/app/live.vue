@@ -492,7 +492,7 @@ useSeoMeta({ title: 'Live — VRSUS', robots: 'noindex, nofollow' })
           Nessun torneo in programma per questa serata.
         </p>
 
-        <ul v-else class="grid gap-3 sm:grid-cols-2">
+        <ul v-else v-vrsus-motion="'cards'" class="grid gap-3 sm:grid-cols-2">
           <li v-for="tournament in orderedTournaments" :key="tournament.id">
             <NuxtLink
               :to="`/app/tornei/${tournament.id}`"
@@ -535,7 +535,7 @@ useSeoMeta({ title: 'Live — VRSUS', robots: 'noindex, nofollow' })
           Nessuna postazione configurata per questa serata.
         </p>
 
-        <ul v-else class="grid gap-3 sm:grid-cols-2">
+        <ul v-else v-vrsus-motion="'cards'" class="grid gap-3 sm:grid-cols-2">
           <li
             v-for="platform in day.platforms"
             :key="String(platform.id)"

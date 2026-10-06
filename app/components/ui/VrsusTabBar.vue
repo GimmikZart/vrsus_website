@@ -52,13 +52,7 @@ const linkClass =
     class="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#08090d]/95 backdrop-blur-xl lg:inset-y-0 lg:right-auto lg:left-0 lg:flex lg:w-64 lg:flex-col lg:overflow-y-auto lg:border-t-0 lg:border-r lg:pb-0"
   >
     <div class="hidden h-16 shrink-0 items-center gap-3 px-6 lg:flex">
-      <span
-        class="bg-brand-red-500 font-display grid size-9 place-items-center rounded-xl text-sm font-bold text-white"
-        >V</span
-      >
-      <span class="font-display text-lg font-bold tracking-[0.18em] text-white"
-        >VRSUS</span
-      >
+      <UiVrsusBrandMark />
     </div>
 
     <ul

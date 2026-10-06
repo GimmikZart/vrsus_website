@@ -299,6 +299,7 @@ useSeoMeta({ title: 'Giochi — Admin VRSUS', robots: 'noindex, nofollow' })
     -->
     <div
       v-else
+      v-vrsus-motion="{ preset: 'cards', key: filterPlatform }"
       class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
     >
       <NuxtLink

@@ -347,66 +347,72 @@ async function submit() {
           La sezione compare e scompare al variare della data di nascita senza
           ricaricare la pagina e senza perdere quanto gia digitato (DEC-026).
         -->
-          <section
-            v-if="isMinor"
-            class="rounded-2xl border border-white/15 bg-white/[0.03] p-5"
-          >
-            <h2 class="font-display text-base font-semibold text-white">
-              Consenso di un genitore o tutore
-            </h2>
-            <p class="mt-2 text-sm leading-6 text-white/55">
-              Hai meno di 18 anni: per completare la registrazione serve il
-              consenso di chi esercita la responsabilità genitoriale.
-            </p>
+          <Transition name="content">
+            <section
+              v-if="isMinor"
+              class="rounded-2xl border border-white/15 bg-white/[0.03] p-5"
+            >
+              <h2 class="font-display text-base font-semibold text-white">
+                Consenso di un genitore o tutore
+              </h2>
+              <p class="mt-2 text-sm leading-6 text-white/55">
+                Hai meno di 18 anni: per completare la registrazione serve il
+                consenso di chi esercita la responsabilità genitoriale.
+              </p>
 
-            <div class="mt-5 space-y-4">
-              <div class="grid gap-4 sm:grid-cols-2">
-                <UFormField label="Nome" name="guardianFirstName">
-                  <UInput v-model="guardian.firstName" class="w-full" />
+              <div class="mt-5 space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <UFormField label="Nome" name="guardianFirstName">
+                    <UInput v-model="guardian.firstName" class="w-full" />
+                  </UFormField>
+                  <UFormField label="Cognome" name="guardianLastName">
+                    <UInput v-model="guardian.lastName" class="w-full" />
+                  </UFormField>
+                </div>
+
+                <UFormField label="Email" name="guardianEmail">
+                  <UInput
+                    v-model="guardian.email"
+                    type="email"
+                    class="w-full"
+                  />
                 </UFormField>
-                <UFormField label="Cognome" name="guardianLastName">
-                  <UInput v-model="guardian.lastName" class="w-full" />
+
+                <UFormField label="Telefono (facoltativo)" name="guardianPhone">
+                  <UInput v-model="guardian.phone" type="tel" class="w-full" />
                 </UFormField>
+
+                <UFormField label="Relazione" name="guardianRelationship">
+                  <select v-model="guardian.relationship" class="vrsus-select">
+                    <option
+                      v-for="option in relationshipOptions"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </UFormField>
+
+                <!-- Una spunta pre-selezionata non sarebbe un consenso. -->
+                <label
+                  class="flex cursor-pointer items-start gap-3 text-sm text-white/70"
+                >
+                  <input
+                    v-model="guardian.consent"
+                    type="checkbox"
+                    class="mt-1 size-4 rounded border-white/20 bg-white/5"
+                  />
+                  <span>
+                    Dichiaro di essere il genitore o tutore di chi si sta
+                    registrando e acconsento al trattamento dei suoi dati per la
+                    partecipazione agli eventi VRSUS. Posso revocare il consenso
+                    in qualsiasi momento.
+                  </span>
+                </label>
               </div>
-
-              <UFormField label="Email" name="guardianEmail">
-                <UInput v-model="guardian.email" type="email" class="w-full" />
-              </UFormField>
-
-              <UFormField label="Telefono (facoltativo)" name="guardianPhone">
-                <UInput v-model="guardian.phone" type="tel" class="w-full" />
-              </UFormField>
-
-              <UFormField label="Relazione" name="guardianRelationship">
-                <select v-model="guardian.relationship" class="vrsus-select">
-                  <option
-                    v-for="option in relationshipOptions"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </option>
-                </select>
-              </UFormField>
-
-              <!-- Una spunta pre-selezionata non sarebbe un consenso. -->
-              <label
-                class="flex cursor-pointer items-start gap-3 text-sm text-white/70"
-              >
-                <input
-                  v-model="guardian.consent"
-                  type="checkbox"
-                  class="mt-1 size-4 rounded border-white/20 bg-white/5"
-                />
-                <span>
-                  Dichiaro di essere il genitore o tutore di chi si sta
-                  registrando e acconsento al trattamento dei suoi dati per la
-                  partecipazione agli eventi VRSUS. Posso revocare il consenso
-                  in qualsiasi momento.
-                </span>
-              </label>
-            </div>
-          </section>
+            </section>
+          </Transition>
 
           <UAlert
             v-if="errorMessage"

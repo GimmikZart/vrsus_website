@@ -15,6 +15,14 @@ intervento sugli account esterni.
 ## Prossima attivita prioritaria
 
 **Verificare in DEV la nuova sezione Utenti, Ranking e Notifiche.**
+Logo e sistema motion sono implementati (DEC-064/065) e verificati in Chrome
+mobile/desktop con fixture temporanee. Il timing e stato allungato e
+ammorbidito dopo il primo riscontro del proprietario. Integrare la prova su
+telefono fisico con la checklist "Logo e motion" in
+`guideline_test_features.md`: ritmo delle
+sequenze, tastiera/scroll, riduzione movimento e icone della PWA installata.
+Le altre verifiche funzionali elencate sotto restano pendenti: il nuovo smoke
+motion non equivale al collaudo completo di ruoli, ban e invio notifiche.
 Usare un account Staff e uno Admin, una sfida a punti e una a tempo. Controllare
 lista a righe, profilo compatto e accordion Info/ARCI, differenza delle azioni per ruolo, percorso
 profilo -> Ranking con utente conservato, ricerca nickname quando si entra da

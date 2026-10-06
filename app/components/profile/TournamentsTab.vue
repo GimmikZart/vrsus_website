@@ -26,7 +26,7 @@ const crowns: Record<number, string> = {
       Nessuna iscrizione a tornei.
     </p>
 
-    <ul v-else class="grid gap-3 sm:grid-cols-2">
+    <ul v-else v-vrsus-motion="'cards'" class="grid gap-3 sm:grid-cols-2">
       <li v-for="item in tournaments" :key="item.entryId">
         <NuxtLink
           :to="`${tournamentBasePath}/${item.tournamentId}`"

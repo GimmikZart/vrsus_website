@@ -50,45 +50,47 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="open"
-      class="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm"
-      @click.self="close"
-    >
+    <Transition name="dialog">
       <div
-        role="dialog"
-        aria-modal="true"
-        class="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0d0f14] p-5 shadow-2xl shadow-black/60"
+        v-if="open"
+        class="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm"
+        @click.self="close"
       >
-        <h2 class="font-display text-lg font-semibold text-white">
-          {{ title }}
-        </h2>
-        <p v-if="description" class="mt-2 text-sm leading-6 text-white/55">
-          {{ description }}
-        </p>
-
-        <div class="mt-4 empty:hidden">
-          <slot />
-        </div>
-
         <div
-          class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"
+          role="dialog"
+          aria-modal="true"
+          class="vrsus-dialog-panel w-full max-w-sm rounded-2xl border border-white/10 bg-[#0d0f14] p-5 shadow-2xl shadow-black/60"
         >
-          <UButton
-            color="neutral"
-            variant="ghost"
-            :disabled="pending"
-            :label="cancelLabel"
-            @click="close"
-          />
-          <UButton
-            color="primary"
-            :loading="pending"
-            :label="confirmLabel"
-            @click="emit('confirm')"
-          />
+          <h2 class="font-display text-lg font-semibold text-white">
+            {{ title }}
+          </h2>
+          <p v-if="description" class="mt-2 text-sm leading-6 text-white/55">
+            {{ description }}
+          </p>
+
+          <div class="mt-4 empty:hidden">
+            <slot />
+          </div>
+
+          <div
+            class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"
+          >
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :disabled="pending"
+              :label="cancelLabel"
+              @click="close"
+            />
+            <UButton
+              color="primary"
+              :loading="pending"
+              :label="confirmLabel"
+              @click="emit('confirm')"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>

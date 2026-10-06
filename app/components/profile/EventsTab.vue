@@ -28,7 +28,7 @@ function bookingLabel(status: string) {
       Nessun evento registrato per questo utente.
     </p>
 
-    <ul v-else class="grid gap-3 sm:grid-cols-2">
+    <ul v-else v-vrsus-motion="'cards'" class="grid gap-3 sm:grid-cols-2">
       <li v-for="item in events" :key="item.bookingId">
         <component
           :is="eventBasePath ? resolveComponent('NuxtLink') : 'div'"

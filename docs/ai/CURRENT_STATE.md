@@ -1,5 +1,33 @@
 # Current Project State
 
+## Logo e motion — revisione 2026-10-06
+
+Il logo fornito in `app/assets/css/img/logo/logo-vrsus.png` e ora usato da
+toolbar, sidebar, vetrina/footer e invito all'installazione. Favicon, icone
+PWA e Apple sono generate dallo stesso originale (DEC-064).
+
+Vetrina e cataloghi, bacheca, eventi, tornei, live, ranking e liste operative
+usano ingressi GSAP selettivi con salita/dissolvenza. Dopo il riscontro del
+proprietario, il ritmo e stato ammorbidito (DEC-065): spostamenti piu brevi,
+durate di circa 0,6–0,9 secondi, curve meno aggressive e successioni piu
+leggibili. Le
+classifiche e le liste utenti entrano per righe; filtri e tab possono
+ripetere la sequenza. Dettagli di profilo, regole ranking, riepilogo torneo
+e giochi nel wizard si espandono con `UiVrsusCollapse`. Tab con indicatore
+mobile, dialog, bottom sheet, menu azioni e badge hanno transizioni coordinate.
+Riduzione movimento, focus immediato, SSR visibile e cleanup sono coperti
+dai test. Le transizioni fra pagine restano disattivate (DEC-029).
+
+DEV: lint e format PASS, typecheck PASS (warning Volar noto), unit 36/36
+PASS; build `node-server` e `cloudflare_pages` PASS. Verifica autenticata
+Chrome a 375x812 e 1440x900: logo, successione reale delle quattro righe,
+regole, profilo, bottom sheet, tab, assenza di overflow e movimento ridotto
+PASS. La suite E2E completa e riportata in `TEST_REPORT.md`.
+Il nuovo timing e verificato automaticamente e in Chrome mobile/desktop;
+resta da valutarne il feeling su telefono fisico insieme al nuovo logo
+dell'app gia installata. Nessuna modifica al database.
+Avanzamento stimato progetto: 96%; polish richiesto implementato.
+
 ## Profili compatti, podio Ranking e notifiche personali — revisione 2026-10-06
 
 La scheda utente e stata alleggerita: il contenitore principale non ha bordo e
@@ -371,7 +399,7 @@ restano da rieseguire. Dettaglio in `docs/ai/TEST_REPORT.md`.
 
 ## Ultimo aggiornamento
 
-2026-10-03
+2026-10-06
 
 ## Revisione float menu admin del 2026-10-02
 

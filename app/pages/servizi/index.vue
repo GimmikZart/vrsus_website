@@ -49,7 +49,7 @@ useSeoMeta({
       >
         Non ci sono ancora servizi pubblicati.
       </div>
-      <div v-else class="grid gap-5 md:grid-cols-2">
+      <div v-else v-vrsus-motion="'cards'" class="grid gap-5 md:grid-cols-2">
         <NuxtLink
           v-for="service in services"
           :key="service.id || service.slug || service.title || 'service'"

@@ -75,6 +75,7 @@ html.dark {
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
+  --ease-vrsus: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 html {
@@ -149,14 +150,79 @@ body {
   font-family: var(--font-display);
 }
 
-.page-enter-active,
-.page-leave-active {
-  transition: opacity 180ms ease;
+/* Shared motion presets. Page transitions stay disabled (DEC-029). */
+.dialog-enter-active,
+.dialog-leave-active {
+  transition: opacity 280ms ease;
+}
+.dialog-enter-from,
+.dialog-leave-to {
+  opacity: 0;
+}
+.vrsus-dialog-panel {
+  transition: transform 420ms var(--ease-vrsus);
+}
+.dialog-enter-from .vrsus-dialog-panel,
+.dialog-leave-to .vrsus-dialog-panel {
+  transform: translateY(16px) scale(0.97);
+}
+.dialog-leave-active .vrsus-dialog-panel {
+  transition-duration: 240ms;
 }
 
-.page-enter-from,
-.page-leave-to {
+.float-menu-enter-active,
+.float-menu-leave-active,
+.content-enter-active,
+.content-leave-active {
+  transition:
+    opacity 260ms ease,
+    transform 380ms var(--ease-vrsus);
+}
+.float-menu-enter-from,
+.float-menu-leave-to,
+.content-enter-from,
+.content-leave-to {
   opacity: 0;
+  transform: translateY(10px);
+}
+
+.badge-enter-active,
+.badge-leave-active {
+  transition:
+    opacity 180ms ease,
+    transform 280ms var(--ease-vrsus);
+}
+.badge-enter-from,
+.badge-leave-to {
+  opacity: 0;
+  transform: scale(0.75);
+}
+
+/* Pointer-only lift: touch scroll and keyboard focus stay stable. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-motion='cards'] > a {
+    transition:
+      transform 200ms var(--ease-vrsus),
+      border-color 240ms ease,
+      background-color 240ms ease;
+  }
+  [data-motion='cards'] > a:hover {
+    transform: translateY(-3px);
+  }
+}
+
+button:not(:disabled),
+a[role='button'] {
+  transition-property:
+    color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-vrsus);
+}
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled):active,
+  a[role='button']:active {
+    transform: scale(0.98);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
