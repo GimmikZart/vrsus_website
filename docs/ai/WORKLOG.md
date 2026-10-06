@@ -1726,3 +1726,53 @@ dell'invio admin sul dispositivo e nel pannello OneSignal.
 Implementazione locale pronta e verificata automaticamente. Applicare la
 migration in QUALITY prima del deploy e completare la checklist autenticata in
 `docs/dev/guideline_test_features.md`.
+
+## 2026-10-06 — Utenti e Ranking operativo
+
+### Lavoro svolto
+
+- Trasformato l'elenco utenti in righe ricercabili con nickname, ruolo e
+  accesso alla scheda; spostati ruoli e comandi nel profilo.
+- Ridisegnata l'intestazione del profilo con avatar, recapiti iconografici,
+  anzianita e indicatori; aggiunti float action per ARCI, ruoli, ban e Ranking.
+- Condivisa la galleria Ranking fra app e console e costruito il dettaglio
+  operativo con utente preselezionato oppure ricerca nickname.
+- Aggiunto input coerente con ranking a punti o a tempo e ban server-only
+  auditato, con protezione dall'auto-ban.
+
+### File principali modificati
+
+- `app/pages/admin/utenti/`, `app/components/profile/Header.vue`
+- `app/components/ranking/Gallery.vue`, `app/pages/admin/ranking/`
+- `server/api/admin/users/`, `server/api/admin/ranking-users.get.ts`
+- `shared/utils/ranking.ts`, `tests/unit/ranking.test.ts`
+
+### Verifiche
+
+- ESLint, Prettier, typecheck e `git diff --check` -> PASS.
+- Vitest -> PASS, 30/30.
+- Build Nuxt `node-server` -> PASS.
+- Prova manuale autenticata -> PENDENTE.
+
+### Stato finale della sessione
+
+Implementazione e verifiche automatiche complete. La checklist manuale Staff e
+Admin e aggiornata in `docs/dev/guideline_test_features.md`.
+
+## 2026-10-06 — Compattazione profili/ranking e notifiche personali
+
+### Lavoro svolto
+
+- Resa richiudibile e senza bordi ridondanti la parte informativa del profilo;
+  rimossi gli Eventi dai contatori e integrato lo stato ARCI azionabile.
+- Compattata la testata Ranking, spostate le regole in accordion e aggiunti i
+  tre piazzamenti SVG del podio.
+- Spostato l'invio notifiche da Altro a una pagina dedicata con float action;
+  aggiunta ricerca e consegna esclusiva a un singolo utente.
+- Estesa la RPC auditata con target personale e aggiunta la migrazione DEV.
+
+### Verifiche
+
+- Migration DEV e pgTAP 321/321 -> PASS.
+- ESLint mirato, typecheck, Vitest 30/30 e build `node-server` -> PASS.
+- Verifica visuale autenticata -> PENDENTE.

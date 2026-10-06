@@ -1,5 +1,5 @@
 begin;
-select plan(11);
+select plan(17);
 
 insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at)
 values
@@ -10,6 +10,10 @@ values
 insert into public.user_roles (user_id, role_id)
 select '00000000-0000-0000-0000-0000000000d1', id
 from public.roles where code = 'admin';
+
+insert into public.user_roles (user_id, role_id)
+select '00000000-0000-0000-0000-0000000000d2', id
+from public.roles where code = 'staff';
 
 insert into public.events (id, slug, title, status, starts_at, ends_at)
 values ('00000000-0000-0000-0000-0000000000d4', 'manual-live-test', 'Manual Live Test', 'running', now(), now() + interval '5 hours');
@@ -22,20 +26,27 @@ values ('00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000d3', true);
 select throws_ok(
-  $$select public.send_manual_notification('all', null, 'No', '00000000-0000-0000-0000-0000000000d6')$$,
+  $$select public.send_manual_notification('all', null, 'No', '00000000-0000-0000-0000-0000000000d6', null)$$,
   '42501', 'FORBIDDEN', 'ordinary users cannot send notifications');
+
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000d2', true);
+select throws_ok(
+  $$select public.send_manual_notification('all', null, 'No', '00000000-0000-0000-0000-0000000000da', null)$$,
+  '42501', 'FORBIDDEN', 'staff cannot send notifications to every user');
+select is(public.send_manual_notification('user', null, 'Staff personal message', '00000000-0000-0000-0000-0000000000da', '00000000-0000-0000-0000-0000000000d3'), 1,
+  'staff can notify one selected user');
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000d1', true);
 select throws_ok(
-  $$select public.send_manual_notification('all', null, repeat('x', 301), '00000000-0000-0000-0000-0000000000d6')$$,
+  $$select public.send_manual_notification('all', null, repeat('x', 301), '00000000-0000-0000-0000-0000000000d6', null)$$,
   '22023', 'INVALID_MANUAL_NOTIFICATION', 'message length is enforced by database');
 select throws_ok(
-  $$select public.send_manual_notification('live_event', '00000000-0000-0000-0000-0000000000d9', 'Hi', '00000000-0000-0000-0000-0000000000d6')$$,
+  $$select public.send_manual_notification('live_event', '00000000-0000-0000-0000-0000000000d9', 'Hi', '00000000-0000-0000-0000-0000000000d6', null)$$,
   '22023', 'EVENT_NOT_RUNNING', 'closed or missing event is rejected');
 
-select is(public.send_manual_notification('live_event', '00000000-0000-0000-0000-0000000000d4', 'Present only', '00000000-0000-0000-0000-0000000000d6'), 1,
+select is(public.send_manual_notification('live_event', '00000000-0000-0000-0000-0000000000d4', 'Present only', '00000000-0000-0000-0000-0000000000d6', null), 1,
   'live audience is exactly one checked-in user');
-select is(public.send_manual_notification('live_event', '00000000-0000-0000-0000-0000000000d4', 'Present only', '00000000-0000-0000-0000-0000000000d6'), 1,
+select is(public.send_manual_notification('live_event', '00000000-0000-0000-0000-0000000000d4', 'Present only', '00000000-0000-0000-0000-0000000000d6', null), 1,
   'retry returns prior recipient count');
 
 set local role postgres;
@@ -45,7 +56,7 @@ select is((select user_id from public.notifications where metadata->>'dispatch_i
   '00000000-0000-0000-0000-0000000000d2'::uuid, 'only checked-in user receives live notification');
 
 set local role authenticated;
-select ok(public.send_manual_notification('all', null, 'Everyone', '00000000-0000-0000-0000-0000000000d7') >= 3,
+select ok(public.send_manual_notification('all', null, 'Everyone', '00000000-0000-0000-0000-0000000000d7', null) >= 3,
   'all audience includes the fixture profiles');
 set local role postgres;
 select is((select count(*)::integer from public.notifications where metadata->>'dispatch_id' = '00000000-0000-0000-0000-0000000000d7'),
@@ -55,6 +66,19 @@ select is((select count(*)::integer from public.audit_logs where action = 'manua
   2, 'each send is audited once');
 select is((select count(*)::integer from public.notifications where type = 'manual' and user_id = '00000000-0000-0000-0000-0000000000d3'
   and metadata->>'scope' = 'live_event'), 0, 'unpresent user is excluded from live send');
+
+set local role authenticated;
+select throws_ok(
+  $$select public.send_manual_notification('user', null, 'Missing target', '00000000-0000-0000-0000-0000000000d8', null)$$,
+  '22023', 'INVALID_MANUAL_NOTIFICATION', 'single-user audience requires a target');
+select throws_ok(
+  $$select public.send_manual_notification('user', null, 'Missing profile', '00000000-0000-0000-0000-0000000000d8', '00000000-0000-0000-0000-0000000000d9')$$,
+  '22023', 'USER_NOT_FOUND', 'single-user audience rejects a missing profile');
+select is(public.send_manual_notification('user', null, 'Personal message', '00000000-0000-0000-0000-0000000000d8', '00000000-0000-0000-0000-0000000000d3'), 1,
+  'single-user audience creates one notification');
+set local role postgres;
+select is((select user_id from public.notifications where metadata->>'dispatch_id' = '00000000-0000-0000-0000-0000000000d8'),
+  '00000000-0000-0000-0000-0000000000d3'::uuid, 'personal notification reaches only the selected user');
 
 select * from finish();
 rollback;

@@ -9,8 +9,8 @@ export default defineEventHandler(async (event) => {
   const client = serverSupabaseServiceRole<Database>(event)
   const { data, error } = await client
     .from('profiles')
-    .select('id, display_name')
-    .order('display_name')
+    .select('id, display_name, nickname')
+    .order('nickname', { nullsFirst: false })
 
   if (error) {
     throw createError({

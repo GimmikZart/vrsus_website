@@ -59,6 +59,13 @@ export function useAdminMenu() {
             icon: 'i-lucide-mail',
             visible: isAdmin.value,
           },
+          {
+            to: '/admin/notifiche',
+            label: 'Invia notifica',
+            description: 'Invia un messaggio a utenti o partecipanti.',
+            icon: 'i-lucide-send',
+            visible: isAdmin.value,
+          },
         ],
       },
       {
@@ -66,15 +73,15 @@ export function useAdminMenu() {
         items: [
           {
             to: '/admin/ranking',
-            label: 'Rettifiche ranking',
-            description: 'Aggiustamenti auditabili dei punti VRSUS.',
+            label: 'Ranking',
+            description: 'Classifiche e registrazione dei risultati.',
             icon: 'i-lucide-trophy',
             visible: isAdmin.value,
           },
           {
             to: '/admin/utenti',
-            label: 'Utenti e ruoli',
-            description: 'Assegnazione dei ruoli agli account.',
+            label: 'Utenti',
+            description: 'Profili, ruoli e stato degli account.',
             icon: 'i-lucide-users',
             visible: hasAnyRole(['admin']),
           },

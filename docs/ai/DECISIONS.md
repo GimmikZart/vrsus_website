@@ -1832,3 +1832,74 @@ rimosso; togliere `staff` a un Admin richiede prima togliere `admin`. Le
 verifiche manuali devono coprire un account per ciascun livello, il passaggio
 fra ruoli e i due stati della navbar User. L'alias SQL legacy potra essere
 rimosso solo dopo avere sostituito le policy storiche che lo nominano.
+
+## DEC-062 — Utenti a righe e assegnazione ranking contestuale
+
+**Status:** Accepted
+
+### Decisione
+
+Staff e Admin aprono la stessa sezione Utenti: l'elenco e una lista di righe
+con nickname, ruolo effettivo e accesso alla scheda, mentre tutte le operazioni
+sull'account vivono nel float menu della scheda. Staff puo registrare la
+tessera ARCI e aprire il Ranking; Admin aggiunge assegnazione ruoli cumulativi
+e ban/rimozione ban. Il ban passa da una route server-only che usa Supabase
+Auth Admin, impedisce l'auto-ban e scrive l'audit.
+
+La console Ranking riusa la stessa galleria di `/app/ranking`. Quando viene
+aperta da una scheda utente, `userId` e nickname viaggiano nella query della
+rotta e vengono conservati entrando nella classifica: non esiste stato globale
+volatile. Dentro una sfida aperta il float menu registra un risultato per
+l'utente preselezionato; senza utente iniziale apre una ricerca per nickname.
+I ranking a tempo accettano `m:ss.mmm`, quelli a punti un numero.
+
+La card Punti VRSUS resta di sola lettura: quei punti derivano dal ledger di
+tornei e rettifiche auditabili e non sono un `game_score` assegnabile come il
+risultato di una sfida.
+
+### Motivazione
+
+La lista precedente mescolava consultazione, select e pulsanti ruolo dentro
+card ripetute. Inoltre l'aggiustamento ledger e la registrazione di un record
+di gioco erano presentati come lo stesso gesto, pur avendo fonti e semantiche
+diverse. La rotta conserva il contesto anche dopo refresh o link condiviso e
+permette a Staff e Admin di usare lo stesso percorso operativo.
+
+### Conseguenze
+
+Le nuove azioni account si aggiungono alla scheda, non alla lista. La route
+`/admin/ranking` non e piu il form di rettifica del ledger: e l'esploratore
+delle classifiche e apre `/admin/ranking/[id]`. Le rettifiche future dei Punti
+VRSUS dovranno restare un workflow auditabile distinto dai risultati delle
+sfide.
+
+## DEC-063 — Informazioni progressive e notifiche personali auditabili
+
+**Status:** Accepted
+
+### Decisione
+
+Le pagine operative mostrano per prime le azioni e i dati principali: nel
+profilo anagrafica, ARCI e statistiche vivono in un accordion chiuso per
+default; nel dettaglio Ranking lo stesso vale per le regole. Lo stato ARCI e
+parte delle informazioni dell'utente e non del float menu.
+
+L'invio manuale vive in `/admin/notifiche`, raggiungibile dalla card di Altro o
+dal profilo con l'utente preselezionato. Oltre a tutti e ai presenti a un
+evento, la RPC accetta il pubblico `user` con `target_user_id` obbligatorio,
+verifica l'esistenza del profilo e conserva idempotenza e audit del dispatch.
+Lo Staff puo usare esclusivamente il pubblico personale; i pubblici estesi
+restano riservati all'Admin.
+
+### Motivazione
+
+La classifica e le tab del profilo devono essere consultabili senza che una
+testata informativa occupi gran parte del viewport. La notifica personale non
+puo essere ottenuta filtrando soltanto lato client: il destinatario deve essere
+vincolato e verificato nella transazione database.
+
+### Conseguenze
+
+La migration `20261006160000_single_user_manual_notifications.sql` deve essere
+applicata prima di distribuire la nuova pagina. Retry con lo stesso dispatch
+non duplicano le notifiche; la card Altro non contiene piu il form inline.

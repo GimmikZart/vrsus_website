@@ -3,19 +3,24 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '~/types/database.types'
 
 export default defineEventHandler(async (event) => {
-  await requireServerAnyRole(event, ['admin'])
+  await requireServerAnyRole(event, ['staff', 'admin'])
   const client = serverSupabaseServiceRole<Database>(event)
-  const [{ count, error: countError }, { data: events, error: eventsError }] =
-    await Promise.all([
-      client.from('profiles').select('id', { head: true, count: 'exact' }),
-      client
-        .from('events')
-        .select('id, title, starts_at')
-        .eq('status', 'running')
-        .order('starts_at', { ascending: false }),
-    ])
+  const [
+    { data: users, error: usersError },
+    { data: events, error: eventsError },
+  ] = await Promise.all([
+    client
+      .from('profiles')
+      .select('id, display_name, nickname')
+      .order('nickname', { nullsFirst: false }),
+    client
+      .from('events')
+      .select('id, title, starts_at')
+      .eq('status', 'running')
+      .order('starts_at', { ascending: false }),
+  ])
 
-  if (countError || eventsError) {
+  if (usersError || eventsError) {
     throw createError({
       statusCode: 500,
       statusMessage: 'Audience unavailable',
@@ -38,5 +43,5 @@ export default defineEventHandler(async (event) => {
     }),
   )
 
-  return { allUsers: count ?? 0, liveEvents }
+  return { allUsers: users?.length ?? 0, users: users ?? [], liveEvents }
 })

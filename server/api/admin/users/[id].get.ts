@@ -313,9 +313,9 @@ export default defineEventHandler(async (event) => {
   // --- Anagrafica -----------------------------------------------------------
   // L indirizzo vive in auth.users, non nel profilo: se la lettura non riesce
   // la scheda resta valida senza recapito.
-  const email = await client.auth.admin
+  const authUser = await client.auth.admin
     .getUserById(userId)
-    .then((result) => result.data?.user?.email ?? null)
+    .then((result) => result.data?.user ?? null)
     .catch(() => null)
 
   const age = computeAge(profile.birth_date)
@@ -339,7 +339,8 @@ export default defineEventHandler(async (event) => {
     birthDate: profile.birth_date,
     age,
     phone: profile.phone,
-    email,
+    email: authUser?.email ?? null,
+    bannedUntil: authUser?.banned_until ?? null,
     avatarPath: profile.avatar_path,
     createdAt: profile.created_at,
     roles: (rolesResult.data ?? [])

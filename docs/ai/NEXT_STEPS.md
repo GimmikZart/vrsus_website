@@ -14,10 +14,25 @@ intervento sugli account esterni.
 
 ## Prossima attivita prioritaria
 
+**Verificare in DEV la nuova sezione Utenti, Ranking e Notifiche.**
+Usare un account Staff e uno Admin, una sfida a punti e una a tempo. Controllare
+lista a righe, profilo compatto e accordion Info/ARCI, differenza delle azioni per ruolo, percorso
+profilo -> Ranking con utente conservato, ricerca nickname quando si entra da
+menu, podio e accordion regole, input `m:ss.mmm`, assegnazione ruoli cumulativi
+e ban/rimozione ban. Da Altro aprire la card Invia notifica e provare tutti,
+evento live e singolo utente; dal profilo verificare il destinatario preselezionato.
+La checklist completa e in `docs/dev/guideline_test_features.md`, sezione
+"Utenti e assegnazione dei risultati ranking". Criterio di completamento:
+risultati visibili nella classifica corretta, account bannato respinto al nuovo
+accesso, self-ban rifiutato e nessuna regressione su mobile. Le verifiche
+automatiche sono PASS: lint, typecheck, unit 30/30, pgTAP 321/321 e build.
+
+## Attivita esterna successiva
+
 **USER ACTION REQUIRED — distribuire e provare la correzione push in QUALITY.**
 La sottoscrizione OneSignal e la push di benvenuto funzionano; inbox e badge
 si aggiornano. Dopo il deploy della route admin aggiornata, inviare una nuova
-notifica da `/admin/altro` e leggere il messaggio: deve indicare quanti
+notifica da `/admin/notifiche` e leggere il messaggio: deve indicare quanti
 dispositivi OneSignal ha accettato. Se indica errore, non modificare il testo
 e premere di nuovo per ritentare la sola push senza duplicare inbox.
 Provare con PWA in background. Il webhook resta necessario per notifiche
@@ -34,8 +49,8 @@ la diagnostica push e la rimozione del blocco per origine. Dopo il deploy,
 leggere nell'avviso della pagina notifiche i valori effettivi di origine
 pagina e APP_BASE_URL; se differiscono, correggere la variabile nel relativo
 ambiente Cloudflare, ma continuare la prova Abilita push. Verificare che le
-   migration `20261002103000`, `20261002104000`, `20261002105000` e
-   `20261003100000` siano applicate a Supabase QUALITY e che
+   migration `20261002103000`, `20261002104000`, `20261002105000`,
+   `20261003100000` e `20261006160000` siano applicate a Supabase QUALITY e che
 App ID, REST API Key e `NOTIFICATION_WEBHOOK_SECRET` appartengano alla stessa
 configurazione. Procedura in `docs/dev/guideline_implementations.md`.
 Poi eseguire la checklist A/B in `docs/dev/guideline_test_features.md`:

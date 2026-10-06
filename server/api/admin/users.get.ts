@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   ] = await Promise.all([
     serviceClient
       .from('profiles')
-      .select('id, display_name, created_at')
+      .select('id, display_name, nickname, created_at')
       .order('created_at', { ascending: true }),
     serviceClient.from('user_roles').select('user_id, roles(code)'),
   ])

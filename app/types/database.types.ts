@@ -3140,6 +3140,7 @@ export type Database = {
           p_event_id: string | null
           p_message: string
           p_scope: string
+          p_target_user_id: string | null
         }
         Returns: number
       }

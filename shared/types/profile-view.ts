@@ -58,6 +58,7 @@ export type ProfileDetailView = {
   age: number | null
   phone: string | null
   email: string | null
+  bannedUntil: string | null
   avatarPath: string | null
   createdAt: string
   roles: string[]

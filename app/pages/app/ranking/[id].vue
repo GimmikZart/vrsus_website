@@ -16,6 +16,7 @@ const client = useSupabaseClient<Database>()
 const user = useSupabaseUser()
 const rankingId = computed(() => String(route.params.id))
 const isVrsusPoints = computed(() => rankingId.value === 'punti-vrsus')
+const rulesOpen = ref(false)
 
 const { data: ranking } = await useAsyncData<GameRanking | null>(
   () => `app-ranking-${rankingId.value}`,
@@ -120,7 +121,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="space-y-5 pb-6">
+  <div class="space-y-3 pb-6">
     <NuxtLink
       to="/app/ranking"
       class="text-primary inline-flex items-center gap-1 text-sm font-semibold"
@@ -129,10 +130,8 @@ useSeoMeta({
       Tutti i ranking
     </NuxtLink>
 
-    <section
-      class="border-default bg-elevated max-h-[32dvh] overflow-y-auto rounded-2xl border p-4"
-    >
-      <div class="mb-3 flex items-center gap-2">
+    <section class="bg-elevated rounded-2xl px-4 py-3">
+      <div class="mb-2 flex items-center gap-2">
         <span
           class="bg-default text-highlighted rounded-full px-2.5 py-1 text-xs font-bold"
         >
@@ -141,29 +140,39 @@ useSeoMeta({
         <span class="text-muted text-xs font-medium">{{ game }}</span>
       </div>
 
-      <h1 class="text-highlighted text-2xl font-black tracking-tight">
+      <h1 class="text-highlighted text-xl font-black tracking-tight">
         {{ title }}
       </h1>
 
       <p
         v-if="!isVrsusPoints && ranking?.ends_at"
-        class="text-muted mt-2 text-sm"
+        class="text-muted mt-1 text-xs"
       >
         Termine {{ formatLongDate(ranking.ends_at) }}
       </p>
 
-      <div class="border-default mt-4 border-t pt-3">
-        <p class="text-muted text-xs font-bold tracking-wide uppercase">
-          Regole del ranking
-        </p>
-        <p class="text-toned mt-1.5 text-sm leading-6 whitespace-pre-line">
+      <button
+        type="button"
+        class="text-muted mx-auto mt-2 flex min-h-8 items-center gap-1.5 px-3 text-xs font-bold tracking-wide uppercase hover:text-white"
+        :aria-expanded="rulesOpen"
+        @click="rulesOpen = !rulesOpen"
+      >
+        Regole
+        <UIcon
+          name="i-lucide-chevron-down"
+          class="size-4 transition-transform"
+          :class="{ 'rotate-180': rulesOpen }"
+        />
+      </button>
+      <div v-show="rulesOpen" class="pt-1 pb-1">
+        <p class="text-toned text-sm leading-5 whitespace-pre-line">
           {{ description }}
         </p>
       </div>
     </section>
 
     <section aria-labelledby="leaderboard-title">
-      <div class="mb-3 flex items-center justify-between">
+      <div class="mb-2 flex items-center justify-between">
         <h2 id="leaderboard-title" class="text-highlighted text-lg font-black">
           Classifica
         </h2>
@@ -190,11 +199,7 @@ useSeoMeta({
           class="border-default bg-elevated flex items-center gap-3 rounded-xl border p-3"
           :class="{ 'border-primary/40 bg-primary/5': entry.id === user?.id }"
         >
-          <span
-            class="bg-default text-highlighted flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-black"
-          >
-            {{ index + 1 }}
-          </span>
+          <RankingPositionBadge :position="index + 1" />
           <div class="min-w-0 flex-1">
             <p class="text-highlighted truncate font-bold">
               {{ entry.nickname || 'Giocatore VRSUS' }}

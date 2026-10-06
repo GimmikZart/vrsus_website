@@ -1,5 +1,48 @@
 # Current Project State
 
+## Profili compatti, podio Ranking e notifiche personali — revisione 2026-10-06
+
+La scheda utente e stata alleggerita: il contenitore principale non ha bordo e
+l'accordion `Info`, chiuso per default, raccoglie anagrafica, stato ARCI e i
+soli indicatori Presenze, Tornei e Punti VRSUS. La tessera non e piu nel float
+menu: se assente compare come box giallo azionabile con conferma dal basso, se
+registrata come box verde. Il float menu porta invece alla notifica personale
+con utente gia selezionato.
+
+I dettagli Ranking mettono subito in primo piano la classifica; le regole sono
+in un accordion chiuso per default e i primi tre posti usano simboli SVG oro,
+argento e bronzo. L'invio manuale e ora una card `Invia notifica` in Altro che
+apre `/admin/notifiche`: destinatari tutti, presenti a un evento oppure un
+singolo utente ricercabile. La RPC conserva idempotenza e audit e valida il
+target personale (DEC-063).
+
+Migrazione locale `20261006160000_single_user_manual_notifications.sql` e
+pgTAP completo 321/321 PASS. ESLint mirato, `nuxt typecheck`, Vitest 30/30 e
+build `node-server` PASS. La verifica visuale/autenticata resta pendente nella
+checklist. Avanzamento stimato progetto: 96%.
+
+## Gestione utenti e ranking operativo — revisione 2026-10-06
+
+Staff e Admin hanno la sezione Utenti nella posizione gia prevista dalle loro
+shell. L'elenco e ora composto da righe con nickname, ruolo effettivo e azione
+di apertura; ricerca, ruoli e comandi non sono piu mescolati dentro card. La
+scheda profilo presenta identita e un riepilogo richiudibile prima delle tab.
+
+Il float menu del profilo permette a Staff e Admin di notificare l'utente e
+scegliere una sfida Ranking; Admin aggiunge ruoli
+cumulativi e ban/rimozione ban auditato. `/admin/ranking` riusa la stessa
+galleria di `/app/ranking`; il dettaglio mostra la classifica e registra il
+risultato tramite pannello dal basso. Senza utente iniziale offre ricerca per
+nickname, mentre dal profilo conserva l'utente nella rotta. I tempi accettano
+`m:ss.mmm`; Punti VRSUS resta una classifica di sola lettura distinta dai
+risultati delle sfide (DEC-062).
+
+Verifiche DEV: ESLint completo, Prettier completo, `nuxt typecheck`, Vitest
+30/30, `git diff --check` e build `node-server` PASS. Il typecheck conserva il
+warning noto Volar/vue-router. La prova visuale autenticata e i flussi reali di
+ruolo, ban e inserimento punteggi sono pendenti secondo
+`docs/dev/guideline_test_features.md`. Avanzamento stimato progetto: 95%.
+
 ## Ruoli, navigazione, Inbox e immagini — revisione 2026-10-03
 
 L'app usa ora soltanto i ruoli cumulativi `user`, `staff` e `admin`. Ogni

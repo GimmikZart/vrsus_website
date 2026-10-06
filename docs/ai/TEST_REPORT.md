@@ -1026,3 +1026,38 @@ il nuovo feedback `problem`. Lint, typecheck e build coprono le nuove route e
 shell. Il controllo browser ha verificato la resa delle card pubbliche con
 fallback, ma non prova i flussi autenticati: la relativa checklist e in
 `docs/dev/guideline_test_features.md`.
+
+## 2026-10-06 — Utenti e assegnazione risultati Ranking
+
+| Verifica | Esito |
+| --- | --- |
+| ESLint completo | PASS |
+| Prettier completo | PASS |
+| `nuxt typecheck` | PASS, warning noto Volar/vue-router |
+| Vitest | PASS — 30/30 in 7 file |
+| Build Nuxt `node-server` | PASS |
+| `git diff --check` | PASS, soli warning CRLF attesi su Windows |
+| Prova autenticata Staff/Admin | PENDENTE |
+| Inserimento reale punti/tempo, ruoli e ban | PENDENTE |
+
+La suite aggiunge quattro test alla conversione dei valori ranking: punti con
+separatore italiano o internazionale, tempi `m:ss.mmm`, secondi assoluti e
+rifiuto dei tempi impossibili. Build e route structure confermano che
+`/admin/ranking` e `/admin/ranking/[id]` sono rotte sorelle e che la nuova
+route server del ban viene inclusa nell'output Nitro.
+
+## 2026-10-06 — Profili compatti e notifica a singolo utente
+
+| Verifica | Esito |
+| --- | --- |
+| Migration DEV `20261006160000_single_user_manual_notifications.sql` | PASS |
+| pgTAP completo | PASS — 321/321 in 15 file |
+| ESLint sui file modificati | PASS |
+| `nuxt typecheck` | PASS, warning noto Volar/vue-router |
+| Vitest | PASS — 30/30 in 7 file |
+| Build Nuxt `node-server` | PASS |
+| Prova visuale/autenticata di accordion, ARCI, podio e notifica | PENDENTE |
+
+I nuovi test database coprono target obbligatorio, profilo inesistente,
+consegna a un solo destinatario e isolamento dagli altri profili. La build
+include la nuova pagina `/admin/notifiche` e le API aggiornate.

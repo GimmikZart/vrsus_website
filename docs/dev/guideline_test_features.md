@@ -502,31 +502,58 @@ il ranking è derivato dal ledger auditabile.
 
 <!-- Inserire qui eventuali osservazioni -->
 
-## Aggiustamento ranking admin
+## Utenti e assegnazione dei risultati ranking
 
 **Stato:** READY TO TEST in DEV.
 
 ### Prerequisiti
 
 - Supabase DEV attivo.
-- Un account autenticato con ruolo `admin`.
-- Almeno un profilo e un'attività attiva nel catalogo.
+- Un account Staff e un account Admin.
+- Almeno due profili con nickname.
+- Una sfida a punti e una sfida a tempo, entrambe aperte e pubbliche.
 
 ### Procedura di test
 
-- [ ] 1. Aprire `/admin/ranking` e selezionare utente, attività, punti e
-      motivazione.
-- [ ] 2. Salvare e verificare il messaggio di successo.
-- [ ] 3. Aprire `/ranking` e verificare che l'aggiustamento compaia nella
-      classifica relativa all'attività quando il profilo/torneo è pubblico.
-- [ ] 4. Ripetere con punti negativi e verificare che venga creata una nuova
-      voce auditabile senza modificare lo storico del torneo.
-- [ ] 5. Accedere con un utente senza ruolo e verificare il redirect dalla route.
+- [ ] 1. Come Staff aprire `Utenti`: l'elenco mostra righe con nickname, ruolo
+      e azione a destra, senza select o campi ruolo dentro la lista. Cercare un
+      nickname e aprirne il profilo.
+- [ ] 2. Verificare il profilo su telefono: avatar a sinistra e nickname
+      allineato a destra. L'accordion Info parte chiuso e lascia subito
+      accessibili le tab; aprendolo compaiono eta, ARCI, email e data iscrizione
+      con icone, poi soltanto Presenze, Tornei e Punti VRSUS.
+- [ ] 3. Con tessera assente, toccare il box ARCI giallo `Non registrata`,
+      confermare dal menu in basso e verificare che diventi verde `Registrata`.
+      Come Staff verificare nel float menu `Invia notifica` e `Ranking`, ma
+      non `Assegna ruoli` e `Banna utente`.
+- [ ] 4. Toccare `Ranking`: si apre la stessa griglia di `/app/ranking` con il
+      nome dell'utente di partenza. Aprire una sfida a punti e verificare il
+      comando `Assegna punti a [nickname]`; inserire un valore e controllare
+      che la classifica si aggiorni.
+- [ ] 5. Tornare alla griglia, aprire una sfida a tempo e inserire `1:42.380`.
+      La classifica deve mostrare lo stesso formato e ordinare il tempo piu
+      basso davanti. Verificare testata compatta, regole chiuse di default e
+      podio SVG oro/argento/bronzo. La card Punti VRSUS non deve offrire
+      assegnazione diretta.
+- [ ] 6. Aprire `/admin/ranking` senza passare da un profilo. Dentro una sfida
+      il float menu mostra `Assegna punti`; il pannello dal basso consente di
+      cercare il nickname, selezionare l'utente e inserire il valore.
+- [ ] 7. Come Admin aprire `Altro -> Ranking` (non piu `Rettifiche ranking`) e
+      ripetere il passo 6. Aprire poi `Altro -> Utenti` nella stessa posizione
+      precedente.
+- [ ] 8. Sul profilo Admin aprire `Assegna ruoli`: User resta obbligatorio,
+      Admin abilita anche Staff e la rimozione rispetta l'ordine cumulativo.
+- [ ] 9. Bannare un account di prova, verificare l'avviso rosso nel profilo e
+      il rifiuto di un nuovo accesso; rimuovere il ban e verificare che
+      l'accesso torni possibile. Provare a bannare il proprio account Admin:
+      l'operazione deve essere rifiutata.
 
 ### Risultato atteso
 
-Soltanto admin e super-admin possono creare aggiustamenti. Ogni voce conserva
-attore, attività, punti, motivazione e descrizione nel ledger/audit.
+Staff e Admin consultano la stessa UI di utenti e ranking con comandi coerenti
+con il ruolo. I risultati finiscono nella sfida corretta, i tempi vengono
+convertiti in secondi senza perdere la forma visuale, ruoli e ban sono
+autorizzati server-side e le azioni amministrative restano auditabili.
 
 ### Esito manuale
 
@@ -579,15 +606,17 @@ configurazione OneSignal e del Database Webhook.
 
 ### Prerequisiti
 
-- Migration `20261002105000_manual_notifications.sql` applicata nell'ambiente.
+- Migration `20261002105000_manual_notifications.sql` e
+  `20261006160000_single_user_manual_notifications.sql` applicate nell'ambiente.
 - Account `admin`; due account cliente A e B. Per il pubblico
   live, evento in stato `running` con A gia registrato tramite check-in e B
   senza check-in.
 
 ### Procedura di test
 
-- [ ] 1. Aprire `/admin/altro` come admin: trovare **Invia notifica**.
-      Ripetere come `staff`: la sezione non deve comparire. Commenti: <!-- -->
+- [ ] 1. Aprire `/admin/altro` come admin: trovare la card **Invia notifica** e
+      aprire `/admin/notifiche`. Ripetere come `staff`: la card non deve
+      comparire. Commenti: <!-- -->
 - [ ] 2. Scegliere **Tutti gli utenti dell'app**, scrivere un testo di massimo
       300 caratteri e confermare. Verificare il numero destinatari e la nuova
       riga nella inbox di A e B, con badge aggiornato senza refresh.
@@ -598,7 +627,11 @@ configurazione OneSignal e del Database Webhook.
 - [ ] 4. Provare messaggio vuoto, oltre 300 caratteri, nessun evento live e
       evento senza presenti: il pulsante di invio deve restare disabilitato.
       Commenti: <!-- -->
-- [ ] 5. In QUALITY, con push abilitata per A, ripetere il punto 3 con la PWA
+- [ ] 5. Scegliere **Singolo utente**, cercare A per nickname e inviare. A deve
+      ricevere la notifica, B no e il conteggio previsto deve essere 1. Dal
+      profilo di A premere `Invia notifica` e verificare che la pagina si apra
+      con A gia selezionato. Commenti: <!-- -->
+- [ ] 6. In QUALITY, con push abilitata per A, ripetere il punto 3 con la PWA
       in background: verificare la push e la riga inbox. Senza provider push,
       verificare comunque inbox e badge. Commenti: <!-- -->
 
@@ -641,7 +674,7 @@ configurazione OneSignal e webhook come in `guideline_implementations.md`.
       float menu e la card push in alto. Premere il comando: i segni di non
       letto spariscono, il badge torna a zero anche nel secondo browser di A
       e il comando non compare piu. Annotare: <!-- commenti -->
-- [ ] 8. Come admin, inviare da `/admin/altro` una notifica a tutti gli
+- [ ] 8. Come admin, inviare da `/admin/notifiche` una notifica a tutti gli
       utenti. Verificare che la risposta indichi quanti dispositivi OneSignal
       ha accettato, che A riceva la push con la PWA in background e che B
       riceva solo se ha abilitato le push. Annotare: <!-- commenti -->

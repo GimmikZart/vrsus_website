@@ -243,7 +243,8 @@ account esterni e devono essere inseriti dal proprietario.
 2. Applicare sul Supabase QUALITY le migration ancora pendenti, comprese
    `20261002103000_notifications_realtime.sql` e
    `20261002104000_push_subscription_owner_guard.sql` e
-   `20261002105000_manual_notifications.sql`, usando il normale
+   `20261002105000_manual_notifications.sql` e
+   `20261006160000_single_user_manual_notifications.sql`, usando il normale
    workflow `supabase db push` verso il progetto esplicitamente collegato.
    Non usare `db reset` sul progetto remoto. Controllare in **Database →
    Publications → supabase_realtime** che `public.notifications` sia presente.
@@ -589,7 +590,7 @@ registrato chi era socio la stagione prima.
 
 Chiunque abbia ruolo `staff` o `admin`, in due punti:
 
-- scheda utente (`Console -> Utenti e ruoli -> Scheda`), comando
+- scheda utente (`Console -> Utenti -> profilo`), comando
   `Registra tessera ARCI` / `Revoca tessera`;
 - check-in: dopo la scansione del QR, se la giornata richiede la tessera e il
   socio non ce l'ha, compare il comando `Tessera vista`.

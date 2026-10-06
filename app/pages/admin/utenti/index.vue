@@ -4,6 +4,7 @@ import type { VrsusRole } from '~/composables/useVrsusAuth'
 type AdminUser = {
   id: string
   display_name: string
+  nickname: string | null
   created_at: string
   roles: string[]
 }
@@ -14,134 +15,119 @@ definePageMeta({
   requiredRoles: ['staff', 'admin'] satisfies VrsusRole[],
 })
 
-const { isAdmin } = useVrsusAuth()
+const {
+  data: users,
+  pending,
+  error,
+} = await useFetch<AdminUser[]>('/api/admin/users', { default: () => [] })
+const search = ref('')
 
-const { data: users, refresh } = await useFetch<AdminUser[]>(
-  '/api/admin/users',
-  {
-    default: () => [],
-  },
-)
-const selectedRoles = reactive<Record<string, VrsusRole>>({})
-const pendingUserId = ref<string | null>(null)
-const errorMessage = ref('')
-const roleOptions: VrsusRole[] = ['user', 'staff', 'admin']
-
-useSeoMeta({
-  title: 'Gestione utenti — VRSUS',
-  robots: 'noindex, nofollow',
+const visibleUsers = computed(() => {
+  const query = search.value.trim().toLocaleLowerCase('it-IT')
+  if (!query) return users.value
+  return users.value.filter((account) =>
+    `${account.nickname ?? ''} ${account.display_name}`
+      .toLocaleLowerCase('it-IT')
+      .includes(query),
+  )
 })
 
-async function changeRole(userId: string, assign: boolean) {
-  pendingUserId.value = userId
-  errorMessage.value = ''
-
-  try {
-    await $fetch('/api/admin/roles', {
-      method: 'POST',
-      body: { userId, roleCode: selectedRoles[userId] ?? 'user', assign },
-    })
-    await refresh()
-  } catch {
-    errorMessage.value = 'La modifica del ruolo è stata rifiutata.'
-  } finally {
-    pendingUserId.value = null
-  }
+function roleLabel(roles: string[]) {
+  if (roles.includes('admin')) return 'Admin'
+  if (roles.includes('staff')) return 'Staff'
+  return 'User'
 }
+
+useSeoMeta({
+  title: 'Utenti — VRSUS',
+  robots: 'noindex, nofollow',
+})
 </script>
 
 <template>
-  <div>
-    <div>
+  <div class="space-y-6">
+    <header>
       <p
         class="text-brand-red-400 text-xs font-semibold tracking-[0.24em] uppercase"
       >
+        Community
+      </p>
+      <h1 class="font-display mt-2 text-3xl font-semibold text-white">
         Utenti
-      </p>
-      <h1 class="font-display mt-3 text-4xl font-semibold text-white">
-        Gestione utenti
       </h1>
-      <p class="mt-4 max-w-2xl text-white/55">
-        Cerca e consulta gli account. Gli Admin possono anche assegnare o
-        rimuovere i ruoli, con una modifica auditata.
+      <p class="mt-2 max-w-2xl text-sm text-white/55">
+        Cerca un nickname e apri la scheda completa per gestire il profilo.
       </p>
-    </div>
+    </header>
+
+    <UFormField label="Cerca utente" name="search">
+      <UInput
+        v-model="search"
+        icon="i-lucide-search"
+        placeholder="Nickname o nome"
+        class="w-full sm:max-w-md"
+      />
+    </UFormField>
 
     <UAlert
-      v-if="errorMessage"
-      class="mt-8"
+      v-if="error"
       color="error"
       variant="subtle"
-      :description="errorMessage"
+      description="Non è stato possibile caricare gli utenti."
     />
 
-    <div class="mt-10 space-y-3">
-      <UCard
-        v-for="account in users"
-        :key="account.id"
-        class="border border-white/10 bg-white/[0.04]"
-      >
-        <div
-          class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between"
-        >
-          <div>
-            <NuxtLink
-              :to="`/admin/utenti/${account.id}`"
-              class="font-display text-lg font-semibold text-white hover:underline"
-            >
-              {{ account.display_name }}
-            </NuxtLink>
-            <p class="mt-1 text-xs break-all text-white/35">{{ account.id }}</p>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <UBadge
-                v-for="role in account.roles"
-                :key="role"
-                color="secondary"
-                variant="subtle"
-                :label="role"
-              />
-              <span
-                v-if="account.roles.length === 0"
-                class="text-sm text-white/45"
-                >Nessun ruolo</span
-              >
-            </div>
-          </div>
-          <div class="flex flex-col gap-2 sm:flex-row">
-            <UButton
-              :to="`/admin/utenti/${account.id}`"
-              color="neutral"
-              variant="ghost"
-              icon="i-lucide-id-card"
-              label="Scheda"
-            />
-            <template v-if="isAdmin">
-              <USelect
-                v-model="selectedRoles[account.id]"
-                :items="roleOptions"
-                class="min-w-44"
-              />
-              <UButton
-                color="secondary"
-                variant="soft"
-                :loading="pendingUserId === account.id"
-                label="Assegna"
-                @click="changeRole(account.id, true)"
-              />
-              <UButton
-                color="neutral"
-                variant="outline"
-                :loading="pendingUserId === account.id"
-                label="Rimuovi"
-                @click="changeRole(account.id, false)"
-              />
-            </template>
-          </div>
-        </div>
-      </UCard>
-      <p v-if="users.length === 0" class="text-white/50">
-        Nessun profilo disponibile.
-      </p>
+    <div v-if="pending" class="space-y-2">
+      <USkeleton v-for="index in 5" :key="index" class="h-16 rounded-xl" />
     </div>
+
+    <div
+      v-else-if="visibleUsers.length"
+      class="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]"
+    >
+      <div
+        class="hidden grid-cols-[minmax(0,1fr)_10rem_3.5rem] items-center gap-4 border-b border-white/10 px-4 py-3 text-xs tracking-wide text-white/40 uppercase sm:grid"
+      >
+        <span>Nome utente</span>
+        <span>Ruolo</span>
+        <span class="sr-only">Azioni</span>
+      </div>
+
+      <NuxtLink
+        v-for="account in visibleUsers"
+        :key="account.id"
+        :to="`/admin/utenti/${account.id}`"
+        class="group grid min-h-16 grid-cols-[minmax(0,1fr)_auto_2.75rem] items-center gap-3 border-b border-white/[0.07] px-4 py-3 last:border-b-0 hover:bg-white/[0.05] sm:grid-cols-[minmax(0,1fr)_10rem_3.5rem] sm:gap-4"
+      >
+        <div class="min-w-0">
+          <p class="truncate font-semibold text-white">
+            {{ account.nickname ?? account.display_name }}
+          </p>
+          <p
+            v-if="account.nickname && account.display_name !== account.nickname"
+            class="mt-0.5 truncate text-xs text-white/40"
+          >
+            {{ account.display_name }}
+          </p>
+        </div>
+        <span
+          class="justify-self-start rounded-full bg-white/[0.07] px-2.5 py-1 text-xs text-white/65"
+        >
+          {{ roleLabel(account.roles) }}
+        </span>
+        <span
+          class="grid size-11 place-items-center rounded-full text-white/45 transition-colors group-hover:bg-white/10 group-hover:text-white"
+          aria-label="Apri profilo"
+        >
+          <UIcon name="i-lucide-arrow-up-right" class="size-5" />
+        </span>
+      </NuxtLink>
+    </div>
+
+    <p
+      v-else
+      class="rounded-2xl border border-dashed border-white/10 p-5 text-sm text-white/45"
+    >
+      Nessun utente corrisponde alla ricerca.
+    </p>
   </div>
 </template>
